@@ -1,0 +1,174 @@
+.hero {
+  position: relative;
+  background: linear-gradient(160deg, #c9eaff 0%, #e8f6ff 60%, #f0f8ff 100%);
+  padding: 80px 0 100px;
+  overflow: visible;
+}
+
+// Sol
+.hero__sun {
+  position: absolute;
+  top: -40px;
+  right: 80px;
+  width: 180px;
+  height: 180px;
+  background: radial-gradient(circle, #FFD84D 60%, #FFB800 100%);
+  border-radius: 50%;
+  opacity: 0.9;
+}
+
+// Moln
+.hero__cloud {
+  position: absolute;
+  background: white;
+  border-radius: 50px;
+  opacity: 0.7;
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    background: white;
+    border-radius: 50%;
+  }
+
+  &--1 {
+    width: 140px;
+    height: 45px;
+    top: 40px;
+    left: 10%;
+
+    &::before {
+      width: 70px;
+      height: 70px;
+      top: -35px;
+      left: 20px;
+    }
+
+    &::after {
+      width: 50px;
+      height: 50px;
+      top: -25px;
+      left: 60px;
+    }
+  }
+
+  &--2 {
+    width: 100px;
+    height: 35px;
+    top: 100px;
+    right: 20%;
+
+    &::before {
+      width: 50px;
+      height: 50px;
+      top: -25px;
+      left: 15px;
+    }
+
+    &::after {
+      width: 40px;
+      height: 40px;
+      top: -18px;
+      left: 45px;
+    }
+  }
+
+  &--3 {
+    width: 80px;
+    height: 28px;
+    bottom: 60px;
+    left: 30%;
+    opacity: 0.4;
+
+    &::before {
+      width: 40px;
+      height: 40px;
+      top: -20px;
+      left: 10px;
+    }
+
+    &::after {
+      width: 30px;
+      height: 30px;
+      top: -15px;
+      left: 35px;
+    }
+  }
+}
+
+// Innehåll
+.hero__content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 28px;
+}
+
+.hero__title {
+  font-family: var(--font-heading);
+  font-size: clamp(36px, 5vw, 58px);
+  font-weight: 800;
+  color: var(--color-dark);
+  line-height: 1.15;
+
+  &--italic {
+    font-style: italic;
+    color: var(--color-primary);
+  }
+}
+
+// Sökruta
+.hero__searchbar {
+  width: 100%;
+  max-width: 560px;
+  position: relative;
+  z-index: 100;
+}
+
+// Taggar
+.hero__tags {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.hero__tags_label {
+  font-size: 14px;
+  color: var(--color-dark);
+  font-weight: 500;
+}
+
+.hero__tag {
+  padding: 8px 18px;
+  border-radius: var(--radius-full);
+  border: 2px solid var(--color-dark);
+  background: transparent;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-dark);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: var(--font-body);
+
+  &:hover {
+    background: var(--color-dark);
+    color: white;
+  }
+
+  &--active {
+    background: var(--color-orange);
+    border-color: var(--color-orange);
+    color: white;
+
+    &:hover {
+      background: #d14a35;
+      border-color: #d14a35;
+    }
+  }
+}

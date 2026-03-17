@@ -1,16 +1,15 @@
-import { supabase } from '@/lib/supabase'
+import Hero from '@/components/Hero'
+import Categories from '@/components/Categories'
+import ServiceList from '@/components/ServiceList'
+import CtaSection from '@/components/CtaSection'
 
-export default async function Home() {
-  const { data, error } = await supabase.from('services').select('id').limit(1)
-
+export default function Home() {
   return (
     <main>
-      <h1>Svippo</h1>
-      {error ? (
-        <p style={{ color: 'red' }}>Fel: {error.message}</p>
-      ) : (
-        <p style={{ color: 'green' }}>✅ Supabase kopplat!</p>
-      )}
+      <Hero />
+      <Categories />
+      <ServiceList />
+      <CtaSection />
     </main>
   )
 }

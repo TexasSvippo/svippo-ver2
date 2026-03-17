@@ -1,0 +1,152 @@
+.servicelist {
+  padding: 48px 0;
+}
+
+.servicelist__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.servicelist__title {
+  font-family: var(--font-heading);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-dark);
+}
+
+.servicelist__see_all {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-primary);
+  transition: opacity 0.2s;
+
+  &:hover {
+    opacity: 0.7;
+  }
+}
+
+.servicelist__list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.servicelist__loading {
+  text-align: center;
+  padding: 48px;
+  color: var(--color-gray);
+  font-size: 15px;
+}
+
+.servicelist__empty {
+  text-align: center;
+  padding: 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  color: var(--color-gray);
+}
+
+// Kort
+.service_card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+// Avatar
+.service_card__avatar {
+  flex-shrink: 0;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.service_card__avatar_placeholder {
+  width: 100%;
+  height: 100%;
+  background: var(--color-primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 700;
+  border-radius: 50%;
+}
+
+// Info
+.service_card__info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.service_card__meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.service_card__name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-dark);
+}
+
+.star_rating {
+  font-size: 13px;
+  color: var(--color-dark);
+}
+
+.service_card__reviews,
+.service_card__distance {
+  font-size: 13px;
+  color: var(--color-gray);
+}
+
+.service_card__title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-dark);
+}
+
+.service_card__category {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  background: #e0f0fa;
+  color: var(--color-primary);
+  font-size: 12px;
+  font-weight: 600;
+  width: fit-content;
+}
+
+// Pris
+.service_card__price {
+  flex-shrink: 0;
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.service_card__price_type {
+  font-size: 12px;
+  color: var(--color-gray);
+}
+
+.service_card__price strong {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-dark);
+}
