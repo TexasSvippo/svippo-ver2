@@ -1,5 +1,6 @@
 'use client'
 
+import CategorySubscriptions from '@/components/CategorySubscriptions'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useSearchParams, useRouter } from 'next/navigation'
@@ -81,6 +82,9 @@ export default function ForfragningarClient({ requests }: Props) {
             + Skapa förfrågan
           </Link>
         </div>
+
+        {/* Kategori-prenumerationer */}
+        <CategorySubscriptions />
 
         {/* Sök & filter */}
         <div className={styles.requests__filters}>

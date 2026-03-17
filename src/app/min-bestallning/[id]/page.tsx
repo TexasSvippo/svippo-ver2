@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import useAuth from '@/hooks/useAuth'
 import styles from './myorderdetail.module.scss'
-import orderStyles from '../[id]/orderdetail.module.scss'
+import orderStyles from '@/styles/orderdetail.module.scss'
 
 type ProjectStatus = 'not_started' | 'in_progress' | 'almost_done' | 'completed'
 

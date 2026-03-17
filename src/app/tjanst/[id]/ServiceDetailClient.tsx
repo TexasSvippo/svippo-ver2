@@ -1,5 +1,6 @@
 'use client'
 
+import OrderModal from '@/components/OrderModal'
 import { useState } from 'react'
 import Link from 'next/link'
 import useAuth from '@/hooks/useAuth'
@@ -156,14 +157,20 @@ export default function ServiceDetailClient({ service }: Props) {
         </div>
       </div>
 
-      {/* OrderModal – läggs till senare */}
+      {/* OrderModal */}
       {showOrder && (
-        <div className="modal-backdrop" onClick={() => setShowOrder(false)}>
-          <div className="modal-box" onClick={e => e.stopPropagation()}>
-            <p>Beställningsformulär kommer snart!</p>
-            <button className="btn btn-primary" onClick={() => setShowOrder(false)}>Stäng</button>
-          </div>
-        </div>
+        <OrderModal
+          serviceId={service.id}
+          serviceTitle={service.title}
+          sellerId={service.user_id}
+          sellerName={service.user_name}
+          subcategory={service.subcategory}
+          priceType={service.price_type}
+          price={service.price}
+          location={service.location}
+          customQuestions={service.custom_questions || []}
+          onClose={() => setShowOrder(false)}
+        />
       )}
 
       {/* LoginPromptModal – läggs till senare */}

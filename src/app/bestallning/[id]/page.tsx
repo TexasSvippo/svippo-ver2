@@ -5,7 +5,9 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import useAuth from '@/hooks/useAuth'
-import styles from './orderdetail.module.scss'
+import styles from '@/styles/orderdetail.module.scss'
+
+
 
 type ProjectStatus = 'not_started' | 'in_progress' | 'almost_done' | 'completed'
 

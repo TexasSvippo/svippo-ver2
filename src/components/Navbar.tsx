@@ -1,39 +1,23 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import useAuth from '@/hooks/useAuth'
 import CreateModal from './CreateModal'
 import SearchBar from './SearchBar'
+import { useNotifications } from '@/hooks/useNotifications'
 import styles from './Navbar.module.scss'
 import Image from 'next/image'
 
 export default function Navbar() {
   const { user, loading } = useAuth()
+  const { unreadCount } = useNotifications()
   const [menuOpen, setMenuOpen] = useState(false)
   const [showCreate, setShowCreate] = useState(false)
-  const [unreadCount, setUnreadCount] = useState(0)
-  const pathname = usePathname()
   const router = useRouter()
 
-  useEffect(() => {
-    if (!user) return
-    const fetchUnread = async () => {
-      try {
-        const { count } = await supabase
-          .from('notifications')
-          .select('*', { count: 'exact', head: true })
-          .eq('user_id', user.id)
-          .eq('read', false)
-        setUnreadCount(count ?? 0)
-      } catch (err) {
-        console.error(err)
-      }
-    }
-    fetchUnread()
-  }, [user, pathname])
 
   // Stäng dropdown vid klick utanför
   useEffect(() => {
