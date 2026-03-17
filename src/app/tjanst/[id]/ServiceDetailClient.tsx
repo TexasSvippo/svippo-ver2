@@ -1,0 +1,183 @@
+'use client'
+
+import { useState } from 'react'
+import Link from 'next/link'
+import useAuth from '@/hooks/useAuth'
+import styles from './servicedetail.module.scss'
+
+type CustomQuestion = {
+  id: string
+  label: string
+  type: 'text' | 'select' | 'textarea'
+  options?: string[]
+  required: boolean
+}
+
+type Service = {
+  id: string
+  title: string
+  description: string
+  category_id: string
+  subcategory: string
+  price_type: string
+  price: number
+  location: string
+  user_name: string
+  user_email: string
+  user_id: string
+  rating: number
+  reviews: number
+  custom_questions?: CustomQuestion[]
+}
+
+type Props = {
+  service: Service
+}
+
+export default function ServiceDetailClient({ service }: Props) {
+  const { user } = useAuth()
+  const [showOrder, setShowOrder] = useState(false)
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false)
+
+  const isOwner = user?.id === service.user_id
+
+  return (
+    <div className={styles.detail}>
+      <div className={`container ${styles.detail__inner}`}>
+
+        {/* Brödsmulor */}
+        <div className={styles.detail__breadcrumb}>
+          <Link href="/">Hem</Link>
+          <span>·</span>
+          <Link href="/tjanster">Tjänster</Link>
+          <span>·</span>
+          <span>{service.title}</span>
+        </div>
+
+        <div className={styles.detail__layout}>
+
+          {/* Vänster – huvudinnehåll */}
+          <div className={styles.detail__main}>
+            <div className={styles.detail__badges}>
+              <span className={styles.detail__badge}>{service.subcategory}</span>
+            </div>
+
+            <h1 className={styles.detail__title}>{service.title}</h1>
+
+            <div className={styles.detail__section}>
+              <h2 className={styles.detail__section_title}>Om tjänsten</h2>
+              <p className={styles.detail__description}>{service.description}</p>
+            </div>
+
+            <div className={styles.detail__section}>
+              <h2 className={styles.detail__section_title}>Recensioner</h2>
+              {/* ReviewsList läggs till senare */}
+              <p className={styles.detail__no_reviews}>Inga recensioner ännu.</p>
+            </div>
+          </div>
+
+          {/* Höger – utförare & beställning */}
+          <div className={styles.detail__sidebar}>
+
+            {/* Utförare */}
+            <div className={`${styles.detail__seller} card`}>
+              <div className={styles.detail__seller_header}>
+                <div className={styles.detail__seller_avatar}>
+                  {service.user_name?.charAt(0).toUpperCase() || '?'}
+                </div>
+                <div className={styles.detail__seller_info}>
+                  <Link href={`/svippare/${service.user_id}`} className={styles.detail__seller_name}>
+                    {service.user_name}
+                  </Link>
+                  <span className={styles.detail__seller_rating}>
+                    ⭐ {service.rating || '–'} ({service.reviews} recensioner)
+                  </span>
+                  <Link href={`/svippare/${service.user_id}`} className={styles.detail__seller_profile_btn}>
+                    👤 Se profil →
+                  </Link>
+                </div>
+              </div>
+
+              {/* Prisbox */}
+              <div className={styles.detail__price_box}>
+                <div className={styles.detail__price_row}>
+                  <span>Pristyp</span>
+                  <span className={styles.detail__price_type}>{service.price_type}</span>
+                </div>
+                {service.price_type !== 'offert' && (
+                  <div className={styles.detail__price_row}>
+                    <span>Pris</span>
+                    <strong className={styles.detail__price}>{service.price} kr</strong>
+                  </div>
+                )}
+                <div className={styles.detail__price_row}>
+                  <span>Plats</span>
+                  <span>{service.location}</span>
+                </div>
+              </div>
+
+              {isOwner ? (
+                <div className={styles.detail__own_service}>
+                  <span>✏️</span>
+                  <div>
+                    <strong>Detta är din tjänst</strong>
+                    <p>Du kan inte beställa din egen tjänst.</p>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  className={`btn btn-primary ${styles.detail__order_btn}`}
+                  onClick={() => user ? setShowOrder(true) : setShowLoginPrompt(true)}
+                >
+                  Beställ
+                </button>
+              )}
+
+              {!isOwner && (
+                <a
+                  href={`mailto:${service.user_email}`}
+                  className={`btn btn-outline ${styles.detail__question_btn}`}
+                >
+                  💬 Har du en fråga?
+                </a>
+              )}
+            </div>
+
+            {/* SvippoSafe */}
+            <div className={`${styles.detail__safe} card`}>
+              <span className={styles.detail__safe_icon}>🛡️</span>
+              <div>
+                <strong>Känn dig trygg med SvippoSafe</strong>
+                <p>Vi hjälper till att hantera trassel som kan dyka upp.</p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      {/* OrderModal – läggs till senare */}
+      {showOrder && (
+        <div className="modal-backdrop" onClick={() => setShowOrder(false)}>
+          <div className="modal-box" onClick={e => e.stopPropagation()}>
+            <p>Beställningsformulär kommer snart!</p>
+            <button className="btn btn-primary" onClick={() => setShowOrder(false)}>Stäng</button>
+          </div>
+        </div>
+      )}
+
+      {/* LoginPromptModal – läggs till senare */}
+      {showLoginPrompt && (
+        <div className="modal-backdrop" onClick={() => setShowLoginPrompt(false)}>
+          <div className="modal-box" onClick={e => e.stopPropagation()}>
+            <p>Du måste logga in för att beställa en tjänst.</p>
+            <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
+              <Link href="/logga-in" className="btn btn-primary">Logga in</Link>
+              <Link href="/registrera" className="btn btn-outline">Skapa konto</Link>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}

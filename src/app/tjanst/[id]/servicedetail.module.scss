@@ -1,0 +1,257 @@
+.detail {
+  padding: 40px 0 80px;
+  min-height: calc(100vh - 68px);
+}
+
+.detail__inner {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+// Brödsmulor
+.detail__breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--color-gray);
+  margin-bottom: 32px;
+
+  a {
+    color: var(--color-primary);
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+// Layout
+.detail__layout {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 32px;
+  align-items: start;
+}
+
+// Huvudinnehåll
+.detail__main {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.detail__badges {
+  display: flex;
+  gap: 8px;
+}
+
+.detail__badge {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  background: #e0f0fa;
+  color: var(--color-primary);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.detail__title {
+  font-family: var(--font-heading);
+  font-size: clamp(24px, 3vw, 36px);
+  font-weight: 700;
+  color: var(--color-dark);
+  line-height: 1.2;
+}
+
+.detail__section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.detail__section_title {
+  font-family: var(--font-heading);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-dark);
+}
+
+.detail__description {
+  font-size: 15px;
+  line-height: 1.8;
+  color: var(--color-dark);
+  white-space: pre-wrap;
+}
+
+.detail__no_reviews {
+  font-size: 14px;
+  color: var(--color-gray);
+}
+
+// Sidebar
+.detail__sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: sticky;
+  top: 88px;
+}
+
+.detail__seller {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.detail__seller_header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.detail__seller_avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: white;
+  font-size: 20px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.detail__seller_info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.detail__seller_name {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-dark);
+  text-decoration: none;
+  transition: color 0.2s;
+
+  &:hover {
+    color: var(--color-primary);
+    text-decoration: underline;
+  }
+}
+
+.detail__seller_rating {
+  font-size: 13px;
+  color: var(--color-gray);
+}
+
+.detail__seller_profile_btn {
+  font-size: 13px;
+  color: var(--color-primary);
+  font-weight: 600;
+  text-decoration: none;
+  margin-top: 4px;
+  display: inline-block;
+  transition: opacity 0.2s;
+
+  &:hover {
+    opacity: 0.7;
+  }
+}
+
+// Prisbox
+.detail__price_box {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  background: var(--color-gray-light);
+  border-radius: var(--radius-md);
+}
+
+.detail__price_row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  color: var(--color-gray);
+}
+
+.detail__price_type {
+  text-transform: capitalize;
+  color: var(--color-dark);
+  font-weight: 500;
+}
+
+.detail__price {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-dark);
+}
+
+.detail__order_btn,
+.detail__question_btn {
+  width: 100%;
+  justify-content: center;
+}
+
+.detail__own_service {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: #f0f8ff;
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--color-primary);
+  font-size: 14px;
+
+  span {
+    font-size: 24px;
+    flex-shrink: 0;
+  }
+
+  strong {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--color-dark);
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  p {
+    font-size: 13px;
+    color: var(--color-gray);
+  }
+}
+
+// SvippoSafe
+.detail__safe {
+  padding: 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+
+  strong {
+    font-size: 14px;
+    color: var(--color-dark);
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  p {
+    font-size: 13px;
+    color: var(--color-gray);
+    line-height: 1.5;
+  }
+}
+
+.detail__safe_icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
