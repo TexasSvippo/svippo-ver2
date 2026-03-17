@@ -1,0 +1,85 @@
+.myorder {
+  padding: 48px 0 80px;
+  min-height: calc(100vh - 68px);
+  background: var(--color-bg);
+}
+
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  min-height: calc(100vh - 68px);
+  color: var(--color-gray);
+}
+
+.myorder__inner {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.myorder__layout {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 24px;
+  align-items: start;
+}
+
+.myorder__main {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.myorder__header {
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.header_top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.myorder__message {
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.myorder__progress {
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+// Skrivskyddade steg
+.readonly_step {
+  cursor: default !important;
+  pointer-events: none;
+}
+
+.myorder__sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: sticky;
+  top: 88px;
+}
+
+.seller_card {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+}
