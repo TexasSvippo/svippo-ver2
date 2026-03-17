@@ -1,0 +1,258 @@
+.tjanster {
+  padding: 48px 0 80px;
+  min-height: calc(100vh - 68px);
+}
+
+.tjanster__inner {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.tjanster__header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.tjanster__title {
+  font-family: var(--font-heading);
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--color-dark);
+}
+
+.tjanster__subtitle {
+  font-size: 14px;
+  color: var(--color-gray);
+}
+
+// Sök & filter
+.tjanster__filters {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tjanster__search {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: white;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-full);
+  padding: 12px 20px;
+  box-shadow: var(--shadow-sm);
+}
+
+.tjanster__search_input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 15px;
+  font-family: var(--font-body);
+  color: var(--color-dark);
+  outline: none;
+
+  &::placeholder {
+    color: var(--color-gray);
+  }
+}
+
+.tjanster__clear_search {
+  background: none;
+  border: none;
+  color: var(--color-gray);
+  cursor: pointer;
+  font-size: 14px;
+  transition: color 0.2s;
+
+  &:hover {
+    color: var(--color-dark);
+  }
+}
+
+.tjanster__filter_row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.tjanster__select {
+  padding: 10px 16px;
+  border-radius: var(--radius-full);
+  border: 1.5px solid var(--color-border);
+  background: white;
+  font-size: 14px;
+  font-family: var(--font-body);
+  color: var(--color-dark);
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s;
+
+  &:focus {
+    border-color: var(--color-primary);
+  }
+}
+
+.tjanster__clear_btn {
+  padding: 10px 16px;
+  border-radius: var(--radius-full);
+  border: 1.5px solid var(--color-orange);
+  background: transparent;
+  color: var(--color-orange);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font-body);
+  transition: all 0.2s;
+
+  &:hover {
+    background: var(--color-orange);
+    color: white;
+  }
+}
+
+// Aktiva filter-taggar
+.tjanster__active_filters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.tjanster__filter_tag {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+  background: #e0f0fa;
+  color: var(--color-primary);
+  font-size: 13px;
+  font-weight: 500;
+
+  button {
+    background: none;
+    border: none;
+    color: var(--color-primary);
+    cursor: pointer;
+    font-size: 12px;
+    padding: 0;
+    line-height: 1;
+  }
+}
+
+// Lista
+.tjanster__list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tjanster__empty {
+  text-align: center;
+  padding: 64px;
+  color: var(--color-gray);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+// Kort
+.service_card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.service_card__avatar {
+  flex-shrink: 0;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.service_card__avatar_placeholder {
+  width: 100%;
+  height: 100%;
+  background: var(--color-primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 700;
+  border-radius: 50%;
+}
+
+.service_card__info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.service_card__meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.service_card__name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-dark);
+}
+
+.star_rating {
+  font-size: 13px;
+  color: var(--color-dark);
+}
+
+.service_card__reviews,
+.service_card__distance {
+  font-size: 13px;
+  color: var(--color-gray);
+}
+
+.service_card__title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-dark);
+}
+
+.service_card__category {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  background: #e0f0fa;
+  color: var(--color-primary);
+  font-size: 12px;
+  font-weight: 600;
+  width: fit-content;
+}
+
+.service_card__price {
+  flex-shrink: 0;
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.service_card__price_type {
+  font-size: 12px;
+  color: var(--color-gray);
+}
+
+.service_card__price strong {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-dark);
+}
