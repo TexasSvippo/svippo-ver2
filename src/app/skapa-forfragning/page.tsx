@@ -116,6 +116,31 @@ export default function CreateRequestPage() {
         image_base64: imageUrl, // Använder samma kolumn men lagrar nu en URL
         created_at: new Date().toISOString(),
       })
+      // Hitta användare som bevakar denna kategori och skicka notifikationer
+      const { data: subscribers } = await supabase
+        .from('category_subscriptions')
+        .select('user_id')
+        .like('category_id', `${form.category_id}%`)
+
+      if (subscribers && subscribers.length > 0) {
+        const notifications = subscribers
+          .filter(sub => sub.user_id !== user.id) // Skicka inte till sig själv
+          .map(sub => ({
+            user_id: sub.user_id,
+            type: 'new_request_in_category',
+            actor_name: userData?.name || user.email,
+            message: `Ny förfrågan inom ${selectedCategory?.label}: "${form.title}"`,
+            action_url: `/forfragningar`,
+            read: false,
+            dismissed: false,
+            email_sent: false,
+            created_at: new Date().toISOString(),
+          }))
+
+        if (notifications.length > 0) {
+          await supabase.from('notifications').insert(notifications)
+        }
+      }
       setShowSuccess(true)
     } catch (err) {
       console.error(err)

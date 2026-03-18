@@ -50,30 +50,44 @@ export default function RequestDetailClient({ request }: Props) {
     fetchProfile()
   }, [user])
 
-  const handleInterest = async () => {
-    if (!user || !message) return
-    setSaving(true)
-    try {
-      await supabase.from('interests').insert({
-        request_id: request.id,
-        request_title: request.title,
-        request_owner_id: request.user_id,
-        svippar_id: user.id,
-        svippar_name: userProfile?.name || user.email,
-        svippar_email: userProfile?.email || user.email,
-        svippar_phone: userProfile?.phone || '',
-        message,
-        price: price ? Number(price) : null,
-        created_at: new Date().toISOString(),
-      })
-      setSuccess(true)
-      setShowInterestForm(false)
-    } catch (err) {
-      console.error(err)
-    } finally {
-      setSaving(false)
-    }
+const handleInterest = async () => {
+  if (!user || !message) return
+  setSaving(true)
+  try {
+    await supabase.from('interests').insert({
+      request_id: request.id,
+      request_title: request.title,
+      request_owner_id: request.user_id,
+      svippar_id: user.id,
+      svippar_name: userProfile?.name || user.email,
+      svippar_email: userProfile?.email || user.email,
+      svippar_phone: userProfile?.phone || '',
+      message,
+      price: price ? Number(price) : null,
+      created_at: new Date().toISOString(),
+    })
+
+    // Skicka notifikation till förfrågans ägare
+    await supabase.from('notifications').insert({
+      user_id: request.user_id,
+      type: 'new_interest',
+      actor_name: userProfile?.name || user.email,
+      message: `${userProfile?.name || user.email} har visat intresse för din förfrågan "${request.title}"!`,
+      action_url: `/intresseanmalningar`,
+      read: false,
+      dismissed: false,
+      email_sent: false,
+      created_at: new Date().toISOString(),
+    })
+
+    setSuccess(true)
+    setShowInterestForm(false)
+  } catch (err) {
+    console.error(err)
+  } finally {
+    setSaving(false)
   }
+}
 
   const isOwner = user?.id === request.user_id
 

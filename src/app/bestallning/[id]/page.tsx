@@ -56,14 +56,33 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
     }
     fetchOrder()
   }, [])
+  
 
-  const handleStatus = async (status: 'accepted' | 'rejected') => {
-    if (!order) return
-    setUpdating(true)
-    await supabase.from('orders').update({ status }).eq('id', order.id)
-    setOrder(prev => prev ? { ...prev, status } : prev)
-    setUpdating(false)
-  }
+const handleStatus = async (status: 'accepted' | 'rejected') => {
+  if (!order) return
+  setUpdating(true)
+  await supabase.from('orders').update({ status }).eq('id', order.id)
+  setOrder(prev => prev ? { ...prev, status } : prev)
+
+  // Skicka notifikation till köparen
+  await supabase.from('notifications').insert({
+    user_id: order.buyer_id,
+    type: status === 'accepted' ? 'order_accepted' : 'order_rejected',
+    order_id: order.id,
+    service_title: order.service_title,
+    actor_name: order.seller_name,
+    message: status === 'accepted'
+      ? `${order.seller_name} har godkänt din beställning av "${order.service_title}"! 🎉`
+      : `${order.seller_name} har tyvärr nekat din beställning av "${order.service_title}".`,
+    action_url: `/min-bestallning/${order.id}`,
+    read: false,
+    dismissed: false,
+    email_sent: false,
+    created_at: new Date().toISOString(),
+  })
+
+  setUpdating(false)
+}
 
   const handleProjectStatus = async (status: ProjectStatus) => {
     if (!order) return
