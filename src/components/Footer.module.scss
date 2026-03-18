@@ -86,3 +86,21 @@
     }
   }
 }
+
+@media (max-width: 768px) {
+  .footer__inner {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+
+  .footer__columns {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+
+  .footer__bottom_inner {
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+  }
+}

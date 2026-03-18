@@ -65,7 +65,7 @@ export default function Navbar() {
                   </Link>
 
                   <button
-                    className="btn btn-orange"
+                    className={`btn btn-orange ${styles.navbar__create_btn}`}
                     onClick={() => setShowCreate(true)}
                   >
                     Skapa inlägg
@@ -85,9 +85,31 @@ export default function Navbar() {
                         <Link href="/profil" className={styles.navbar__dropdown_item} onClick={() => setMenuOpen(false)}>
                           👤 Min profil
                         </Link>
+                        <Link href="/tjanster" className={styles.navbar__dropdown_item} onClick={() => setMenuOpen(false)}>
+                          🛠️ Tjänster
+                        </Link>
+                        <Link href="/forfragningar" className={styles.navbar__dropdown_item} onClick={() => setMenuOpen(false)}>
+                          🙋 Förfrågningar
+                        </Link>
                         <Link href="/bestallningar" className={styles.navbar__dropdown_item} onClick={() => setMenuOpen(false)}>
                           📦 Beställningar
                         </Link>
+                        <Link 
+                          href="/notifikationer" 
+                          className={`${styles.navbar__dropdown_item} ${styles.navbar__dropdown_mobile_only}`} 
+                          onClick={() => setMenuOpen(false)}
+                        >
+                          🔔 Notifikationer
+                          {unreadCount > 0 && (
+                            <span className={styles.navbar__nav_badge}>{unreadCount}</span>
+                          )}
+                        </Link>
+                        <button
+                          className={`${styles.navbar__dropdown_item} ${styles.navbar__dropdown_create}`}
+                          onClick={() => { setMenuOpen(false); setShowCreate(true) }}
+                        >
+                          ✏️ Skapa inlägg
+                        </button>
                         <button
                           className={`${styles.navbar__dropdown_item} ${styles.navbar__dropdown_signout}`}
                           onClick={handleSignOut}

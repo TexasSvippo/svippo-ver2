@@ -353,3 +353,49 @@
   color: var(--color-dark);
   cursor: pointer;
 }
+
+@media (max-width: 768px) {
+  .create__inner {
+    max-width: 100%;
+  }
+
+  .create__card {
+    padding: 24px 16px;
+  }
+
+  // Kategorier – 2 kolumner istället för 4
+  .create__categories {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  // Pristyp – stapla vertikalt
+  .create__price_types {
+    flex-direction: column;
+  }
+
+  // Steg-indikator – göm labels
+  .create__step_label {
+    display: none;
+  }
+
+  // Egna frågor
+  .create__add_question {
+    padding: 16px;
+  }
+
+  // Navigering
+  .create__nav {
+    flex-direction: row;
+    gap: 12px;
+
+    .btn {
+      flex: 1;
+      justify-content: center;
+    }
+  }
+
+  // Success-knappar
+  .create__success_actions {
+    flex-direction: column;
+  }
+}

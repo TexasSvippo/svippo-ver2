@@ -255,3 +255,18 @@
   font-size: 24px;
   flex-shrink: 0;
 }
+
+
+@media (max-width: 768px) {
+  .detail__layout {
+    grid-template-columns: 1fr;
+  }
+
+  .detail__sidebar {
+    position: static;
+  }
+
+  .detail__title {
+    font-size: 24px;
+  }
+}

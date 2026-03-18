@@ -50,3 +50,23 @@
   text-align: center;
   line-height: 1.3;
 }
+
+
+@media (max-width: 768px) {
+  .categories__grid {
+    gap: 6px;
+  }
+
+  .categories__item {
+    padding: 12px 14px;
+    min-width: 80px;
+  }
+
+  .categories__icon {
+    font-size: 22px;
+  }
+
+  .categories__label {
+    font-size: 11px;
+  }
+}

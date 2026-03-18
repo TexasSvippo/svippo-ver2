@@ -33,6 +33,7 @@ export default function ForfragningarClient({ requests }: Props) {
   const [selectedCategory, setSelectedCategory] = useState('')
   const [selectedLocation, setSelectedLocation] = useState('')
   const [sortBy, setSortBy] = useState('newest')
+  const [showFilterModal, setShowFilterModal] = useState(false)
 
   useEffect(() => {
     const params = new URLSearchParams()
@@ -66,6 +67,7 @@ export default function ForfragningarClient({ requests }: Props) {
     setSortBy('newest')
   }
 
+  const activeFilterCount = [selectedCategory, selectedLocation, sortBy !== 'newest' ? sortBy : ''].filter(Boolean).length
   const hasFilters = search || selectedCategory || selectedLocation || sortBy !== 'newest'
 
   return (
@@ -97,73 +99,46 @@ export default function ForfragningarClient({ requests }: Props) {
               onChange={e => setSearch(e.target.value)}
               className={styles.requests__search_input}
             />
-            {search && (
-              <button className={styles.requests__clear_search} onClick={() => setSearch('')}>✕</button>
-            )}
+            {search && <button className={styles.requests__clear_search} onClick={() => setSearch('')}>✕</button>}
           </div>
 
+          {/* Desktop filter-rad */}
           <div className={styles.requests__filter_row}>
-            <select
-              className={styles.requests__select}
-              value={selectedCategory}
-              onChange={e => setSelectedCategory(e.target.value)}
-            >
+            <select className={styles.requests__select} value={selectedCategory} onChange={e => setSelectedCategory(e.target.value)}>
               <option value="">Alla kategorier</option>
-              {categories.map(cat => (
-                <option key={cat.id} value={cat.id}>{cat.icon} {cat.label}</option>
-              ))}
+              {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.icon} {cat.label}</option>)}
             </select>
-
-            <select
-              className={styles.requests__select}
-              value={selectedLocation}
-              onChange={e => setSelectedLocation(e.target.value)}
-            >
+            <select className={styles.requests__select} value={selectedLocation} onChange={e => setSelectedLocation(e.target.value)}>
               <option value="">Alla platser</option>
-              {locations.map(loc => (
-                <option key={loc} value={loc}>{loc}</option>
-              ))}
+              {locations.map(loc => <option key={loc} value={loc}>{loc}</option>)}
             </select>
-
-            <select
-              className={styles.requests__select}
-              value={sortBy}
-              onChange={e => setSortBy(e.target.value)}
-            >
+            <select className={styles.requests__select} value={sortBy} onChange={e => setSortBy(e.target.value)}>
               <option value="newest">Nyast först</option>
               <option value="budget_asc">Lägst budget</option>
               <option value="budget_desc">Högst budget</option>
             </select>
+            {hasFilters && <button className={styles.requests__clear_btn} onClick={clearFilters}>Rensa filter</button>}
+          </div>
 
-            {hasFilters && (
-              <button className={styles.requests__clear_btn} onClick={clearFilters}>
-                Rensa filter
-              </button>
-            )}
+          {/* Mobil filter-knapp */}
+          <div className={styles.requests__mobile_filter_row}>
+            <button
+              className={`${styles.requests__filter_btn} ${activeFilterCount > 0 ? styles['requests__filter_btn--active'] : ''}`}
+              onClick={() => setShowFilterModal(true)}
+            >
+              🎛️ Filter
+              {activeFilterCount > 0 && <span className={styles.requests__filter_badge}>{activeFilterCount}</span>}
+            </button>
+            {hasFilters && <button className={styles.requests__clear_btn} onClick={clearFilters}>Rensa</button>}
           </div>
         </div>
 
         {/* Aktiva filter-taggar */}
         {hasFilters && (
           <div className={styles.requests__active_filters}>
-            {search && (
-              <span className={styles.requests__filter_tag}>
-                🔍 &quot;{search}&quot;
-                <button onClick={() => setSearch('')}>✕</button>
-              </span>
-            )}
-            {selectedCategory && (
-              <span className={styles.requests__filter_tag}>
-                {categories.find(c => c.id === selectedCategory)?.label}
-                <button onClick={() => setSelectedCategory('')}>✕</button>
-              </span>
-            )}
-            {selectedLocation && (
-              <span className={styles.requests__filter_tag}>
-                📍 {selectedLocation}
-                <button onClick={() => setSelectedLocation('')}>✕</button>
-              </span>
-            )}
+            {search && <span className={styles.requests__filter_tag}>🔍 &quot;{search}&quot;<button onClick={() => setSearch('')}>✕</button></span>}
+            {selectedCategory && <span className={styles.requests__filter_tag}>{categories.find(c => c.id === selectedCategory)?.label}<button onClick={() => setSelectedCategory('')}>✕</button></span>}
+            {selectedLocation && <span className={styles.requests__filter_tag}>📍 {selectedLocation}<button onClick={() => setSelectedLocation('')}>✕</button></span>}
           </div>
         )}
 
@@ -177,27 +152,21 @@ export default function ForfragningarClient({ requests }: Props) {
           <div className={styles.requests__list}>
             {filtered.map(r => (
               <Link href={`/forfragning/${r.id}`} key={r.id} className={`${styles.request_card} card`}>
-
                 {r.image_base64 && (
                   <div className={styles.request_card__image}>
                     <img src={r.image_base64} alt={r.title} />
                   </div>
                 )}
-
                 <div className={styles.request_card__content}>
                   <div className={styles.request_card__meta}>
                     <span className={styles.request_card__category}>{r.subcategory}</span>
                     <span className={styles.request_card__location}>📍 {r.location}</span>
                   </div>
-
                   <h2 className={styles.request_card__title}>{r.title}</h2>
                   <p className={styles.request_card__description}>{r.description}</p>
-
                   <div className={styles.request_card__footer}>
                     <div className={styles.request_card__user}>
-                      <div className={styles.request_card__avatar}>
-                        {r.user_name?.charAt(0).toUpperCase()}
-                      </div>
+                      <div className={styles.request_card__avatar}>{r.user_name?.charAt(0).toUpperCase()}</div>
                       <span>{r.user_name}</span>
                     </div>
                     <div className={styles.request_card__budget}>
@@ -206,13 +175,52 @@ export default function ForfragningarClient({ requests }: Props) {
                     </div>
                   </div>
                 </div>
-
               </Link>
             ))}
           </div>
         )}
 
       </div>
+
+      {/* Mobil filter-modal */}
+      {showFilterModal && (
+        <div className="modal-backdrop" onClick={() => setShowFilterModal(false)}>
+          <div className={`modal-box ${styles.filter_modal}`} onClick={e => e.stopPropagation()}>
+            <div className={styles.filter_modal__header}>
+              <h2>Filter</h2>
+              <button onClick={() => setShowFilterModal(false)}>✕</button>
+            </div>
+            <div className={styles.filter_modal__body}>
+              <div className={styles.filter_modal__group}>
+                <label>Kategori</label>
+                <select className={styles.requests__select} value={selectedCategory} onChange={e => setSelectedCategory(e.target.value)}>
+                  <option value="">Alla kategorier</option>
+                  {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.icon} {cat.label}</option>)}
+                </select>
+              </div>
+              <div className={styles.filter_modal__group}>
+                <label>Plats</label>
+                <select className={styles.requests__select} value={selectedLocation} onChange={e => setSelectedLocation(e.target.value)}>
+                  <option value="">Alla platser</option>
+                  {locations.map(loc => <option key={loc} value={loc}>{loc}</option>)}
+                </select>
+              </div>
+              <div className={styles.filter_modal__group}>
+                <label>Sortera</label>
+                <select className={styles.requests__select} value={sortBy} onChange={e => setSortBy(e.target.value)}>
+                  <option value="newest">Nyast först</option>
+                  <option value="budget_asc">Lägst budget</option>
+                  <option value="budget_desc">Högst budget</option>
+                </select>
+              </div>
+            </div>
+            <div className={styles.filter_modal__footer}>
+              <button className="btn btn-outline" onClick={() => { clearFilters(); setShowFilterModal(false) }}>Rensa filter</button>
+              <button className="btn btn-orange" onClick={() => setShowFilterModal(false)}>Visa {filtered.length} förfrågningar</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

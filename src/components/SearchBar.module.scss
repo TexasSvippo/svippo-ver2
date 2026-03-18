@@ -226,3 +226,27 @@
   font-size: 14px;
   color: var(--color-gray);
 }
+
+@media (max-width: 768px) {
+  .searchbar__type_btn {
+    display: none;
+  }
+
+  .searchbar__divider {
+    display: none;
+  }
+
+  .searchbar {
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .searchbar__dropdown {
+    position: fixed;
+    top: 70px;
+    left: 16px;
+    right: 16px;
+    width: auto;
+    z-index: 9999;
+  }
+}

@@ -346,3 +346,43 @@
     color: var(--color-gray);
   }
 }
+
+@media (max-width: 768px) {
+  .pubprofile__hero_inner {
+    flex-direction: column;
+    text-align: center;
+    gap: 16px;
+  }
+
+  .pubprofile__nav_inner {
+    overflow-x: auto;
+    scrollbar-width: none;
+    white-space: nowrap;
+    flex-wrap: nowrap;
+    &::-webkit-scrollbar { display: none; }
+  }
+
+  .pubprofile__share_btn {
+    display: none;
+  }
+
+  .pubprofile__stats {
+    justify-content: center;
+  }
+
+  .pubprofile__contact_layout {
+    grid-template-columns: 1fr !important;
+  }
+
+  .pubprofile__section {
+    max-width: 100%;
+  }
+
+  .pubprofile__nav_item {
+    flex-shrink: 0;
+  }
+
+  .pubprofile__nav {
+    top: 60px;
+  }
+}

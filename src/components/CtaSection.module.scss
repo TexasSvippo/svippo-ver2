@@ -104,3 +104,42 @@
   gap: 16px;
   margin-top: 8px;
 }
+
+
+@media (max-width: 768px) {
+  .cta__inner {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-bottom: 40px;
+  }
+
+  .cta__card {
+    padding: 24px;
+  }
+
+  .cta__illustration {
+    font-size: 48px;
+  }
+
+  .cta__title {
+    font-size: 20px;
+  }
+
+  .cta__bottom {
+    padding: 48px 0;
+  }
+
+  .cta__bottom_title {
+    font-size: 22px;
+  }
+
+  .cta__bottom_actions {
+    flex-direction: column;
+    width: 100%;
+
+    .btn {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+}

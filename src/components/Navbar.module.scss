@@ -158,3 +158,82 @@
   color: var(--color-orange);
   border-top: 1px solid var(--color-border);
 }
+
+.navbar__dropdown_notif {
+  display: flex;
+  justify-content: space-between;
+}
+
+.navbar__dropdown_create {
+  border-top: 1px solid var(--color-border);
+  color: var(--color-primary);
+}
+
+.navbar__dropdown_create,
+.navbar__dropdown_mobile_only {
+  display: none;
+}
+
+.navbar__nav_badge {
+  margin-left: auto;
+  background: var(--color-orange);
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: var(--radius-full);
+}
+
+// ================================
+// MOBILANPASSNING
+// ================================
+@media (max-width: 768px) {
+
+  .navbar__dropdown_create,
+  .navbar__dropdown_mobile_only {
+    display: flex;
+  }
+
+  .navbar__inner {
+    gap: 12px;
+    height: 60px;
+  }
+
+  // Göm navigeringslänkar
+  .navbar__links {
+    display: none;
+  }
+
+  // Göm "Skapa inlägg"-knapp
+  .navbar__create_btn {
+    display: none !important;
+  }
+
+  // Göm notifikationsklocka
+  .navbar__notif_btn {
+    display: none;
+  }
+
+  // Sökfältet tar upp resterande utrymme
+  :global(.searchbar) {
+    max-width: 100%;
+    flex: 1;
+  }
+
+  .navbar__actions {
+    gap: 8px;
+    margin-left: 0;
+    flex-shrink: 0;
+  }
+
+  .navbar__avatar {
+    width: 36px;
+    height: 36px;
+    font-size: 14px;
+  }
+
+  .navbar__dropdown {
+    right: 0;
+    min-width: 200px;
+  }
+}

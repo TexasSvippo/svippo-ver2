@@ -32,8 +32,8 @@ export default function TjansterClient({ services }: Props) {
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get('kategori') ?? '')
   const [selectedLocation, setSelectedLocation] = useState('')
   const [sortBy, setSortBy] = useState('newest')
+  const [showFilterModal, setShowFilterModal] = useState(false)
 
-  // Uppdatera URL när sökning ändras
   useEffect(() => {
     const params = new URLSearchParams()
     if (search) params.set('search', search)
@@ -68,7 +68,27 @@ export default function TjansterClient({ services }: Props) {
     setSortBy('newest')
   }
 
+  const activeFilterCount = [selectedCategory, selectedLocation, sortBy !== 'newest' ? sortBy : ''].filter(Boolean).length
   const hasFilters = search || selectedCategory || selectedLocation || sortBy !== 'newest'
+
+  const FilterSelects = () => (
+    <>
+      <select className={styles.tjanster__select} value={selectedCategory} onChange={e => setSelectedCategory(e.target.value)}>
+        <option value="">Alla kategorier</option>
+        {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.icon} {cat.label}</option>)}
+      </select>
+      <select className={styles.tjanster__select} value={selectedLocation} onChange={e => setSelectedLocation(e.target.value)}>
+        <option value="">Alla platser</option>
+        {locations.map(loc => <option key={loc} value={loc}>{loc}</option>)}
+      </select>
+      <select className={styles.tjanster__select} value={sortBy} onChange={e => setSortBy(e.target.value)}>
+        <option value="newest">Nyast först</option>
+        <option value="price_asc">Lägst pris</option>
+        <option value="price_desc">Högst pris</option>
+        <option value="rating">Bäst betyg</option>
+      </select>
+    </>
+  )
 
   return (
     <div className={styles.tjanster}>
@@ -91,74 +111,47 @@ export default function TjansterClient({ services }: Props) {
               onChange={e => setSearch(e.target.value)}
               className={styles.tjanster__search_input}
             />
-            {search && (
-              <button className={styles.tjanster__clear_search} onClick={() => setSearch('')}>✕</button>
-            )}
+            {search && <button className={styles.tjanster__clear_search} onClick={() => setSearch('')}>✕</button>}
           </div>
 
+          {/* Desktop filter-rad */}
           <div className={styles.tjanster__filter_row}>
-            <select
-              className={styles.tjanster__select}
-              value={selectedCategory}
-              onChange={e => setSelectedCategory(e.target.value)}
-            >
+            <select className={styles.tjanster__select} value={selectedCategory} onChange={e => setSelectedCategory(e.target.value)}>
               <option value="">Alla kategorier</option>
-              {categories.map(cat => (
-                <option key={cat.id} value={cat.id}>{cat.icon} {cat.label}</option>
-              ))}
+              {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.icon} {cat.label}</option>)}
             </select>
-
-            <select
-              className={styles.tjanster__select}
-              value={selectedLocation}
-              onChange={e => setSelectedLocation(e.target.value)}
-            >
+            <select className={styles.tjanster__select} value={selectedLocation} onChange={e => setSelectedLocation(e.target.value)}>
               <option value="">Alla platser</option>
-              {locations.map(loc => (
-                <option key={loc} value={loc}>{loc}</option>
-              ))}
+              {locations.map(loc => <option key={loc} value={loc}>{loc}</option>)}
             </select>
-
-            <select
-              className={styles.tjanster__select}
-              value={sortBy}
-              onChange={e => setSortBy(e.target.value)}
-            >
+            <select className={styles.tjanster__select} value={sortBy} onChange={e => setSortBy(e.target.value)}>
               <option value="newest">Nyast först</option>
               <option value="price_asc">Lägst pris</option>
               <option value="price_desc">Högst pris</option>
               <option value="rating">Bäst betyg</option>
             </select>
+            {hasFilters && <button className={styles.tjanster__clear_btn} onClick={clearFilters}>Rensa filter</button>}
+          </div>
 
-            {hasFilters && (
-              <button className={styles.tjanster__clear_btn} onClick={clearFilters}>
-                Rensa filter
-              </button>
-            )}
+          {/* Mobil filter-knapp */}
+          <div className={styles.tjanster__mobile_filter_row}>
+            <button
+              className={`${styles.tjanster__filter_btn} ${activeFilterCount > 0 ? styles['tjanster__filter_btn--active'] : ''}`}
+              onClick={() => setShowFilterModal(true)}
+            >
+              🎛️ Filter
+              {activeFilterCount > 0 && <span className={styles.tjanster__filter_badge}>{activeFilterCount}</span>}
+            </button>
+            {hasFilters && <button className={styles.tjanster__clear_btn} onClick={clearFilters}>Rensa</button>}
           </div>
         </div>
 
         {/* Aktiva filter-taggar */}
         {hasFilters && (
           <div className={styles.tjanster__active_filters}>
-            {search && (
-              <span className={styles.tjanster__filter_tag}>
-                🔍 &quot;{search}&quot;
-                <button onClick={() => setSearch('')}>✕</button>
-              </span>
-            )}
-            {selectedCategory && (
-              <span className={styles.tjanster__filter_tag}>
-                {categories.find(c => c.id === selectedCategory)?.label}
-                <button onClick={() => setSelectedCategory('')}>✕</button>
-              </span>
-            )}
-            {selectedLocation && (
-              <span className={styles.tjanster__filter_tag}>
-                📍 {selectedLocation}
-                <button onClick={() => setSelectedLocation('')}>✕</button>
-              </span>
-            )}
+            {search && <span className={styles.tjanster__filter_tag}>🔍 &quot;{search}&quot;<button onClick={() => setSearch('')}>✕</button></span>}
+            {selectedCategory && <span className={styles.tjanster__filter_tag}>{categories.find(c => c.id === selectedCategory)?.label}<button onClick={() => setSelectedCategory('')}>✕</button></span>}
+            {selectedLocation && <span className={styles.tjanster__filter_tag}>📍 {selectedLocation}<button onClick={() => setSelectedLocation('')}>✕</button></span>}
           </div>
         )}
 
@@ -177,7 +170,6 @@ export default function TjansterClient({ services }: Props) {
                     {s.user_name?.charAt(0).toUpperCase() || '?'}
                   </div>
                 </div>
-
                 <div className={styles.service_card__info}>
                   <div className={styles.service_card__meta}>
                     <span className={styles.service_card__name}>{s.user_name}</span>
@@ -188,14 +180,9 @@ export default function TjansterClient({ services }: Props) {
                   <p className={styles.service_card__title}>{s.title}</p>
                   <span className={styles.service_card__category}>{s.subcategory}</span>
                 </div>
-
                 <div className={styles.service_card__price}>
-                  <span className={styles.service_card__price_type}>
-                    {s.price_type === 'offert' ? '' : 'från:'}
-                  </span>
-                  <strong>
-                    {s.price_type === 'offert' ? 'Offert' : `${s.price} kr`}
-                  </strong>
+                  <span className={styles.service_card__price_type}>{s.price_type === 'offert' ? '' : 'från:'}</span>
+                  <strong>{s.price_type === 'offert' ? 'Offert' : `${s.price} kr`}</strong>
                 </div>
               </Link>
             ))}
@@ -203,6 +190,47 @@ export default function TjansterClient({ services }: Props) {
         )}
 
       </div>
+
+      {/* Mobil filter-modal */}
+      {showFilterModal && (
+        <div className="modal-backdrop" onClick={() => setShowFilterModal(false)}>
+          <div className={`modal-box ${styles.filter_modal}`} onClick={e => e.stopPropagation()}>
+            <div className={styles.filter_modal__header}>
+              <h2>Filter</h2>
+              <button onClick={() => setShowFilterModal(false)}>✕</button>
+            </div>
+            <div className={styles.filter_modal__body}>
+              <div className={styles.filter_modal__group}>
+                <label>Kategori</label>
+                <select className={styles.tjanster__select} value={selectedCategory} onChange={e => setSelectedCategory(e.target.value)}>
+                  <option value="">Alla kategorier</option>
+                  {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.icon} {cat.label}</option>)}
+                </select>
+              </div>
+              <div className={styles.filter_modal__group}>
+                <label>Plats</label>
+                <select className={styles.tjanster__select} value={selectedLocation} onChange={e => setSelectedLocation(e.target.value)}>
+                  <option value="">Alla platser</option>
+                  {locations.map(loc => <option key={loc} value={loc}>{loc}</option>)}
+                </select>
+              </div>
+              <div className={styles.filter_modal__group}>
+                <label>Sortera</label>
+                <select className={styles.tjanster__select} value={sortBy} onChange={e => setSortBy(e.target.value)}>
+                  <option value="newest">Nyast först</option>
+                  <option value="price_asc">Lägst pris</option>
+                  <option value="price_desc">Högst pris</option>
+                  <option value="rating">Bäst betyg</option>
+                </select>
+              </div>
+            </div>
+            <div className={styles.filter_modal__footer}>
+              <button className="btn btn-outline" onClick={() => { clearFilters(); setShowFilterModal(false) }}>Rensa filter</button>
+              <button className="btn btn-primary" onClick={() => setShowFilterModal(false)}>Visa {filtered.length} tjänster</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
