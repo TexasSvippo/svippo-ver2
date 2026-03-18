@@ -341,7 +341,7 @@
 // ================================
 @media (max-width: 768px) {
   .tjanster__filter_row {
-    display: none;
+    display: none !important;
   }
 
   .tjanster__mobile_filter_row {
@@ -350,21 +350,56 @@
     align-items: center;
   }
 
-  .service_card {
-    flex-wrap: wrap;
-  }
-
-  .service_card__price {
-    width: 100%;
-    flex-direction: row;
-    justify-content: flex-end;
-    gap: 4px;
-    align-items: center;
-  }
-  
   .filter_modal {
     width: calc(100vw - 48px) !important;
     max-width: 480px !important;
     padding: 0 !important;
   }
+
+  .service_card {
+    padding: 12px 16px;
+    gap: 12px;
+    flex-wrap: nowrap;
+    align-items: center;
+  }
+
+  .service_card__avatar {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+  }
+
+  .service_card__avatar_placeholder {
+    font-size: 16px;
+  }
+
+  .service_card__info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .service_card__name {
+    font-size: 13px;
+  }
+
+  .service_card__title {
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .service_card__price {
+    width: auto;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+    flex-shrink: 0;
+  }
+
+  .service_card__price strong {
+    font-size: 14px;
+    white-space: nowrap;
+  }
 }
+
