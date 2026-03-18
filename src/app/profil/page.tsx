@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import useAuth from '@/hooks/useAuth'
+import { useNotifications } from '@/hooks/useNotifications'
 import styles from './profile.module.scss'
 
 type Section =
@@ -95,10 +96,12 @@ export default function ProfilePage() {
     setEditing(false)
   }
 
-  const dismissNotif = async (id: string) => {
-    await supabase.from('notifications').update({ read: true }).eq('id', id)
-    setNotifications(prev => prev.filter(n => n.id !== id))
-  }
+const { dismiss } = useNotifications()
+
+const dismissNotif = async (id: string) => {
+  await dismiss(id)
+  setNotifications(prev => prev.filter(n => n.id !== id))
+}
 
   if (loading) return <div className={styles.profile_loading}>Laddar...</div>
   if (!user) return null
@@ -173,14 +176,38 @@ export default function ProfilePage() {
         {/* ÖVERSIKT */}
         {activeSection === 'oversikt' && (
           <div className={styles.profile__section}>
-            <h1 className={styles.profile__section_title}>Välkommen tillbaka, {displayName || 'där'}! 👋</h1>
 
+            {/* Välkomstbanner */}
+            <div className={styles.welcome_banner}>
+              <div className={styles.welcome_banner__content}>
+                <div className={styles.welcome_banner__avatar}>
+                  {(displayName || user.email || '?').charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <p className={styles.welcome_banner__greeting}>Välkommen tillbaka 👋</p>
+                  <h1 className={styles.welcome_banner__name}>{displayName || 'Inget namn'}</h1>
+                  <Link href={`/svippare/${user.id}`} className={styles.welcome_banner__publink}>
+                    Se din publika profil →
+                  </Link>
+                </div>
+              </div>
+              <div className={styles.welcome_banner__actions}>
+                <button className="btn btn-primary" onClick={() => router.push('/skapa-inlagg')}>
+                  🛠️ Skapa tjänst
+                </button>
+                <button className="btn btn-orange" onClick={() => router.push('/skapa-forfragning')}>
+                  🙋 Skapa förfrågan
+                </button>
+              </div>
+            </div>
+
+            {/* Notifikationer */}
             {notifications.length > 0 && (
               <div className={styles.profile__notifications}>
                 {notifications.map(notif => (
                   <div key={notif.id} className={`${styles.profile__notification} ${styles[`profile__notification--${notif.type}`]}`}>
                     <span className={styles.profile__notification_icon}>
-                      {notif.type === 'project_completed' ? '🎉' : '💰'}
+                      {notif.type === 'project_completed' ? '🎉' : notif.type === 'new_order' ? '📦' : notif.type === 'order_accepted' ? '✅' : '💰'}
                     </span>
                     <div className={styles.profile__notification_content}>
                       <p>{notif.message}</p>
@@ -192,6 +219,9 @@ export default function ProfilePage() {
                       {notif.type === 'request_review' && (
                         <Link href={`/bestallning/${notif.order_id}`} className="btn btn-orange">Ta betalt</Link>
                       )}
+                      {notif.type === 'new_order' && (
+                        <Link href={`/bestallning/${notif.order_id}`} className="btn btn-primary">Se beställning</Link>
+                      )}
                       <button className={styles.notifications__dismiss} onClick={() => dismissNotif(notif.id)}>✕</button>
                     </div>
                   </div>
@@ -200,25 +230,43 @@ export default function ProfilePage() {
               </div>
             )}
 
+            {/* Statistik-kort */}
             <div className={styles.profile__stats}>
-              {[
-                { icon: '🛠️', value: services.length, label: 'Aktiva tjänster', section: 'mina-tjanster' },
-                { icon: '📥', value: pendingOrders.length, label: 'Nya beställningar', section: 'inkomna-bestallningar' },
-                { icon: '🙋', value: myRequests.length, label: 'Förfrågningar', section: 'mina-forfragningar' },
-                { icon: '👀', value: interests.length, label: 'Intresseanmälningar', section: 'intresseanmalningar' },
-              ].map(stat => (
-                <div key={stat.label} className={styles.profile__stat_card} onClick={() => setActiveSection(stat.section as Section)}>
-                  <span className={styles.profile__stat_icon}>{stat.icon}</span>
-                  <strong>{stat.value}</strong>
-                  <span>{stat.label}</span>
+              <div className={`${styles.profile__stat_card} ${styles['profile__stat_card--blue']}`} onClick={() => setActiveSection('mina-tjanster')}>
+                <div className={styles.stat_icon_wrap}>🛠️</div>
+                <div className={styles.stat_info}>
+                  <strong>{services.length}</strong>
+                  <span>Aktiva tjänster</span>
                 </div>
-              ))}
+              </div>
+              <div className={`${styles.profile__stat_card} ${styles['profile__stat_card--orange']}`} onClick={() => setActiveSection('inkomna-bestallningar')}>
+                <div className={styles.stat_icon_wrap}>📥</div>
+                <div className={styles.stat_info}>
+                  <strong>{pendingOrders.length}</strong>
+                  <span>Nya beställningar</span>
+                </div>
+              </div>
+              <div className={`${styles.profile__stat_card} ${styles['profile__stat_card--green']}`} onClick={() => setActiveSection('mina-forfragningar')}>
+                <div className={styles.stat_icon_wrap}>🙋</div>
+                <div className={styles.stat_info}>
+                  <strong>{myRequests.length}</strong>
+                  <span>Förfrågningar</span>
+                </div>
+              </div>
+              <div className={`${styles.profile__stat_card} ${styles['profile__stat_card--purple']}`} onClick={() => setActiveSection('intresseanmalningar')}>
+                <div className={styles.stat_icon_wrap}>👀</div>
+                <div className={styles.stat_info}>
+                  <strong>{interests.length}</strong>
+                  <span>Intresseanmälningar</span>
+                </div>
+              </div>
             </div>
 
+            {/* Dashboard-block */}
             <div className={styles.profile__dashboard}>
               <div className={styles.profile__dashboard_left}>
 
-                {/* Mina tjänster block */}
+                {/* Mina tjänster */}
                 <div className={`${styles.profile__block} card`}>
                   <div className={styles.profile__block_header}>
                     <div className={styles.profile__block_title}><span>🛠️</span><h2>Mina tjänster</h2></div>
@@ -247,7 +295,7 @@ export default function ProfilePage() {
                   )}
                 </div>
 
-                {/* Inkomna beställningar block */}
+                {/* Inkomna beställningar */}
                 <div className={`${styles.profile__block} card`}>
                   <div className={styles.profile__block_header}>
                     <div className={styles.profile__block_title}>
@@ -277,7 +325,7 @@ export default function ProfilePage() {
 
               <div className={styles.profile__dashboard_right}>
 
-                {/* Mina förfrågningar block */}
+                {/* Mina förfrågningar */}
                 <div className={`${styles.profile__block} card`}>
                   <div className={styles.profile__block_header}>
                     <div className={styles.profile__block_title}><span>🙋</span><h2>Mina förfrågningar</h2></div>
@@ -306,7 +354,7 @@ export default function ProfilePage() {
                   )}
                 </div>
 
-                {/* Intresseanmälningar block */}
+                {/* Intresseanmälningar */}
                 <div className={`${styles.profile__block} card`}>
                   <div className={styles.profile__block_header}>
                     <div className={styles.profile__block_title}><span>👀</span><h2>Intresseanmälningar</h2></div>
@@ -329,28 +377,9 @@ export default function ProfilePage() {
                   )}
                 </div>
 
-                {/* Snabba åtgärder */}
-                <div className={`${styles.profile__block} card`}>
-                  <div className={styles.profile__block_header}>
-                    <div className={styles.profile__block_title}><span>⚡</span><h2>Snabba åtgärder</h2></div>
-                  </div>
-                  <div className={styles.profile__quick_actions}>
-                    {[
-                      { icon: '🛠️', label: 'Skapa tjänst', color: 'blue', action: () => router.push('/skapa-inlagg') },
-                      { icon: '🙋', label: 'Skapa förfrågan', color: 'orange', action: () => router.push('/skapa-forfragning') },
-                      { icon: '🔍', label: 'Utforska', color: 'green', action: () => router.push('/tjanster') },
-                      { icon: '⚙️', label: 'Inställningar', color: 'gray', action: () => setActiveSection('installningar') },
-                    ].map(btn => (
-                      <button key={btn.label} className={`${styles.profile__quick_btn} ${styles[`quick_btn--${btn.color}`]}`} onClick={btn.action}>
-                        <span>{btn.icon}</span>
-                        <span>{btn.label}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
               </div>
             </div>
+
           </div>
         )}
 

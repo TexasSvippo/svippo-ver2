@@ -517,3 +517,151 @@
   margin-top: 4px;
   &:hover { text-decoration: underline; }
 }
+
+// ================================
+// VÄLKOMSTBANNER
+// ================================
+.welcome_banner {
+  background: linear-gradient(135deg, var(--color-primary) 0%, #0891b2 100%);
+  border-radius: var(--radius-lg);
+  padding: 32px 36px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  color: white;
+}
+
+.welcome_banner__content {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.welcome_banner__avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  font-size: 26px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+}
+
+.welcome_banner__greeting {
+  font-size: 14px;
+  opacity: 0.85;
+  margin-bottom: 4px;
+}
+
+.welcome_banner__name {
+  font-family: var(--font-heading);
+  font-size: 26px;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 6px;
+}
+
+.welcome_banner__publink {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  font-weight: 500;
+  transition: opacity 0.2s;
+
+  &:hover { opacity: 0.7; }
+}
+
+.welcome_banner__actions {
+  display: flex;
+  gap: 12px;
+  flex-shrink: 0;
+
+  .btn { 
+    background: rgba(255, 255, 255, 0.15);
+    border: 1.5px solid rgba(255, 255, 255, 0.4);
+    color: white;
+    backdrop-filter: blur(4px);
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.25);
+      transform: translateY(-1px);
+    }
+  }
+}
+
+// ================================
+// NYA STATISTIK-KORT
+// ================================
+.profile__stat_card {
+  border-radius: var(--radius-md);
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+
+  &--blue {
+    background: white;
+    .stat_icon_wrap { background: #c0e0f5; }
+    .stat_info strong { color: var(--color-primary); }
+  }
+
+  &--orange {
+    background: white;
+    .stat_icon_wrap { background: #fbd5d0; }
+    .stat_info strong { color: var(--color-orange); }
+  }
+
+  &--green {
+    background: white;
+    .stat_icon_wrap { background: #c3f0db; }
+    .stat_info strong { color: #1a7a4a; }
+  }
+
+  &--purple {
+    background: white;
+    .stat_icon_wrap { background: #ddd8ff; }
+    .stat_info strong { color: #5b4fcf; }
+  }
+}
+
+.stat_icon_wrap {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.stat_info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  strong {
+    font-size: 26px;
+    font-weight: 800;
+  }
+
+  span {
+    font-size: 13px;
+    color: var(--color-gray);
+    font-weight: 500;
+  }
+}

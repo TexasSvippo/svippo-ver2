@@ -2,15 +2,15 @@ import Link from 'next/link'
 import styles from './Categories.module.scss'
 
 const categories = [
-  { icon: '🖥️', label: 'Digitala tjänster', slug: 'digitala' },
+  { icon: '🖥️', label: 'Digitala tjänster', slug: 'digitala-tjanster' },
   { icon: '🎨', label: 'Medie & design', slug: 'medie-design' },
   { icon: '📚', label: 'Utbildning', slug: 'utbildning' },
   { icon: '🏠', label: 'Hushållstjänster', slug: 'hushall' },
   { icon: '🚗', label: 'Biltjänster', slug: 'bil' },
-  { icon: '💆', label: 'Skönhet & hälsa', slug: 'skonhet' },
-  { icon: '🔨', label: 'Bygg & hantverk', slug: 'bygg' },
-  { icon: '🌿', label: 'Trädgård', slug: 'tradgard' },
-  { icon: '📦', label: 'Frakt & flytt', slug: 'frakt' },
+  { icon: '💆', label: 'Skönhet & hälsa', slug: 'skonhet-halsa' },
+  { icon: '🔨', label: 'Bygg & hantverk', slug: 'bygg-hantverk' },
+  { icon: '🌿', label: 'Trädgård', slug: 'frakt-flytt' },
+  { icon: '📦', label: 'Frakt & flytt', slug: 'frakt-flytt' },
 ]
 
 export default function Categories() {

@@ -94,11 +94,39 @@ export default function TjansterClient({ services }: Props) {
     <div className={styles.tjanster}>
       <div className={`container ${styles.tjanster__inner}`}>
 
-        {/* Header */}
-        <div className={styles.tjanster__header}>
-          <h1 className={styles.tjanster__title}>Tjänster</h1>
-          <p className={styles.tjanster__subtitle}>{filtered.length} tjänster hittades</p>
+      {/* Breadcrumbs + Header */}
+      {selectedCategory && (
+        <div className={styles.tjanster__breadcrumb}>
+          <button onClick={() => setSelectedCategory('')}>Tjänster</button>
+          <span>·</span>
+          <span>{categories.find(c => c.id === selectedCategory)?.label}</span>
         </div>
+      )}
+
+      <div className={styles.tjanster__header}>
+        <h1 className={styles.tjanster__title}>
+          {selectedCategory
+            ? categories.find(c => c.id === selectedCategory)?.label
+            : 'Tjänster'}
+        </h1>
+        <p className={styles.tjanster__subtitle}>{filtered.length} tjänster hittades</p>
+      </div>
+
+      {/* Kategorier – visas bara när ingen kategori är vald */}
+      {!selectedCategory && (
+        <div className={styles.tjanster__categories}>
+          {categories.map(cat => (
+            <button
+              key={cat.id}
+              className={styles.tjanster__category_btn}
+              onClick={() => setSelectedCategory(cat.id)}
+            >
+              <span>{cat.icon}</span>
+              <span>{cat.label}</span>
+            </button>
+          ))}
+        </div>
+      )}
 
         {/* Sök & filter */}
         <div className={styles.tjanster__filters}>
