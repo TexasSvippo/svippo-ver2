@@ -19,7 +19,7 @@ type Request = {
   user_name: string
   user_email: string
   user_id: string
-  image_base64: string
+  image_url: string
   created_at: string
 }
 
@@ -115,9 +115,9 @@ const handleInterest = async () => {
 
             <h1 className={serviceStyles.detail__title}>{request.title}</h1>
 
-            {request.image_base64 && (
+            {request.image_url && (
               <img
-                src={request.image_base64}
+                src={request.image_url}
                 alt={request.title}
                 className={styles.request_image}
               />

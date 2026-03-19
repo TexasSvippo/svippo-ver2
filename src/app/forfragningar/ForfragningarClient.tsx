@@ -18,7 +18,7 @@ type Request = {
   location: string
   user_name: string
   user_id: string
-  image_base64: string
+  image_url: string
   created_at: string
 }
 
@@ -152,9 +152,9 @@ export default function ForfragningarClient({ requests }: Props) {
           <div className={styles.requests__list}>
             {filtered.map(r => (
               <Link href={`/forfragning/${r.id}`} key={r.id} className={`${styles.request_card} card`}>
-                {r.image_base64 && (
+                {r.image_url && (
                   <div className={styles.request_card__image}>
-                    <img src={r.image_base64} alt={r.title} />
+                    <img src={r.image_url} alt={r.title} />
                   </div>
                 )}
                 <div className={styles.request_card__content}>

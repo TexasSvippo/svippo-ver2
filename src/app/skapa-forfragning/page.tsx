@@ -73,8 +73,12 @@ export default function CreateRequestPage() {
       const { error } = await supabase.storage
         .from('request-images')
         .upload(fileName, imageFile, { upsert: true })
+      
+      console.log('Upload error:', error)
+      
       if (error) throw error
       const { data } = supabase.storage.from('request-images').getPublicUrl(fileName)
+      console.log('Public URL:', data.publicUrl)
       return data.publicUrl
     } catch (err) {
       console.error(err)
@@ -113,7 +117,7 @@ export default function CreateRequestPage() {
         user_id: user.id,
         user_name: userData?.name || user.email,
         user_email: user.email,
-        image_base64: imageUrl, // Använder samma kolumn men lagrar nu en URL
+        image_url: imageUrl, // Använder samma kolumn men lagrar nu en URL
         created_at: new Date().toISOString(),
       })
       // Hitta användare som bevakar denna kategori och skicka notifikationer
