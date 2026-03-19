@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import useAuth from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
 import styles from './requestdetail.module.scss'
@@ -29,13 +30,16 @@ type Props = {
 
 export default function RequestDetailClient({ request }: Props) {
   const { user } = useAuth()
+  const router = useRouter()
   const [showInterestForm, setShowInterestForm] = useState(false)
   const [showLoginPrompt, setShowLoginPrompt] = useState(false)
   const [message, setMessage] = useState('')
   const [price, setPrice] = useState('')
   const [saving, setSaving] = useState(false)
   const [success, setSuccess] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const [userProfile, setUserProfile] = useState<{ name: string, email: string, phone: string } | null>(null)
+  const [interestsCount, setInterestsCount] = useState(0)
 
   useEffect(() => {
     if (!user) return
@@ -50,44 +54,78 @@ export default function RequestDetailClient({ request }: Props) {
     fetchProfile()
   }, [user])
 
-const handleInterest = async () => {
-  if (!user || !message) return
-  setSaving(true)
-  try {
-    await supabase.from('interests').insert({
-      request_id: request.id,
-      request_title: request.title,
-      request_owner_id: request.user_id,
-      svippar_id: user.id,
-      svippar_name: userProfile?.name || user.email,
-      svippar_email: userProfile?.email || user.email,
-      svippar_phone: userProfile?.phone || '',
-      message,
-      price: price ? Number(price) : null,
-      created_at: new Date().toISOString(),
-    })
+  // Hämta antal intresseanmälningar (för ägarens varning vid borttagning)
+  useEffect(() => {
+    if (user?.id !== request.user_id) return
+    const fetchInterests = async () => {
+      const { count } = await supabase
+        .from('interests')
+        .select('id', { count: 'exact', head: true })
+        .eq('request_id', request.id)
+      setInterestsCount(count ?? 0)
+    }
+    fetchInterests()
+  }, [user, request.id, request.user_id])
 
-    // Skicka notifikation till förfrågans ägare
-    await supabase.from('notifications').insert({
-      user_id: request.user_id,
-      type: 'new_interest',
-      actor_name: userProfile?.name || user.email,
-      message: `${userProfile?.name || user.email} har visat intresse för din förfrågan "${request.title}"!`,
-      action_url: `/intresseanmalningar`,
-      read: false,
-      dismissed: false,
-      email_sent: false,
-      created_at: new Date().toISOString(),
-    })
+  const handleInterest = async () => {
+    if (!user || !message) return
+    setSaving(true)
+    try {
+      await supabase.from('interests').insert({
+        request_id: request.id,
+        request_title: request.title,
+        request_owner_id: request.user_id,
+        svippar_id: user.id,
+        svippar_name: userProfile?.name || user.email,
+        svippar_email: userProfile?.email || user.email,
+        svippar_phone: userProfile?.phone || '',
+        message,
+        price: price ? Number(price) : null,
+        created_at: new Date().toISOString(),
+      })
 
-    setSuccess(true)
-    setShowInterestForm(false)
-  } catch (err) {
-    console.error(err)
-  } finally {
-    setSaving(false)
+      await supabase.from('notifications').insert({
+        user_id: request.user_id,
+        type: 'new_interest',
+        actor_name: userProfile?.name || user.email,
+        message: `${userProfile?.name || user.email} har visat intresse för din förfrågan "${request.title}"!`,
+        action_url: `/intresseanmalningar`,
+        read: false,
+        dismissed: false,
+        email_sent: false,
+        created_at: new Date().toISOString(),
+      })
+
+      setSuccess(true)
+      setShowInterestForm(false)
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setSaving(false)
+    }
   }
-}
+
+  const handleDelete = async () => {
+    const warningMsg = interestsCount > 0
+      ? `Du har ${interestsCount} intresseanmälan(ar) på denna förfrågan. Är du säker på att du vill ta bort den?`
+      : 'Är du säker på att du vill ta bort denna förfrågan?'
+
+    if (!confirm(warningMsg)) return
+
+    setDeleting(true)
+
+    // Ta bort bild från Storage om det finns en
+    // Ta bort bild från Storage om det finns en
+    if (request.image_url) {
+      const fileName = request.image_url.split('/').pop()
+      if (fileName) {
+        const { error } = await supabase.storage.from('request-images').remove([fileName])
+      }
+    }
+
+    await supabase.from('requests').delete().eq('id', request.id)
+    router.push('/profil')
+  }
 
   const isOwner = user?.id === request.user_id
 
@@ -194,9 +232,24 @@ const handleInterest = async () => {
                   <strong>Detta är din förfrågan</strong>
                   <p>Se vilka Svippare som visat intresse.</p>
                 </div>
-                <Link href="/intresseanmalningar" className="btn btn-outline">
+                <Link href="/intresseanmalningar" className="btn btn-outline" style={{ width: '100%', justifyContent: 'center' }}>
                   Se intresseanmälningar
                 </Link>
+                <div className={styles.owner_actions}>
+                  <button
+                    className={`btn btn-outline ${styles.edit_btn}`}
+                    onClick={() => router.push(`/skapa-forfragning?edit=${request.id}`)}
+                  >
+                    ✏️ Redigera
+                  </button>
+                  <button
+                    className={`btn btn-outline ${styles.delete_btn}`}
+                    onClick={handleDelete}
+                    disabled={deleting}
+                  >
+                    {deleting ? 'Tar bort...' : '🗑️ Ta bort'}
+                  </button>
+                </div>
               </div>
             )}
 

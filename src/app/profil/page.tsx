@@ -398,19 +398,37 @@ const dismissNotif = async (id: string) => {
               </div>
             ) : (
               <div className={styles.profile__list}>
-                {services.map(s => (
-                  <Link href={`/tjanst/${s.id}`} key={s.id} className={`${styles.profile__item} card`}>
-                    <div className={styles.profile__item_icon}>🛠️</div>
-                    <div className={styles.profile__item_info}>
-                      <strong>{s.title}</strong>
-                      <span>{s.subcategory} · {s.location}</span>
-                    </div>
-                    <div className={styles.profile__item_right}>
-                      <strong>{s.price_type === 'offert' ? 'Offert' : `${s.price} kr`}</strong>
-                      <span className={`${styles.profile__item_tag} ${styles['item_tag--blue']}`}>{s.price_type}</span>
-                    </div>
+              {services.map(s => (
+                <div key={s.id} className={`${styles.profile__item} card`}>
+                  <div className={styles.profile__item_icon}>🛠️</div>
+                  <Link href={`/tjanst/${s.id}`} className={styles.profile__item_info}>
+                    <strong>{s.title}</strong>
+                    <span>{s.subcategory} · {s.location}</span>
                   </Link>
-                ))}
+                  <div className={styles.profile__item_right}>
+                    <strong>{s.price_type === 'offert' ? 'Offert' : `${s.price} kr`}</strong>
+                    <span className={`${styles.profile__item_tag} ${styles['item_tag--blue']}`}>{s.price_type}</span>
+                    <div className={styles.profile__item_actions}>
+                      <button
+                        className={`btn btn-outline ${styles.profile__edit_btn}`}
+                        onClick={() => router.push(`/skapa-inlagg?edit=${s.id}`)}
+                      >
+                        ✏️
+                      </button>
+                      <button
+                        className={`btn btn-outline ${styles.profile__delete_btn}`}
+                        onClick={async () => {
+                          if (!confirm('Är du säker på att du vill ta bort denna tjänst?')) return
+                          await supabase.from('services').delete().eq('id', s.id)
+                          setServices(prev => prev.filter(x => x.id !== s.id))
+                        }}
+                      >
+                        🗑️
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
               </div>
             )}
           </div>
@@ -483,21 +501,39 @@ const dismissNotif = async (id: string) => {
               </div>
             ) : (
               <div className={styles.profile__list}>
-                {myRequests.map(r => (
-                  <Link href={`/forfragning/${r.id}`} key={r.id} className={`${styles.profile__item} card`}>
-                    <div className={styles.profile__item_icon}>🙋</div>
-                    <div className={styles.profile__item_info}>
-                      <strong>{r.title}</strong>
-                      <span>{r.subcategory} · {r.location}</span>
-                    </div>
-                    <div className={styles.profile__item_right}>
-                      <strong className={styles.profile__item_budget}>
-                        {r.budget_type === 'prisforslag' ? 'Prisförslag' : `${r.budget} kr`}
-                      </strong>
-                      <span className={`${styles.profile__item_tag} ${styles['item_tag--orange']}`}>Öppen</span>
-                    </div>
+              {myRequests.map(r => (
+                <div key={r.id} className={`${styles.profile__item} card`}>
+                  <div className={styles.profile__item_icon}>🙋</div>
+                  <Link href={`/forfragning/${r.id}`} className={styles.profile__item_info}>
+                    <strong>{r.title}</strong>
+                    <span>{r.subcategory} · {r.location}</span>
                   </Link>
-                ))}
+                  <div className={styles.profile__item_right}>
+                    <strong className={styles.profile__item_budget}>
+                      {r.budget_type === 'prisforslag' ? 'Prisförslag' : `${r.budget} kr`}
+                    </strong>
+                    <span className={`${styles.profile__item_tag} ${styles['item_tag--orange']}`}>Öppen</span>
+                    <div className={styles.profile__item_actions}>
+                      <button
+                        className={`btn btn-outline ${styles.profile__edit_btn}`}
+                        onClick={() => router.push(`/skapa-forfragning?edit=${r.id}`)}
+                      >
+                        ✏️
+                      </button>
+                      <button
+                        className={`btn btn-outline ${styles.profile__delete_btn}`}
+                        onClick={async () => {
+                          if (!confirm('Är du säker på att du vill ta bort denna förfrågan?')) return
+                          await supabase.from('requests').delete().eq('id', r.id)
+                          setMyRequests(prev => prev.filter(x => x.id !== r.id))
+                        }}
+                      >
+                        🗑️
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
               </div>
             )}
           </div>

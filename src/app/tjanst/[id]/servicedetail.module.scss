@@ -202,16 +202,23 @@
 }
 
 .detail__own_service {
+  background: #f0f8ff;
+  border: 1.5px solid var(--color-primary);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+// Regiering och ta bort
+
+.detail__own_service_info {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 16px;
-  background: #f0f8ff;
-  border-radius: var(--radius-md);
-  border: 1.5px solid var(--color-primary);
-  font-size: 14px;
 
-  span {
+  span:first-child {
     font-size: 24px;
     flex-shrink: 0;
   }
@@ -227,6 +234,42 @@
   p {
     font-size: 13px;
     color: var(--color-gray);
+    margin: 0;
+  }
+}
+
+.detail__owner_actions {
+  display: flex;
+  gap: 8px;
+
+  button {
+    flex: 1;
+    justify-content: center;
+    font-size: 13px;
+  }
+}
+
+.detail__edit_btn {
+  color: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+}
+
+.detail__edit_btn:hover{
+  color: white !important;
+}
+
+.detail__delete_btn {
+  color: var(--color-orange) !important;
+  border-color: var(--color-orange) !important;
+
+  &:hover:not(:disabled) {
+    background: var(--color-orange) !important;
+    color: white !important;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 }
 
@@ -254,6 +297,44 @@
 .detail__safe_icon {
   font-size: 24px;
   flex-shrink: 0;
+}
+
+.detail__own_service_info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  span { font-size: 24px; flex-shrink: 0; }
+  strong { font-size: 14px; font-weight: 700; color: var(--color-dark); display: block; margin-bottom: 2px; }
+  p { font-size: 13px; color: var(--color-gray); }
+}
+
+.detail__owner_actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+
+  button { flex: 1; justify-content: center; font-size: 13px; }
+}
+
+.detail__edit_btn {
+  color: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+}
+
+.detail__delete_btn {
+  color: var(--color-orange) !important;
+  border-color: var(--color-orange) !important;
+
+  &:hover:not(:disabled) {
+    background: var(--color-orange) !important;
+    color: white !important;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 }
 
 

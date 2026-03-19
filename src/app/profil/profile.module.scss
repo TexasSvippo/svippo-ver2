@@ -665,3 +665,28 @@
     font-weight: 500;
   }
 }
+
+.profile__item_actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.profile__edit_btn {
+  padding: 6px 10px !important;
+  font-size: 14px !important;
+  color: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+}
+
+.profile__delete_btn {
+  padding: 6px 10px !important;
+  font-size: 14px !important;
+  color: var(--color-orange) !important;
+  border-color: var(--color-orange) !important;
+
+  &:hover {
+    background: var(--color-orange) !important;
+    color: white !important;
+  }
+}

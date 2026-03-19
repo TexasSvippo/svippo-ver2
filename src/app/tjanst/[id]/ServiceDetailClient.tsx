@@ -1,9 +1,11 @@
 'use client'
 
 import OrderModal from '@/components/OrderModal'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import useAuth from '@/hooks/useAuth'
+import { supabase } from '@/lib/supabase'
 import styles from './servicedetail.module.scss'
 
 type CustomQuestion = {
@@ -37,10 +39,47 @@ type Props = {
 
 export default function ServiceDetailClient({ service }: Props) {
   const { user } = useAuth()
+  const router = useRouter()
   const [showOrder, setShowOrder] = useState(false)
   const [showLoginPrompt, setShowLoginPrompt] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const [activeOrdersCount, setActiveOrdersCount] = useState(0)
+  const [inProgressCount, setInProgressCount] = useState(0)
 
   const isOwner = user?.id === service.user_id
+
+  // Hämta aktiva beställningar för denna tjänst
+  useEffect(() => {
+    if (!isOwner) return
+    const fetchOrders = async () => {
+      const { data } = await supabase
+        .from('orders')
+        .select('id, status, project_status')
+        .eq('service_id', service.id)
+
+      if (data) {
+        setActiveOrdersCount(data.filter(o => o.status === 'accepted').length)
+        setInProgressCount(data.filter(o =>
+          o.project_status === 'in_progress' || o.project_status === 'almost_done'
+        ).length)
+      }
+    }
+    fetchOrders()
+  }, [isOwner, service.id])
+
+  const handleDelete = async () => {
+    if (inProgressCount > 0) return // Ska inte kunna klicka, men extra säkerhet
+
+    const warningMsg = activeOrdersCount > 0
+      ? `Du har ${activeOrdersCount} aktiv(a) beställning(ar) på denna tjänst. Är du säker på att du vill ta bort den?`
+      : 'Är du säker på att du vill ta bort denna tjänst?'
+
+    if (!confirm(warningMsg)) return
+
+    setDeleting(true)
+    await supabase.from('services').delete().eq('id', service.id)
+    router.push('/profil')
+  }
 
   return (
     <div className={styles.detail}>
@@ -72,7 +111,6 @@ export default function ServiceDetailClient({ service }: Props) {
 
             <div className={styles.detail__section}>
               <h2 className={styles.detail__section_title}>Recensioner</h2>
-              {/* ReviewsList läggs till senare */}
               <p className={styles.detail__no_reviews}>Inga recensioner ännu.</p>
             </div>
           </div>
@@ -119,10 +157,28 @@ export default function ServiceDetailClient({ service }: Props) {
 
               {isOwner ? (
                 <div className={styles.detail__own_service}>
-                  <span>✏️</span>
-                  <div>
-                    <strong>Detta är din tjänst</strong>
-                    <p>Du kan inte beställa din egen tjänst.</p>
+                  <div className={styles.detail__own_service_info}>
+                    <span>✏️</span>
+                    <div>
+                      <strong>Detta är din tjänst</strong>
+                      <p>Du kan inte beställa din egen tjänst.</p>
+                    </div>
+                  </div>
+                  <div className={styles.detail__owner_actions}>
+                    <button
+                      className={`btn btn-outline ${styles.detail__edit_btn}`}
+                      onClick={() => router.push(`/skapa-inlagg?edit=${service.id}`)}
+                    >
+                      ✏️ Redigera
+                    </button>
+                    <button
+                      className={`btn btn-outline ${styles.detail__delete_btn}`}
+                      onClick={handleDelete}
+                      disabled={deleting || inProgressCount > 0}
+                      title={inProgressCount > 0 ? 'Projektet pågår – kan inte tas bort' : ''}
+                    >
+                      {deleting ? 'Tar bort...' : inProgressCount > 0 ? '🔒 Pågår' : '🗑️ Ta bort'}
+                    </button>
                   </div>
                 </div>
               ) : (
@@ -157,7 +213,6 @@ export default function ServiceDetailClient({ service }: Props) {
         </div>
       </div>
 
-      {/* OrderModal */}
       {showOrder && (
         <OrderModal
           serviceId={service.id}
@@ -173,7 +228,6 @@ export default function ServiceDetailClient({ service }: Props) {
         />
       )}
 
-      {/* LoginPromptModal – läggs till senare */}
       {showLoginPrompt && (
         <div className="modal-backdrop" onClick={() => setShowLoginPrompt(false)}>
           <div className="modal-box" onClick={e => e.stopPropagation()}>
