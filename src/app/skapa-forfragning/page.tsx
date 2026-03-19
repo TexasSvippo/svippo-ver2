@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import useAuth from '@/hooks/useAuth'
 import { categories } from '@/data/categories'
@@ -21,15 +21,20 @@ type FormData = {
 
 const STEPS = ['Kategori', 'Detaljer', 'Budget & plats', 'Granska']
 
-export default function CreateRequestPage() {
+function CreateRequestPage() {
   const { user, loading } = useAuth()
   const router = useRouter()
-  const [step, setStep] = useState(0)
+  const searchParams = useSearchParams()
+  const editId = searchParams.get('edit')
+  const isEditing = !!editId
+  const [step, setStep] = useState(isEditing ? 1 : 0)
   const [saving, setSaving] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [uploadingImage, setUploadingImage] = useState(false)
+  const [loadingEdit, setLoadingEdit] = useState(isEditing)
+  const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null)
 
   const [form, setForm] = useState<FormData>({
     title: '',
@@ -44,10 +49,38 @@ export default function CreateRequestPage() {
   })
 
   useEffect(() => {
+    if (!editId || !user) return
+    const fetchRequest = async () => {
+      const { data } = await supabase.from('requests').select('*').eq('id', editId).eq('user_id', user.id).single()
+      if (data) {
+        setForm({
+          title: data.title || '',
+          description: data.description || '',
+          category_id: data.category_id || '',
+          subcategory: data.subcategory || '',
+          budget_type: data.budget_type || 'fast',
+          budget: data.budget ? String(data.budget) : '',
+          deadline: data.deadline || '',
+          location: data.location || '',
+          image_url: data.image_url || '',
+        })
+        if (data.image_url) {
+          setImagePreview(data.image_url)
+          setExistingImageUrl(data.image_url)
+        }
+      } else {
+        router.push('/profil')
+      }
+      setLoadingEdit(false)
+    }
+    fetchRequest()
+  }, [editId, user])
+
+  useEffect(() => {
     if (!loading && !user) router.push('/logga-in')
   }, [loading, user])
 
-  if (loading) return <div className={styles.create_loading}>Laddar...</div>
+  if (loading || loadingEdit) return <div className={styles.create_loading}>Laddar...</div>
   if (!user) return null
 
   const selectedCategory = categories.find(c => c.id === form.category_id)
@@ -73,12 +106,8 @@ export default function CreateRequestPage() {
       const { error } = await supabase.storage
         .from('request-images')
         .upload(fileName, imageFile, { upsert: true })
-      
-      console.log('Upload error:', error)
-      
       if (error) throw error
       const { data } = supabase.storage.from('request-images').getPublicUrl(fileName)
-      console.log('Public URL:', data.publicUrl)
       return data.publicUrl
     } catch (err) {
       console.error(err)
@@ -91,60 +120,78 @@ export default function CreateRequestPage() {
   const handleSubmit = async () => {
     setSaving(true)
     try {
-      // Ladda upp bild om det finns en
-      let imageUrl = ''
+      const { data: userData } = await supabase.from('users').select('name').eq('id', user.id).single()
+
+      let imageUrl = existingImageUrl || ''
+
       if (imageFile) {
+        if (existingImageUrl) {
+          const oldFileName = existingImageUrl.split('/').pop()
+          if (oldFileName) await supabase.storage.from('request-images').remove([oldFileName])
+        }
         const url = await uploadImage()
         if (url) imageUrl = url
       }
 
-      // Hämta användarens namn
-      const { data: userData } = await supabase
-        .from('users')
-        .select('name')
-        .eq('id', user.id)
-        .single()
+      if (!imagePreview && existingImageUrl) {
+        const oldFileName = existingImageUrl.split('/').pop()
+        if (oldFileName) await supabase.storage.from('request-images').remove([oldFileName])
+        imageUrl = ''
+      }
 
-      await supabase.from('requests').insert({
-        title: form.title,
-        description: form.description,
-        category_id: form.category_id,
-        subcategory: form.subcategory,
-        budget_type: form.budget_type,
-        budget: form.budget_type === 'fast' ? Number(form.budget) : null,
-        deadline: form.deadline || null,
-        location: form.location,
-        user_id: user.id,
-        user_name: userData?.name || user.email,
-        user_email: user.email,
-        image_url: imageUrl, // Använder samma kolumn men lagrar nu en URL
-        created_at: new Date().toISOString(),
-      })
-      // Hitta användare som bevakar denna kategori och skicka notifikationer
-      const { data: subscribers } = await supabase
-        .from('category_subscriptions')
-        .select('user_id')
-        .like('category_id', `${form.category_id}%`)
+      if (isEditing) {
+        await supabase.from('requests').update({
+          title: form.title,
+          description: form.description,
+          budget_type: form.budget_type,
+          budget: form.budget_type === 'fast' ? Number(form.budget) : null,
+          deadline: form.deadline || null,
+          location: form.location,
+          image_url: imageUrl,
+        }).eq('id', editId)
+      } else {
+        await supabase.from('requests').insert({
+          title: form.title,
+          description: form.description,
+          category_id: form.category_id,
+          subcategory: form.subcategory,
+          budget_type: form.budget_type,
+          budget: form.budget_type === 'fast' ? Number(form.budget) : null,
+          deadline: form.deadline || null,
+          location: form.location,
+          user_id: user.id,
+          user_name: userData?.name || user.email,
+          user_email: user.email,
+          image_url: imageUrl,
+          created_at: new Date().toISOString(),
+        })
 
-      if (subscribers && subscribers.length > 0) {
-        const notifications = subscribers
-          .filter(sub => sub.user_id !== user.id) // Skicka inte till sig själv
-          .map(sub => ({
-            user_id: sub.user_id,
-            type: 'new_request_in_category',
-            actor_name: userData?.name || user.email,
-            message: `Ny förfrågan inom ${selectedCategory?.label}: "${form.title}"`,
-            action_url: `/forfragningar`,
-            read: false,
-            dismissed: false,
-            email_sent: false,
-            created_at: new Date().toISOString(),
-          }))
+        // Skicka notifikationer till prenumeranter
+        const { data: subscribers } = await supabase
+          .from('category_subscriptions')
+          .select('user_id')
+          .like('category_id', `${form.category_id}%`)
 
-        if (notifications.length > 0) {
-          await supabase.from('notifications').insert(notifications)
+        if (subscribers && subscribers.length > 0) {
+          const notifications = subscribers
+            .filter(sub => sub.user_id !== user.id)
+            .map(sub => ({
+              user_id: sub.user_id,
+              type: 'new_request_in_category',
+              actor_name: userData?.name || user.email,
+              message: `Ny förfrågan inom ${selectedCategory?.label}: "${form.title}"`,
+              action_url: `/forfragningar`,
+              read: false,
+              dismissed: false,
+              email_sent: false,
+              created_at: new Date().toISOString(),
+            }))
+          if (notifications.length > 0) {
+            await supabase.from('notifications').insert(notifications)
+          }
         }
       }
+
       setShowSuccess(true)
     } catch (err) {
       console.error(err)
@@ -374,5 +421,13 @@ export default function CreateRequestPage() {
         </div>
       )}
     </div>
+  )
+}
+
+export default function Page() {
+  return (
+    <Suspense fallback={<div>Laddar...</div>}>
+      <CreateRequestPage />
+    </Suspense>
   )
 }

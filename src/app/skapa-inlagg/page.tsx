@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import useAuth from '@/hooks/useAuth'
 import { categories } from '@/data/categories'
@@ -33,7 +33,13 @@ const STEPS = ['Kategori', 'Detaljer', 'Pris & plats', 'Egna frågor', 'Granska'
 export default function CreateServicePage() {
   const { user, loading } = useAuth()
   const router = useRouter()
-  const [step, setStep] = useState(0)
+  const searchParams = useSearchParams()
+  const editId = searchParams.get('edit')
+  const isEditing = !!editId
+  console.log('editId:', editId, 'isEditing:', isEditing)
+
+  const [step, setStep] = useState(isEditing ? 1 : 0)
+  const [loadingEdit, setLoadingEdit] = useState(isEditing)
   const [saving, setSaving] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
   const [newQuestion, setNewQuestion] = useState({
@@ -54,10 +60,33 @@ export default function CreateServicePage() {
   })
 
   useEffect(() => {
+    if (!editId || !user) return
+    const fetchService = async () => {
+      const { data } = await supabase.from('services').select('*').eq('id', editId).eq('user_id', user.id).single()
+      if (data) {
+        setForm({
+          title: data.title || '',
+          description: data.description || '',
+          category_id: data.category_id || '',
+          subcategory: data.subcategory || '',
+          price_type: data.price_type || 'timpris',
+          price: data.price ? String(data.price) : '',
+          location: data.location || '',
+          custom_questions: data.custom_questions || [],
+        })
+      } else {
+        router.push('/profil')
+      }
+      setLoadingEdit(false)
+    }
+    fetchService()
+  }, [editId, user])
+
+  useEffect(() => {
     if (!loading && !user) router.push('/logga-in')
   }, [loading, user])
 
-  if (loading) return <div className={styles.create_loading}>Laddar...</div>
+  if (loading || loadingEdit) return <div className={styles.create_loading}>Laddar...</div>
   if (!user) return null
 
   const selectedCategory = categories.find(c => c.id === form.category_id)
@@ -66,29 +95,35 @@ export default function CreateServicePage() {
   const handleSubmit = async () => {
     setSaving(true)
     try {
-      // Hämta användarens namn från users-tabellen
-      const { data: userData } = await supabase
-        .from('users')
-        .select('name')
-        .eq('id', user.id)
-        .single()
+      const { data: userData } = await supabase.from('users').select('name').eq('id', user.id).single()
 
-      await supabase.from('services').insert({
-        title: form.title,
-        description: form.description,
-        category_id: form.category_id,
-        subcategory: form.subcategory,
-        price_type: form.price_type,
-        price: form.price_type !== 'offert' ? Number(form.price) : null,
-        location: form.location,
-        user_id: user.id,
-        user_name: userData?.name || user.email,
-        user_email: user.email,
-        custom_questions: form.custom_questions,
-        rating: 0,
-        reviews: 0,
-        created_at: new Date().toISOString(),
-      })
+      if (isEditing) {
+        await supabase.from('services').update({
+          title: form.title,
+          description: form.description,
+          price_type: form.price_type,
+          price: form.price_type !== 'offert' ? Number(form.price) : null,
+          location: form.location,
+          custom_questions: form.custom_questions,
+        }).eq('id', editId)
+      } else {
+        await supabase.from('services').insert({
+          title: form.title,
+          description: form.description,
+          category_id: form.category_id,
+          subcategory: form.subcategory,
+          price_type: form.price_type,
+          price: form.price_type !== 'offert' ? Number(form.price) : null,
+          location: form.location,
+          user_id: user.id,
+          user_name: userData?.name || user.email,
+          user_email: user.email,
+          custom_questions: form.custom_questions,
+          rating: 0,
+          reviews: 0,
+          created_at: new Date().toISOString(),
+        })
+      }
       setShowSuccess(true)
     } catch (err) {
       console.error(err)

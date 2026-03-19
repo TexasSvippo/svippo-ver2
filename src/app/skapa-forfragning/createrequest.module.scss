@@ -284,3 +284,35 @@
 .create__success_title { font-family: var(--font-heading); font-size: 26px; font-weight: 700; color: var(--color-dark); }
 .create__success_text { font-size: 15px; color: var(--color-gray); line-height: 1.6; }
 .create__success_actions { display: flex; gap: 12px; margin-top: 8px; width: 100%; }
+
+// Redigera förfrågan
+
+.create__edit_banner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  background: #fff8e1;
+  border: 1.5px solid var(--color-orange);
+  border-radius: var(--radius-md);
+  margin-bottom: 8px;
+
+  span:first-child { font-size: 20px; flex-shrink: 0; }
+  strong { font-size: 14px; font-weight: 700; color: var(--color-dark); display: block; }
+  p { font-size: 13px; color: var(--color-gray); margin: 0; }
+}
+
+.create__edit_locked {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-orange);
+  flex-shrink: 0;
+  background: white;
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-orange);
+}
