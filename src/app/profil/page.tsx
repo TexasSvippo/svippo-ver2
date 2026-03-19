@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import useAuth from '@/hooks/useAuth'
 import { useNotifications } from '@/hooks/useNotifications'
+import { categories } from '@/data/categories'
 import styles from './profile.module.scss'
 
 type Section =
@@ -15,19 +16,22 @@ type Section =
   | 'placerade-bestallningar'
   | 'mina-forfragningar'
   | 'intresseanmalningar'
+  | 'mina-bevakningar' 
   | 'recensioner'
   | 'installningar'
 
 type Service = { id: string; title: string; subcategory: string; price_type: string; price: number; location: string }
 type Order = { id: string; service_title: string; buyer_name: string; buyer_email: string; message: string; status: string; project_status: string }
 type PlacedOrder = { id: string; service_title: string; seller_name: string; message: string; status: string; project_status: string }
-type Request = { id: string; title: string; subcategory: string; budget: number; budget_type: string; location: string }
+type Request = { id: string; title: string; category_id: string; subcategory: string; budget: number; budget_type: string; location: string }
 type Interest = { id: string; request_title: string; svippar_name: string; svippar_email: string; message: string; price: number }
 type Notification = { id: string; type: string; order_id: string; service_title: string; message: string; read: boolean }
+type Subscription = { id: string; category_id: string }
 
 const NAV_ITEMS = [
   { id: 'oversikt', label: 'Översikt', icon: '🏠', group: null },
   { id: 'mina-tjanster', label: 'Mina tjänster', icon: '🛠️', group: 'Tjänster' },
+  { id: 'mina-bevakningar', label: 'Mina bevakningar', icon: '🔔', group: 'Tjänster' },
   { id: 'inkomna-bestallningar', label: 'Inkomna beställningar', icon: '📥', group: 'Tjänster' },
   { id: 'mina-forfragningar', label: 'Mina förfrågningar', icon: '🙋', group: 'Förfrågningar' },
   { id: 'intresseanmalningar', label: 'Intresseanmälningar', icon: '👀', group: 'Förfrågningar' },
@@ -55,10 +59,14 @@ export default function ProfilePage() {
   const [interests, setInterests] = useState<Interest[]>([])
   const [notifications, setNotifications] = useState<Notification[]>([])
 
+  const [subscriptions, setSubscriptions] = useState<Subscription[]>([])
+  const [watchedRequests, setWatchedRequests] = useState<Request[]>([])
+  const [selectedWatchCategory, setSelectedWatchCategory] = useState('')
+
   useEffect(() => {
     if (!user) return
     const fetchAll = async () => {
-      const [profileRes, servicesRes, incomingRes, placedRes, requestsRes, interestsRes, notifsRes] = await Promise.all([
+      const [profileRes, servicesRes, incomingRes, placedRes, requestsRes, interestsRes, notifsRes, subsRes] = await Promise.all([
         supabase.from('users').select('*').eq('id', user.id).single(),
         supabase.from('services').select('*').eq('user_id', user.id),
         supabase.from('orders').select('*').eq('seller_id', user.id).order('created_at', { ascending: false }),
@@ -66,6 +74,7 @@ export default function ProfilePage() {
         supabase.from('requests').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
         supabase.from('interests').select('*').eq('request_owner_id', user.id).order('created_at', { ascending: false }),
         supabase.from('notifications').select('*').eq('user_id', user.id).eq('read', false),
+        supabase.from('category_subscriptions').select('*').eq('user_id', user.id),
       ])
       if (profileRes.data) {
         setDisplayName(profileRes.data.name || '')
@@ -78,6 +87,7 @@ export default function ProfilePage() {
       setMyRequests(requestsRes.data ?? [])
       setInterests(interestsRes.data ?? [])
       setNotifications(notifsRes.data ?? [])
+      setSubscriptions(subsRes.data ?? [])
     }
     fetchAll()
   }, [user])
@@ -561,6 +571,102 @@ const dismissNotif = async (id: string) => {
                     </div>
                   </div>
                 ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* MINA BEVAKNINGAR */}
+        {activeSection === 'mina-bevakningar' && (
+          <div className={styles.profile__section}>
+            <h1 className={styles.profile__section_title}>Mina bevakningar</h1>
+
+            {/* Bevakade kategorier */}
+            <div className={`${styles.profile__block} card`}>
+              <div className={styles.profile__block_header}>
+                <div className={styles.profile__block_title}><span>🔔</span><h2>Bevakade kategorier</h2></div>
+              </div>
+              {subscriptions.length === 0 ? (
+                <div className={styles.profile__block_empty}>
+                  <p>Du bevakar inga kategorier ännu.</p>
+                  <button className="btn btn-primary" onClick={() => router.push('/forfragningar')}>
+                    Gå till förfrågningar
+                  </button>
+                </div>
+              ) : (
+                <div className={styles.subscription_tags}>
+                  {subscriptions.map(sub => {
+                    const [catId, subcat] = sub.category_id.split(':')
+                    const cat = categories.find(c => c.id === catId)
+                    return (
+                      <div key={sub.id} className={styles.subscription_tag}>
+                        <span>{cat?.icon}</span>
+                        <span>{subcat || cat?.label}</span>
+                        <button
+                          onClick={async () => {
+                            await supabase.from('category_subscriptions').delete().eq('id', sub.id)
+                            setSubscriptions(prev => prev.filter(s => s.id !== sub.id))
+                          }}
+                        >✕</button>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Förfrågningar inom bevakade kategorier */}
+            <div className={styles.profile__section_header}>
+              <h2 className={styles.profile__section_title} style={{ fontSize: '20px' }}>
+                Förfrågningar inom dina kategorier
+              </h2>
+              {subscriptions.length > 0 && (
+                <select
+                  className={styles.profile__watch_filter}
+                  value={selectedWatchCategory}
+                  onChange={e => setSelectedWatchCategory(e.target.value)}
+                >
+                  <option value="">Alla bevakade</option>
+                  {subscriptions.map(sub => {
+                    const [catId, subcat] = sub.category_id.split(':')
+                    const cat = categories.find(c => c.id === catId)
+                    return (
+                      <option key={sub.id} value={sub.category_id}>
+                        {cat?.icon} {subcat || cat?.label}
+                      </option>
+                    )
+                  })}
+                </select>
+              )}
+            </div>
+
+            {watchedRequests.length === 0 ? (
+              <div className={styles.profile__empty}>
+                <span>📭</span>
+                <p>Inga förfrågningar inom dina bevakade kategorier ännu.</p>
+              </div>
+            ) : (
+              <div className={styles.profile__list}>
+                {watchedRequests
+                  .filter(r => {
+                    if (!selectedWatchCategory) return true
+                    const [catId, subcat] = selectedWatchCategory.split(':')
+                    return r.category_id === catId && (!subcat || r.subcategory === subcat)
+                  })
+                  .map(r => (
+                    <Link href={`/forfragning/${r.id}`} key={r.id} className={`${styles.profile__item} card`}>
+                      <div className={styles.profile__item_icon}>🙋</div>
+                      <div className={styles.profile__item_info}>
+                        <strong>{r.title}</strong>
+                        <span>{r.subcategory} · {r.location}</span>
+                      </div>
+                      <div className={styles.profile__item_right}>
+                        <strong>{r.budget_type === 'prisforslag' ? 'Prisförslag' : `${r.budget} kr`}</strong>
+                        <span className={`${styles.profile__item_tag} ${styles['item_tag--orange']}`}>Öppen</span>
+                      </div>
+                    </Link>
+                  ))
+                }
               </div>
             )}
           </div>
