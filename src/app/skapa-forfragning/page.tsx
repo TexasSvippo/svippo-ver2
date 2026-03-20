@@ -171,6 +171,7 @@ function CreateRequestPage() {
           .from('category_subscriptions')
           .select('user_id')
           .like('category_id', `${form.category_id}%`)
+    
 
         if (subscribers && subscribers.length > 0) {
           const notifications = subscribers

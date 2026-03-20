@@ -96,6 +96,22 @@ export default function ProfilePage() {
     if (!loading && !user) router.push('/logga-in')
   }, [loading, user])
 
+  useEffect(() => {
+    if (!user || subscriptions.length === 0) return
+    const fetchWatched = async () => {
+      const categoryIds = subscriptions.map(s => s.category_id.split(':')[0])
+      const unique = [...new Set(categoryIds)]
+      const { data, error } = await supabase
+        .from('requests')
+        .select('*')
+        .in('category_id', unique)
+        .neq('user_id', user.id)
+        .order('created_at', { ascending: false })
+      setWatchedRequests(data ?? [])
+    }
+    fetchWatched()
+  }, [subscriptions, user])
+
   const handleSave = async () => {
     if (!user) return
     setSaving(true)
