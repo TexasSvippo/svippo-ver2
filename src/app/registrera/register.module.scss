@@ -1,0 +1,270 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  padding: 24px;
+}
+
+.popup {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: 40px;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.popup__large {
+  max-width: 600px;
+}
+
+.popup__emoji {
+  font-size: 48px;
+  text-align: center;
+}
+
+.popup__title {
+  font-family: var(--font-heading);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--color-dark);
+  text-align: center;
+}
+
+.popup__text {
+  font-size: 15px;
+  color: var(--color-gray);
+  text-align: center;
+  line-height: 1.6;
+}
+
+.popup__info {
+  background: var(--color-gray-light);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  strong {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--color-dark);
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    li {
+      font-size: 14px;
+      color: var(--color-dark);
+    }
+  }
+}
+
+.popup__disclaimer {
+  font-size: 13px;
+  color: var(--color-gray);
+  line-height: 1.5;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--color-border);
+}
+
+.popup__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+// Info-box på registreringssidan
+.info_box {
+  background: #e0f0fa;
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  font-size: 13px;
+  color: var(--color-dark);
+  line-height: 1.5;
+}
+
+// Svippare-formulär
+.form__header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form__back {
+  background: none;
+  border: none;
+  color: var(--color-primary);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font-body);
+  padding: 0;
+  text-align: left;
+  &:hover { opacity: 0.7; }
+}
+
+.form__fields {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form__field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form__label {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-dark);
+}
+
+.form__hint {
+  font-size: 13px;
+  color: var(--color-gray);
+  margin-top: -4px;
+}
+
+.required {
+  color: var(--color-orange);
+}
+
+.form__input {
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--color-border);
+  font-size: 15px;
+  font-family: var(--font-body);
+  color: var(--color-dark);
+  outline: none;
+  transition: border-color 0.2s;
+  &:focus { border-color: var(--color-primary); }
+}
+
+.form__textarea {
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--color-border);
+  font-size: 15px;
+  font-family: var(--font-body);
+  color: var(--color-dark);
+  outline: none;
+  resize: vertical;
+  line-height: 1.6;
+  transition: border-color 0.2s;
+  &:focus { border-color: var(--color-primary); }
+}
+
+// Kategorier
+.category_grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.category_btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--color-border);
+  background: white;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-dark);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: var(--font-body);
+  text-align: left;
+  position: relative;
+
+  span:first-child { font-size: 20px; flex-shrink: 0; }
+
+  &:hover {
+    border-color: var(--color-primary);
+    background: #f0f8ff;
+  }
+
+  &--active {
+    border-color: var(--color-primary);
+    background: #e0f0fa;
+    color: var(--color-primary);
+    font-weight: 600;
+  }
+}
+
+.category_check {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+// Betalningsinfo
+.payment_info {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  background: #fff8e1;
+  border: 1px solid #f59e0b;
+  border-radius: var(--radius-md);
+
+  span:first-child { font-size: 20px; flex-shrink: 0; }
+
+  p {
+    font-size: 13px;
+    color: var(--color-dark);
+    line-height: 1.6;
+    margin: 0;
+  }
+}
+
+.form__actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  padding-top: 8px;
+  border-top: 1px solid var(--color-border);
+}
+
+@media (max-width: 768px) {
+  .popup {
+    padding: 24px;
+  }
+
+  .category_grid {
+    grid-template-columns: 1fr;
+  }
+
+  .popup__actions {
+    flex-direction: column;
+  }
+
+  .form__actions {
+    flex-direction: column-reverse;
+    button { width: 100%; justify-content: center; }
+  }
+}
