@@ -12,7 +12,7 @@ import styles from './Navbar.module.scss'
 import Image from 'next/image'
 
 export default function Navbar() {
-  const { user, loading } = useAuth()
+  const { user, loading, avatarUrl } = useAuth()
   const { unreadCount } = useNotifications()
   const [menuOpen, setMenuOpen] = useState(false)
   const [showCreate, setShowCreate] = useState(false)
@@ -76,7 +76,10 @@ export default function Navbar() {
                       className={styles.navbar__avatar}
                       onClick={() => setMenuOpen(!menuOpen)}
                     >
-                      <span>{user.email?.charAt(0).toUpperCase()}</span>
+                      {avatarUrl
+                        ? <img src={avatarUrl} alt="Profil" className={styles.navbar__avatar_img} />
+                        : <span>{user.email?.charAt(0).toUpperCase()}</span>
+                      }
                     </button>
 
                     {menuOpen && (

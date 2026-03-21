@@ -13,6 +13,7 @@ interface AuthState {
   accountType: AccountType | null
   svippareStatus: SvippareStatus
   canCreateService: boolean
+  avatarUrl: string | null
 }
 
 export default function useAuth(): AuthState {
@@ -20,6 +21,7 @@ export default function useAuth(): AuthState {
   const [loading, setLoading] = useState(true)
   // ← NY: separat state för svippareStatus så vi kan uppdatera den från DB
   const [svippareStatus, setSvippareStatus] = useState<SvippareStatus>(null)
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -41,26 +43,32 @@ export default function useAuth(): AuthState {
 
     const checkDbStatus = async () => {
       if (metadataStatus !== 'pending') {
-        // Inte pending – lita på metadata som vanligt
         setSvippareStatus(metadataStatus)
-        return
+      } else {
+        const { data } = await supabase
+          .from('svippare_profiles')
+          .select('status')
+          .eq('user_id', user!.id)
+          .single()
+
+        if (data?.status && data.status !== metadataStatus) {
+          await supabase.auth.updateUser({
+            data: { svippare_status: data.status }
+          })
+          setSvippareStatus(data.status as SvippareStatus)
+        } else {
+          setSvippareStatus(metadataStatus)
+        }
       }
 
-      // Metadata säger pending – kolla DB om det faktiskt fortfarande stämmer
-      const { data } = await supabase
-        .from('svippare_profiles')
-        .select('status')
-        .eq('user_id', user!.id)
-        .single()
-
-      if (data?.status && data.status !== metadataStatus) {
-        // DB har uppdaterats (t.ex. godkänd via SQL) – uppdatera metadata
-        await supabase.auth.updateUser({
-          data: { svippare_status: data.status }
-        })
-        setSvippareStatus(data.status as SvippareStatus)
-      } else {
-        setSvippareStatus(metadataStatus)
+      // Hämta alltid avatar_url oavsett status
+      if (user) {
+        const { data: userData } = await supabase
+          .from('users')
+          .select('avatar_url')
+          .eq('id', user.id)
+          .single()
+        setAvatarUrl(userData?.avatar_url ?? null)
       }
     }
 
@@ -74,5 +82,5 @@ export default function useAuth(): AuthState {
     accountType === 'uf-foretag' ||
     (accountType === 'svippare' && svippareStatus === 'approved')
 
-  return { user, loading, accountType, svippareStatus, canCreateService }
+  return { user, loading, accountType, svippareStatus, canCreateService, avatarUrl }
 }
