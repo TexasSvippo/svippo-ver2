@@ -518,6 +518,44 @@
   &:hover { text-decoration: underline; }
 }
 
+// Pending-banner
+.profile__pending_banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px 20px;
+  background: #fff8e1;
+  border: 1.5px solid #f59e0b;
+  border-radius: var(--radius-md);
+  margin-bottom: 8px;
+}
+
+.profile__pending_banner_icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.profile__pending_banner_content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  strong {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--color-dark);
+  }
+
+  p {
+    font-size: 13px;
+    color: var(--color-gray);
+    line-height: 1.5;
+    margin: 0;
+  }
+}
+
+
+
 // ================================
 // VÄLKOMSTBANNER
 // ================================
@@ -731,4 +769,72 @@
   color: var(--color-dark);
   background: white;
   cursor: pointer;
+}
+
+// Företagsprofil – kategorier
+.profile__category_grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.profile__category_btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--color-border);
+  background: white;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-dark);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: var(--font-body);
+
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+  &:not(:disabled):hover { border-color: var(--color-primary); background: #f0f8ff; }
+  &--active { border-color: var(--color-primary); background: #e0f0fa; color: var(--color-primary); font-weight: 600; }
+}
+
+// Sociala medier
+.profile__social_row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.profile__social_remove {
+  background: none;
+  border: none;
+  color: var(--color-gray);
+  cursor: pointer;
+  font-size: 16px;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+  &:hover { background: #fdecea; color: var(--color-orange); }
+}
+
+.profile__social_add {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border-radius: var(--radius-md);
+  border: 1.5px dashed var(--color-border);
+  background: white;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-primary);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: var(--font-body);
+  width: 100%;
+  justify-content: center;
+  margin-top: 4px;
+  &:hover { border-color: var(--color-primary); background: #f0f8ff; }
 }

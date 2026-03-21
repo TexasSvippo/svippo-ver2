@@ -31,7 +31,7 @@ type FormData = {
 const STEPS = ['Kategori', 'Detaljer', 'Pris & plats', 'Egna frågor', 'Granska']
 
 export default function CreateServicePage() {
-  const { user, loading } = useAuth()
+  const { user, loading, accountType, svippareStatus, canCreateService } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
   const editId = searchParams.get('edit')
@@ -88,6 +88,53 @@ export default function CreateServicePage() {
 
   if (loading || loadingEdit) return <div className={styles.create_loading}>Laddar...</div>
   if (!user) return null
+
+  if (!canCreateService) {
+  if (accountType === 'svippare' && svippareStatus === 'pending') {
+    return (
+      <div className={styles.create}>
+        <div className={`container ${styles.create__inner}`}>
+          <div className={`${styles.create__card} card`}>
+            <div className={styles.create__content}>
+              <div className={styles.create__blocked_emoji}>⏳</div>
+              <h1 className={styles.create__title}>Din ansökan granskas</h1>
+              <p className={styles.create__subtitle}>
+                Vi håller på att granska din Svippare-ansökan. Du får ett meddelande så snart den är godkänd.
+              </p>
+              <button className="btn btn-outline" onClick={() => router.push('/profil')}>
+                Till din profil
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className={styles.create}>
+      <div className={`container ${styles.create__inner}`}>
+        <div className={`${styles.create__card} card`}>
+          <div className={styles.create__content}>
+            <div className={styles.create__blocked_emoji}>🔒</div>
+            <h1 className={styles.create__title}>Du kan inte skapa tjänster</h1>
+            <p className={styles.create__subtitle}>
+              För att skapa tjänster på Svippo behöver du vara godkänd Svippare, företag eller UF-företag.
+            </p>
+            <div className={styles.create__blocked_actions}>
+              <button className="btn btn-primary" onClick={() => router.push('/bli-svippare')}>
+                Ansök om att bli Svippare
+              </button>
+              <button className="btn btn-outline" onClick={() => router.push('/tjanster')}>
+                Bläddra bland tjänster
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
 
   const selectedCategory = categories.find(c => c.id === form.category_id)
   const update = (field: keyof FormData, value: string) => setForm(prev => ({ ...prev, [field]: value }))

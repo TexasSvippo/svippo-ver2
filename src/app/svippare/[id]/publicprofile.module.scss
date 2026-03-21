@@ -1,9 +1,49 @@
+// ================================
+// CSS-VARIABLER PER PROFILTYP
+// Dessa sätts på root-elementet via modifier-klasser
+// ================================
+
 .pubprofile {
   min-height: calc(100vh - 68px);
   background: var(--color-bg);
+
+  // Svippare – Svippos blå (default)
+  &--svippare {
+    --profile-accent: #066696;
+    --profile-accent-light: #e0f0fa;
+    --profile-accent-dark: #05334A;
+    --profile-hero-from: #066696;
+    --profile-hero-to: #0891b2;
+    --profile-badge-bg: rgba(255,255,255,0.15);
+    --profile-badge-color: white;
+  }
+
+  // Företag – mörkblå, professionell
+  &--foretag {
+    --profile-accent: #05334A;
+    --profile-accent-light: #e0eaf0;
+    --profile-accent-dark: #021f2d;
+    --profile-hero-from: #05334A;
+    --profile-hero-to: #0a4d6e;
+    --profile-badge-bg: rgba(255,255,255,0.15);
+    --profile-badge-color: white;
+  }
+
+  // UF-företag – Ung Företagsamhets mörkblå + mintgrön
+  &--uf {
+    --profile-accent: #1a1a4e;
+    --profile-accent-light: #eef6e4;
+    --profile-accent-dark: #0f0f30;
+    --profile-hero-from: #1a1a4e;
+    --profile-hero-to: #2d2d7a;
+    --profile-badge-bg: #c8f0a0;
+    --profile-badge-color: #1a1a4e;
+  }
 }
 
-// Sticky meny
+// ================================
+// STICKY NAV
+// ================================
 .pubprofile__nav {
   background: white;
   border-bottom: 1px solid var(--color-border);
@@ -44,8 +84,8 @@
   }
 
   &--active {
-    background: #e0f0fa;
-    color: var(--color-primary);
+    background: var(--profile-accent-light, #e0f0fa);
+    color: var(--profile-accent, var(--color-primary));
     font-weight: 600;
   }
 }
@@ -56,62 +96,113 @@
   font-size: 13px;
 }
 
-// Hero
+// ================================
+// HERO – gradient per profiltyp
+// ================================
 .pubprofile__hero {
-  background: white;
-  border-bottom: 1px solid var(--color-border);
-  padding: 40px 0;
+  background: linear-gradient(135deg, var(--profile-hero-from, #066696) 0%, var(--profile-hero-to, #0891b2) 100%);
+  padding: 56px 0 48px;
+  color: white;
 }
 
 .pubprofile__hero_inner {
   display: flex;
   align-items: center;
-  gap: 28px;
+  gap: 32px;
 }
 
 .pubprofile__avatar {
-  width: 100px;
-  height: 100px;
+  width: 110px;
+  height: 110px;
   border-radius: 50%;
-  background: var(--color-primary);
+  background: rgba(255, 255, 255, 0.2);
   color: white;
-  font-size: 40px;
+  font-size: 44px;
   font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: var(--shadow-md);
+  border: 3px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
 }
 
 .pubprofile__hero_info {
   flex: 1;
   display: flex;
   flex-direction: column;
+  gap: 8px;
+}
+
+.pubprofile__hero_top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.pubprofile__badge {
+  display: inline-flex;
+  align-items: center;
   gap: 6px;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  background: var(--profile-badge-bg, rgba(255,255,255,0.15));
+  color: var(--profile-badge-color, white);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.pubprofile__location {
+  font-size: 13px;
+  color: rgba(255,255,255,0.75);
+  font-weight: 500;
 }
 
 .pubprofile__member {
   font-size: 13px;
-  color: var(--color-gray);
+  color: rgba(255,255,255,0.65);
 }
 
 .pubprofile__name {
   font-family: var(--font-heading);
-  font-size: 32px;
+  font-size: 36px;
   font-weight: 700;
-  color: var(--color-dark);
+  color: white;
+  line-height: 1.1;
 }
 
 .pubprofile__bio_short {
   font-size: 15px;
-  color: var(--color-gray);
-  line-height: 1.5;
+  color: rgba(255,255,255,0.85);
+  line-height: 1.6;
+  max-width: 560px;
+}
+
+.pubprofile__categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.pubprofile__category_tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  background: rgba(255,255,255,0.15);
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid rgba(255,255,255,0.25);
 }
 
 .pubprofile__stats {
   display: flex;
-  gap: 24px;
+  gap: 28px;
   margin-top: 8px;
 }
 
@@ -121,39 +212,102 @@
   gap: 2px;
 
   strong {
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--color-dark);
+    font-size: 22px;
+    font-weight: 800;
+    color: white;
   }
 
   span {
     font-size: 12px;
-    color: var(--color-gray);
+    color: rgba(255,255,255,0.65);
+    font-weight: 500;
   }
 }
 
-// Sektioner
+.pubprofile__contact_btn {
+  flex-shrink: 0;
+  background: rgba(255,255,255,0.15) !important;
+  border: 2px solid rgba(255,255,255,0.5) !important;
+  color: white !important;
+  backdrop-filter: blur(4px);
+  padding: 14px 24px !important;
+  font-size: 15px !important;
+
+  &:hover {
+    background: rgba(255,255,255,0.25) !important;
+    transform: translateY(-2px);
+  }
+}
+
+// ================================
+// USP-RAD under hero
+// ================================
+.pubprofile__usp {
+  background: white;
+  border-bottom: 1px solid var(--color-border);
+  padding: 20px 0;
+}
+
+.pubprofile__usp_inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 48px;
+}
+
+.pubprofile__usp_item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-dark);
+
+  span:first-child {
+    font-size: 20px;
+  }
+}
+
+// ================================
+// SEKTIONER
+// ================================
 .pubprofile__section {
   display: flex;
   flex-direction: column;
-  gap: 24px;
-  padding: 64px 0;
+  gap: 28px;
+  padding: 72px 0;
   border-bottom: 1px solid var(--color-border);
   max-width: 900px;
 
   &:last-child {
     border-bottom: none;
+    padding-bottom: 96px;
   }
 }
 
 .pubprofile__section_title {
   font-family: var(--font-heading);
-  font-size: 26px;
+  font-size: 28px;
   font-weight: 700;
   color: var(--color-dark);
+  position: relative;
+  padding-bottom: 12px;
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 40px;
+    height: 3px;
+    background: var(--profile-accent, var(--color-primary));
+    border-radius: 2px;
+  }
 }
 
-// Tjänster
+// ================================
+// TJÄNSTER
+// ================================
 .pubprofile__services {
   display: flex;
   flex-direction: column;
@@ -167,20 +321,28 @@
   padding: 20px 24px;
   text-decoration: none;
   gap: 16px;
+  transition: all 0.2s;
+  border: 1px solid var(--color-border) !important;
+
+  &:hover {
+    border-color: var(--profile-accent, var(--color-primary)) !important;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
 }
 
 .pubprofile__service_info {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
 .pubprofile__service_category {
   display: inline-block;
   padding: 3px 10px;
   border-radius: var(--radius-full);
-  background: #e0f0fa;
-  color: var(--color-primary);
+  background: var(--profile-accent-light, #e0f0fa);
+  color: var(--profile-accent, var(--color-primary));
   font-size: 12px;
   font-weight: 600;
   width: fit-content;
@@ -210,22 +372,78 @@
   }
 
   strong {
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--color-dark);
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--profile-accent, var(--color-primary));
   }
 }
 
-// Om mig
+// ================================
+// OM MIG / OM OSS
+// ================================
 .pubprofile__about {
-  padding: 32px;
+  padding: 36px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
 }
 
 .pubprofile__about_text {
-  font-size: 15px;
-  line-height: 1.8;
+  font-size: 16px;
+  line-height: 1.9;
   color: var(--color-dark);
   white-space: pre-wrap;
+}
+
+.pubprofile__about_block {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 24px;
+  border-top: 1px solid var(--color-border);
+}
+
+.pubprofile__about_heading {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-dark);
+}
+
+.pubprofile__link {
+  color: var(--profile-accent, var(--color-primary));
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  word-break: break-all;
+
+  &:hover { text-decoration: underline; }
+}
+
+.pubprofile__social_links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.pubprofile__social_link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--color-border);
+  background: white;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-dark);
+  text-decoration: none;
+  transition: all 0.2s;
+
+  &:hover {
+    border-color: var(--profile-accent, var(--color-primary));
+    color: var(--profile-accent, var(--color-primary));
+    background: var(--profile-accent-light, #e0f0fa);
+  }
 }
 
 .pubprofile__empty_text {
@@ -246,7 +464,9 @@
   color: var(--color-gray);
 }
 
-// Recensioner
+// ================================
+// RECENSIONER
+// ================================
 .pubprofile__reviews {
   display: flex;
   flex-direction: column;
@@ -254,10 +474,11 @@
 }
 
 .pubprofile__review {
-  padding: 20px 24px;
+  padding: 24px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
+  border-left: 3px solid var(--profile-accent, var(--color-primary)) !important;
 }
 
 .pubprofile__review_header {
@@ -277,7 +498,9 @@
   color: var(--color-gray);
 }
 
-// Kontakt
+// ================================
+// KONTAKT
+// ================================
 .pubprofile__contact_layout {
   display: grid !important;
   grid-template-columns: 1fr 1fr;
@@ -289,20 +512,22 @@
 .pubprofile__contact_left {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
 }
 
 .pubprofile__contact_text {
   font-size: 15px;
   color: var(--color-gray);
-  line-height: 1.6;
+  line-height: 1.7;
 }
 
 .pubprofile__contact_info {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  margin-top: 8px;
+  gap: 12px;
+  padding: 20px;
+  background: var(--profile-accent-light, #e0f0fa);
+  border-radius: var(--radius-md);
 }
 
 .pubprofile__contact_item {
@@ -310,11 +535,12 @@
   align-items: center;
   gap: 10px;
   font-size: 14px;
+  font-weight: 500;
   color: var(--color-dark);
 }
 
 .pubprofile__contact_right {
-  padding: 28px;
+  padding: 32px;
 }
 
 .pubprofile__contact_form {
@@ -329,29 +555,69 @@
   align-items: center;
   text-align: center;
   gap: 12px;
-  padding: 24px;
+  padding: 32px;
 
-  span {
-    font-size: 48px;
-  }
+  span { font-size: 48px; }
+  strong { font-size: 18px; font-weight: 700; color: var(--color-dark); }
+  p { font-size: 14px; color: var(--color-gray); }
+}
 
-  strong {
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--color-dark);
-  }
+// ================================
+// MOBIL STICKY CTA
+// ================================
+.pubprofile__mobile_cta {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 12px 16px;
+  background: white;
+  border-top: 1px solid var(--color-border);
+  z-index: 50;
+  box-shadow: 0 -4px 16px rgba(0,0,0,0.08);
 
-  p {
-    font-size: 14px;
-    color: var(--color-gray);
+  .btn {
+    width: 100%;
+    justify-content: center;
+    background: var(--profile-accent, var(--color-primary)) !important;
+    border-color: var(--profile-accent, var(--color-primary)) !important;
   }
 }
 
+// ================================
+// MEDIA QUERIES
+// ================================
 @media (max-width: 768px) {
+  .pubprofile__hero {
+    padding: 40px 0 32px;
+  }
+
   .pubprofile__hero_inner {
     flex-direction: column;
     text-align: center;
-    gap: 16px;
+    gap: 20px;
+    align-items: center;
+  }
+
+  .pubprofile__hero_top {
+    justify-content: center;
+  }
+
+  .pubprofile__categories {
+    justify-content: center;
+  }
+
+  .pubprofile__stats {
+    justify-content: center;
+  }
+
+  .pubprofile__contact_btn {
+    display: none;
+  }
+
+  .pubprofile__mobile_cta {
+    display: block;
   }
 
   .pubprofile__nav_inner {
@@ -366,16 +632,13 @@
     display: none;
   }
 
-  .pubprofile__stats {
-    justify-content: center;
-  }
-
   .pubprofile__contact_layout {
     grid-template-columns: 1fr !important;
   }
 
   .pubprofile__section {
     max-width: 100%;
+    padding: 48px 0;
   }
 
   .pubprofile__nav_item {
@@ -384,5 +647,20 @@
 
   .pubprofile__nav {
     top: 60px;
+  }
+
+  .pubprofile__usp_inner {
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
+    padding: 0 16px;
+  }
+
+  .pubprofile__name {
+    font-size: 28px;
+  }
+
+  .pubprofile__about {
+    padding: 24px;
   }
 }

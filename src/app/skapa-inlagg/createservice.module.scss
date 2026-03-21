@@ -387,7 +387,24 @@
   border: 1px solid var(--color-primary);
 }
 
+.create__blocked_emoji {
+  font-size: 64px;
+  line-height: 1;
+  text-align: center;
+}
+
+.create__blocked_actions {
+  display: flex;
+  gap: 12px;
+
+  .btn { flex: 1; justify-content: center; }
+}
+
 @media (max-width: 768px) {
+  .create__blocked_actions {
+    flex-direction: column;
+  }
+
   .create__inner {
     max-width: 100%;
   }
