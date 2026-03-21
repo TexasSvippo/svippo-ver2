@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import useAuth from '@/hooks/useAuth'
 import { categories } from '@/data/categories'
+import { municipalities } from '@/data/municipalities'
 import styles from './createrequest.module.scss'
 
 type FormData = {
@@ -16,6 +17,7 @@ type FormData = {
   budget: string
   deadline: string
   location: string
+  location_type: 'plats' | 'online'
   image_url: string
 }
 
@@ -45,8 +47,16 @@ function CreateRequestPage() {
     budget: '',
     deadline: '',
     location: '',
+    location_type: 'plats',
     image_url: '',
   })
+
+  const [locationSearch, setLocationSearch] = useState('')
+  const [showSuggestions, setShowSuggestions] = useState(false)
+
+  const filteredMunicipalities = municipalities.filter(m =>
+    m.toLowerCase().startsWith(locationSearch.toLowerCase())
+  ).slice(0, 6)
 
   useEffect(() => {
     if (!editId || !user) return
@@ -62,8 +72,10 @@ function CreateRequestPage() {
           budget: data.budget ? String(data.budget) : '',
           deadline: data.deadline || '',
           location: data.location || '',
+          location_type: data.location === 'Online' ? 'online' : 'plats',
           image_url: data.image_url || '',
         })
+        setLocationSearch(data.location !== 'Online' ? data.location || '' : '')
         if (data.image_url) {
           setImagePreview(data.image_url)
           setExistingImageUrl(data.image_url)
@@ -347,7 +359,65 @@ function CreateRequestPage() {
 
                 <div className={styles.create__field}>
                   <label className={styles.create__label}>Plats</label>
-                  <input className={styles.create__input} placeholder="T.ex. Stockholm eller Digitalt" value={form.location} onChange={e => update('location', e.target.value)} />
+                  <div className={styles.create__price_types}>
+                    {(['plats', 'online'] as const).map(type => (
+                      <button
+                        key={type}
+                        className={`${styles.create__price_type_btn} ${form.location_type === type ? styles['create__price_type_btn--active'] : ''}`}
+                        onClick={() => {
+                          update('location_type', type)
+                          if (type === 'online') {
+                            update('location', 'Online')
+                            setLocationSearch('')
+                          } else {
+                            update('location', '')
+                          }
+                        }}
+                        type="button"
+                      >
+                        {type === 'plats' ? '📍 Plats' : '💻 Online'}
+                      </button>
+                    ))}
+                  </div>
+
+                  {form.location_type === 'plats' && (
+                    <div className={styles.create__location_wrap}>
+                      <input
+                        className={styles.create__input}
+                        placeholder="Sök kommun..."
+                        value={locationSearch || form.location}
+                        onChange={e => {
+                          setLocationSearch(e.target.value)
+                          update('location', '')
+                          setShowSuggestions(true)
+                        }}
+                        onFocus={() => setShowSuggestions(true)}
+                        onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+                      />
+                      {showSuggestions && locationSearch && filteredMunicipalities.length > 0 && (
+                        <div className={styles.create__suggestions}>
+                          {filteredMunicipalities.map(m => (
+                            <button
+                              key={m}
+                              type="button"
+                              className={styles.create__suggestion}
+                              onClick={() => {
+                                update('location', m)
+                                setLocationSearch(m)
+                                setShowSuggestions(false)
+                              }}
+                            >
+                              📍 {m}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {form.location_type === 'online' && (
+                    <p className={styles.create__online_hint}>💻 Uppdraget utförs digitalt och är tillgängligt för alla.</p>
+                  )}
                 </div>
               </div>
             </div>

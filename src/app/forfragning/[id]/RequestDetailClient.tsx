@@ -21,6 +21,7 @@ type Request = {
   user_email: string
   user_id: string
   image_url: string
+  deadline?: string
   created_at: string
 }
 
@@ -196,6 +197,14 @@ export default function RequestDetailClient({ request }: Props) {
                 <div className={serviceStyles.detail__price_row}>
                   <span>Plats</span>
                   <span>{request.location}</span>
+                </div>
+                <div className={serviceStyles.detail__price_row}>
+                  <span>Deadline</span>
+                  <span>
+                    {!request.deadline || request.deadline === 'ingen'
+                      ? 'Ingen deadline'
+                      : new Date(request.deadline).toLocaleDateString('sv-SE', { year: 'numeric', month: 'long', day: 'numeric' })}
+                  </span>
                 </div>
               </div>
 
