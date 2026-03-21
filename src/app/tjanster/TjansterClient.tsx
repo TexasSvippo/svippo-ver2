@@ -17,12 +17,46 @@ type Service = {
   location: string
   user_name: string
   user_id: string
+  account_type: string
   rating: number
   reviews: number
 }
 
 type Props = {
   services: Service[]
+}
+
+const WORD_LIMIT = 20
+
+function truncate(text: string, limit: number) {
+  if (!text) return ''
+  const words = text.split(' ')
+  if (words.length <= limit) return text
+  return words.slice(0, limit).join(' ') + '...'
+}
+
+function getCardStyle(accountType: string) {
+  if (accountType === 'foretag') return styles['service_card--foretag']
+  if (accountType === 'uf-foretag') return styles['service_card--uf']
+  return styles['service_card--svippare']
+}
+
+function getAvatarStyle(accountType: string) {
+  if (accountType === 'foretag') return styles['service_card__avatar--foretag']
+  if (accountType === 'uf-foretag') return styles['service_card__avatar--uf']
+  return styles['service_card__avatar--svippare']
+}
+
+function getBadgeStyle(accountType: string) {
+  if (accountType === 'foretag') return styles['service_card__badge--foretag']
+  if (accountType === 'uf-foretag') return styles['service_card__badge--uf']
+  return styles['service_card__badge--svippare']
+}
+
+function getBadgeLabel(accountType: string) {
+  if (accountType === 'foretag') return 'Företag'
+  if (accountType === 'uf-foretag') return 'UF företag'
+  return 'Svippare'
 }
 
 export default function TjansterClient({ services }: Props) {
@@ -33,6 +67,7 @@ export default function TjansterClient({ services }: Props) {
   const [selectedLocation, setSelectedLocation] = useState('')
   const [sortBy, setSortBy] = useState('newest')
   const [showFilterModal, setShowFilterModal] = useState(false)
+  const [maxPrice, setMaxPrice] = useState('')
 
   useEffect(() => {
     const params = new URLSearchParams()
@@ -52,7 +87,8 @@ export default function TjansterClient({ services }: Props) {
         s.subcategory?.toLowerCase().includes(search.toLowerCase())
       const matchCategory = selectedCategory === '' || s.category_id === selectedCategory
       const matchLocation = selectedLocation === '' || s.location === selectedLocation
-      return matchSearch && matchCategory && matchLocation
+      const matchPrice = maxPrice === '' || s.price_type === 'offert' || s.price <= Number(maxPrice)
+      return matchSearch && matchCategory && matchLocation && matchPrice
     })
     .sort((a, b) => {
       if (sortBy === 'price_asc') return a.price - b.price
@@ -66,70 +102,32 @@ export default function TjansterClient({ services }: Props) {
     setSelectedCategory('')
     setSelectedLocation('')
     setSortBy('newest')
+    setMaxPrice('')
   }
 
-  const activeFilterCount = [selectedCategory, selectedLocation, sortBy !== 'newest' ? sortBy : ''].filter(Boolean).length
-  const hasFilters = search || selectedCategory || selectedLocation || sortBy !== 'newest'
-
-  const FilterSelects = () => (
-    <>
-      <select className={styles.tjanster__select} value={selectedCategory} onChange={e => setSelectedCategory(e.target.value)}>
-        <option value="">Alla kategorier</option>
-        {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.icon} {cat.label}</option>)}
-      </select>
-      <select className={styles.tjanster__select} value={selectedLocation} onChange={e => setSelectedLocation(e.target.value)}>
-        <option value="">Alla platser</option>
-        {locations.map(loc => <option key={loc} value={loc}>{loc}</option>)}
-      </select>
-      <select className={styles.tjanster__select} value={sortBy} onChange={e => setSortBy(e.target.value)}>
-        <option value="newest">Nyast först</option>
-        <option value="price_asc">Lägst pris</option>
-        <option value="price_desc">Högst pris</option>
-        <option value="rating">Bäst betyg</option>
-      </select>
-    </>
-  )
+  const hasFilters = search || selectedCategory || selectedLocation || sortBy !== 'newest' || maxPrice
+  const activeFilterCount = [selectedCategory, selectedLocation, sortBy !== 'newest' ? sortBy : '', maxPrice].filter(Boolean).length
 
   return (
     <div className={styles.tjanster}>
       <div className={`container ${styles.tjanster__inner}`}>
 
-      {/* Breadcrumbs + Header */}
-      {selectedCategory && (
-        <div className={styles.tjanster__breadcrumb}>
-          <button onClick={() => setSelectedCategory('')}>Tjänster</button>
-          <span>·</span>
-          <span>{categories.find(c => c.id === selectedCategory)?.label}</span>
-        </div>
-      )}
+        {/* Header */}
+        <div className={styles.tjanster__header}>
+          {selectedCategory && (
+            <div className={styles.tjanster__breadcrumb}>
+              <button onClick={() => setSelectedCategory('')}>Tjänster</button>
+              <span>·</span>
+              <span>{categories.find(c => c.id === selectedCategory)?.label}</span>
+            </div>
+          )}
+          <h1 className={styles.tjanster__title}>
+            {selectedCategory
+              ? categories.find(c => c.id === selectedCategory)?.label
+              : 'Tjänster'}
+          </h1>
 
-      <div className={styles.tjanster__header}>
-        <h1 className={styles.tjanster__title}>
-          {selectedCategory
-            ? categories.find(c => c.id === selectedCategory)?.label
-            : 'Tjänster'}
-        </h1>
-        <p className={styles.tjanster__subtitle}>{filtered.length} tjänster hittades</p>
-      </div>
-
-      {/* Kategorier – visas bara när ingen kategori är vald */}
-      {!selectedCategory && (
-        <div className={styles.tjanster__categories}>
-          {categories.map(cat => (
-            <button
-              key={cat.id}
-              className={styles.tjanster__category_btn}
-              onClick={() => setSelectedCategory(cat.id)}
-            >
-              <span>{cat.icon}</span>
-              <span>{cat.label}</span>
-            </button>
-          ))}
-        </div>
-      )}
-
-        {/* Sök & filter */}
-        <div className={styles.tjanster__filters}>
+          {/* Sökfält */}
           <div className={styles.tjanster__search}>
             <span>🔍</span>
             <input
@@ -141,38 +139,23 @@ export default function TjansterClient({ services }: Props) {
             />
             {search && <button className={styles.tjanster__clear_search} onClick={() => setSearch('')}>✕</button>}
           </div>
-
-          {/* Desktop filter-rad */}
-          <div className={styles.tjanster__filter_row}>
-            <select className={styles.tjanster__select} value={selectedCategory} onChange={e => setSelectedCategory(e.target.value)}>
-              <option value="">Alla kategorier</option>
-              {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.icon} {cat.label}</option>)}
-            </select>
-            <select className={styles.tjanster__select} value={selectedLocation} onChange={e => setSelectedLocation(e.target.value)}>
-              <option value="">Alla platser</option>
-              {locations.map(loc => <option key={loc} value={loc}>{loc}</option>)}
-            </select>
-            <select className={styles.tjanster__select} value={sortBy} onChange={e => setSortBy(e.target.value)}>
-              <option value="newest">Nyast först</option>
-              <option value="price_asc">Lägst pris</option>
-              <option value="price_desc">Högst pris</option>
-              <option value="rating">Bäst betyg</option>
-            </select>
-            {hasFilters && <button className={styles.tjanster__clear_btn} onClick={clearFilters}>Rensa filter</button>}
-          </div>
-
-          {/* Mobil filter-knapp */}
-          <div className={styles.tjanster__mobile_filter_row}>
-            <button
-              className={`${styles.tjanster__filter_btn} ${activeFilterCount > 0 ? styles['tjanster__filter_btn--active'] : ''}`}
-              onClick={() => setShowFilterModal(true)}
-            >
-              🎛️ Filter
-              {activeFilterCount > 0 && <span className={styles.tjanster__filter_badge}>{activeFilterCount}</span>}
-            </button>
-            {hasFilters && <button className={styles.tjanster__clear_btn} onClick={clearFilters}>Rensa</button>}
-          </div>
         </div>
+
+        {/* Kategorier */}
+        {!selectedCategory && (
+          <div className={styles.tjanster__categories}>
+            {categories.map(cat => (
+              <button
+                key={cat.id}
+                className={styles.tjanster__category_btn}
+                onClick={() => setSelectedCategory(cat.id)}
+              >
+                <span>{cat.icon}</span>
+                <span>{cat.label}</span>
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Aktiva filter-taggar */}
         {hasFilters && (
@@ -180,43 +163,171 @@ export default function TjansterClient({ services }: Props) {
             {search && <span className={styles.tjanster__filter_tag}>🔍 &quot;{search}&quot;<button onClick={() => setSearch('')}>✕</button></span>}
             {selectedCategory && <span className={styles.tjanster__filter_tag}>{categories.find(c => c.id === selectedCategory)?.label}<button onClick={() => setSelectedCategory('')}>✕</button></span>}
             {selectedLocation && <span className={styles.tjanster__filter_tag}>📍 {selectedLocation}<button onClick={() => setSelectedLocation('')}>✕</button></span>}
+            {maxPrice && <span className={styles.tjanster__filter_tag}>Pris: {maxPrice}kr<button onClick={() => setMaxPrice('')}>✕</button></span>}
+            <button className={styles.tjanster__clear_btn} onClick={clearFilters}>Rensa alla</button>
           </div>
         )}
 
-        {/* Lista */}
-        {filtered.length === 0 ? (
-          <div className={styles.tjanster__empty}>
-            <p>Inga tjänster matchar din sökning.</p>
-            <button className="btn btn-outline" onClick={clearFilters}>Rensa filter</button>
-          </div>
-        ) : (
-          <div className={styles.tjanster__list}>
-            {filtered.map(s => (
-              <Link href={`/tjanst/${s.id}`} key={s.id} className={`${styles.service_card} card`}>
-                <div className={styles.service_card__avatar}>
-                  <div className={styles.service_card__avatar_placeholder}>
-                    {s.user_name?.charAt(0).toUpperCase() || '?'}
-                  </div>
-                </div>
-                <div className={styles.service_card__info}>
-                  <div className={styles.service_card__meta}>
-                    <span className={styles.service_card__name}>{s.user_name}</span>
-                    <span className={styles.star_rating}>⭐ <strong>{s.rating || '–'}</strong></span>
-                    <span className={styles.service_card__reviews}>({s.reviews})</span>
-                    <span className={styles.service_card__distance}>· {s.location}</span>
-                  </div>
-                  <p className={styles.service_card__title}>{s.title}</p>
-                  <span className={styles.service_card__category}>{s.subcategory}</span>
-                </div>
-                <div className={styles.service_card__price}>
-                  <span className={styles.service_card__price_type}>{s.price_type === 'offert' ? '' : 'från:'}</span>
-                  <strong>{s.price_type === 'offert' ? 'Offert' : `${s.price} kr`}</strong>
-                </div>
-              </Link>
-            ))}
-          </div>
-        )}
+        {/* Huvud-layout: tjänster + filter */}
+        <div className={styles.tjanster__layout}>
 
+          {/* Tjänstelista */}
+          <div className={styles.tjanster__content}>
+            <p className={styles.tjanster__count}>Visar {filtered.length} inlägg</p>
+
+            {filtered.length === 0 ? (
+              <div className={styles.tjanster__empty}>
+                <p>Inga tjänster matchar din sökning.</p>
+                <button className="btn btn-outline" onClick={clearFilters}>Rensa filter</button>
+              </div>
+            ) : (
+              <div className={styles.tjanster__list}>
+                {filtered.map(s => (
+                  <Link
+                    href={`/tjanst/${s.id}`}
+                    key={s.id}
+                    className={`${styles.service_card} ${getCardStyle(s.account_type)}`}
+                  >
+                    <div className={styles.service_card__top}>
+                      {/* Avatar + info */}
+                      <div className={styles.service_card__header}>
+                        <div className={`${styles.service_card__avatar} ${getAvatarStyle(s.account_type)}`}>
+                          {s.user_name?.charAt(0).toUpperCase() || '?'}
+                        </div>
+                        <div className={styles.service_card__meta}>
+                          <div className={styles.service_card__meta_row}>
+                            <span className={styles.service_card__name}>{s.user_name}</span>
+                            <span className={styles.service_card__dot}>·</span>
+                            <span className={styles.star_rating}>⭐ <strong>{s.rating || '–'}</strong></span>
+                            <span className={styles.service_card__reviews}>({s.reviews})</span>
+                            <span className={styles.service_card__dot}>·</span>
+                            <span className={styles.service_card__location}>{s.location}</span>
+                          </div>
+                          <h3 className={styles.service_card__title}>{s.title}</h3>
+                        </div>
+                        <button className={styles.service_card__more}>···</button>
+                      </div>
+
+                      {/* Beskrivning */}
+                      {s.description && (
+                        <p className={styles.service_card__description}>
+                          {truncate(s.description, WORD_LIMIT)}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Footer: badges + pris */}
+                    <div className={styles.service_card__footer}>
+                      <div className={styles.service_card__badges}>
+                        <span className={`${styles.service_card__badge} ${getBadgeStyle(s.account_type)}`}>
+                          {getBadgeLabel(s.account_type)}
+                        </span>
+                        <span className={styles.service_card__subcategory_badge}>
+                          {s.subcategory}
+                        </span>
+                      </div>
+                      <div className={styles.service_card__price}>
+                        <span className={styles.service_card__price_from}>
+                          {s.price_type === 'offert' ? '' : 'från'}
+                        </span>
+                        <strong className={styles.service_card__price_value}>
+                          {s.price_type === 'offert' ? 'Offert' : `${s.price}kr`}
+                        </strong>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Filter-panel – höger sida */}
+          <aside className={styles.tjanster__filter_panel}>
+            <div className={styles.filter_panel__inner}>
+              <h2 className={styles.filter_panel__title}>Filter</h2>
+
+              {maxPrice && (
+                <div className={styles.filter_panel__active_tag}>
+                  Pris: {maxPrice}kr <button onClick={() => setMaxPrice('')}>✕</button>
+                </div>
+              )}
+
+              <div className={styles.filter_panel__group}>
+                <label className={styles.filter_panel__label}>Kategorier</label>
+                <div className={styles.filter_panel__search_wrap}>
+                  <input
+                    className={styles.filter_panel__search}
+                    placeholder="Sök efter kategori"
+                    onChange={e => {
+                      const val = e.target.value.toLowerCase()
+                      // filtreras visuellt via state om vi vill – enkel implementation
+                    }}
+                  />
+                </div>
+                <div className={styles.filter_panel__checkboxes}>
+                  {categories.map(cat => (
+                    <label key={cat.id} className={styles.filter_panel__checkbox_label}>
+                      <input
+                        type="checkbox"
+                        checked={selectedCategory === cat.id}
+                        onChange={() => setSelectedCategory(selectedCategory === cat.id ? '' : cat.id)}
+                      />
+                      <span>{cat.icon} {cat.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div className={styles.filter_panel__group}>
+                <label className={styles.filter_panel__label}>Plats</label>
+                <select
+                  className={styles.filter_panel__select}
+                  value={selectedLocation}
+                  onChange={e => setSelectedLocation(e.target.value)}
+                >
+                  <option value="">Alla platser</option>
+                  {locations.map(loc => <option key={loc} value={loc}>{loc}</option>)}
+                </select>
+              </div>
+
+              <div className={styles.filter_panel__group}>
+                <label className={styles.filter_panel__label}>Max pris (kr)</label>
+                <input
+                  className={styles.filter_panel__input}
+                  type="number"
+                  placeholder="T.ex. 2000"
+                  value={maxPrice}
+                  onChange={e => setMaxPrice(e.target.value)}
+                />
+              </div>
+
+              <div className={styles.filter_panel__group}>
+                <label className={styles.filter_panel__label}>Sortera</label>
+                <select
+                  className={styles.filter_panel__select}
+                  value={sortBy}
+                  onChange={e => setSortBy(e.target.value)}
+                >
+                  <option value="newest">Nyast först</option>
+                  <option value="price_asc">Lägst pris</option>
+                  <option value="price_desc">Högst pris</option>
+                  <option value="rating">Bäst betyg</option>
+                </select>
+              </div>
+
+              <button className={`btn btn-primary ${styles.filter_panel__btn}`} onClick={() => {}}>
+                Filtrera
+              </button>
+
+              {hasFilters && (
+                <button className={styles.filter_panel__clear} onClick={clearFilters}>
+                  Rensa filter
+                </button>
+              )}
+            </div>
+          </aside>
+
+        </div>
       </div>
 
       {/* Mobil filter-modal */}
@@ -230,21 +341,25 @@ export default function TjansterClient({ services }: Props) {
             <div className={styles.filter_modal__body}>
               <div className={styles.filter_modal__group}>
                 <label>Kategori</label>
-                <select className={styles.tjanster__select} value={selectedCategory} onChange={e => setSelectedCategory(e.target.value)}>
+                <select className={styles.filter_panel__select} value={selectedCategory} onChange={e => setSelectedCategory(e.target.value)}>
                   <option value="">Alla kategorier</option>
                   {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.icon} {cat.label}</option>)}
                 </select>
               </div>
               <div className={styles.filter_modal__group}>
                 <label>Plats</label>
-                <select className={styles.tjanster__select} value={selectedLocation} onChange={e => setSelectedLocation(e.target.value)}>
+                <select className={styles.filter_panel__select} value={selectedLocation} onChange={e => setSelectedLocation(e.target.value)}>
                   <option value="">Alla platser</option>
                   {locations.map(loc => <option key={loc} value={loc}>{loc}</option>)}
                 </select>
               </div>
               <div className={styles.filter_modal__group}>
+                <label>Max pris (kr)</label>
+                <input className={styles.filter_panel__input} type="number" placeholder="T.ex. 2000" value={maxPrice} onChange={e => setMaxPrice(e.target.value)} />
+              </div>
+              <div className={styles.filter_modal__group}>
                 <label>Sortera</label>
-                <select className={styles.tjanster__select} value={sortBy} onChange={e => setSortBy(e.target.value)}>
+                <select className={styles.filter_panel__select} value={sortBy} onChange={e => setSortBy(e.target.value)}>
                   <option value="newest">Nyast först</option>
                   <option value="price_asc">Lägst pris</option>
                   <option value="price_desc">Högst pris</option>
@@ -259,6 +374,18 @@ export default function TjansterClient({ services }: Props) {
           </div>
         </div>
       )}
+
+      {/* Mobil filter-knapp */}
+      <div className={styles.tjanster__mobile_filter_bar}>
+        <button
+          className={`${styles.tjanster__filter_btn} ${activeFilterCount > 0 ? styles['tjanster__filter_btn--active'] : ''}`}
+          onClick={() => setShowFilterModal(true)}
+        >
+          🎛️ Filter
+          {activeFilterCount > 0 && <span className={styles.tjanster__filter_badge}>{activeFilterCount}</span>}
+        </button>
+        {hasFilters && <button className={styles.tjanster__clear_btn} onClick={clearFilters}>Rensa</button>}
+      </div>
     </div>
   )
 }

@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import useAuth from '@/hooks/useAuth'
 import { categories } from '@/data/categories'
+import { municipalities } from '@/data/municipalities'
 import styles from './createservice.module.scss'
 
 type PriceType = 'timpris' | 'fastpris' | 'offert'
@@ -25,6 +26,7 @@ type FormData = {
   price_type: PriceType
   price: string
   location: string
+  location_type: 'plats' | 'online'
   custom_questions: CustomQuestion[]
 }
 
@@ -36,7 +38,6 @@ export default function CreateServicePage() {
   const searchParams = useSearchParams()
   const editId = searchParams.get('edit')
   const isEditing = !!editId
-  console.log('editId:', editId, 'isEditing:', isEditing)
 
   const [step, setStep] = useState(isEditing ? 1 : 0)
   const [loadingEdit, setLoadingEdit] = useState(isEditing)
@@ -56,24 +57,33 @@ export default function CreateServicePage() {
     price_type: 'timpris',
     price: '',
     location: '',
+    location_type: 'plats',
     custom_questions: [],
   })
+
+  const [locationSearch, setLocationSearch] = useState('')
+  const [showSuggestions, setShowSuggestions] = useState(false)
+
+  const filteredMunicipalities = municipalities.filter(m =>
+    m.toLowerCase().startsWith(locationSearch.toLowerCase())
+  ).slice(0, 6)
 
   useEffect(() => {
     if (!editId || !user) return
     const fetchService = async () => {
       const { data } = await supabase.from('services').select('*').eq('id', editId).eq('user_id', user.id).single()
       if (data) {
-        setForm({
-          title: data.title || '',
-          description: data.description || '',
-          category_id: data.category_id || '',
-          subcategory: data.subcategory || '',
-          price_type: data.price_type || 'timpris',
-          price: data.price ? String(data.price) : '',
-          location: data.location || '',
-          custom_questions: data.custom_questions || [],
-        })
+      setForm({
+        title: data.title || '',
+        description: data.description || '',
+        category_id: data.category_id || '',
+        subcategory: data.subcategory || '',
+        price_type: data.price_type || 'timpris',
+        price: data.price ? String(data.price) : '',
+        location: data.location || '',
+        location_type: data.location === 'Online' ? 'online' : 'plats',
+        custom_questions: data.custom_questions || [],
+      })
       } else {
         router.push('/profil')
       }
@@ -165,6 +175,7 @@ export default function CreateServicePage() {
           user_id: user.id,
           user_name: userData?.name || user.email,
           user_email: user.email,
+          account_type: accountType,
           custom_questions: form.custom_questions,
           rating: 0,
           reviews: 0,
@@ -291,7 +302,65 @@ export default function CreateServicePage() {
 
                 <div className={styles.create__field}>
                   <label className={styles.create__label}>Plats</label>
-                  <input className={styles.create__input} placeholder="T.ex. Stockholm eller Digitalt" value={form.location} onChange={e => update('location', e.target.value)} />
+                  <div className={styles.create__price_types}>
+                    {(['plats', 'online'] as const).map(type => (
+                      <button
+                        key={type}
+                        className={`${styles.create__price_type_btn} ${form.location_type === type ? styles['create__price_type_btn--active'] : ''}`}
+                        onClick={() => {
+                          update('location_type', type)
+                          if (type === 'online') {
+                            update('location', 'Online')
+                            setLocationSearch('')
+                          } else {
+                            update('location', '')
+                          }
+                        }}
+                        type="button"
+                      >
+                        {type === 'plats' ? '📍 Plats' : '💻 Online'}
+                      </button>
+                    ))}
+                  </div>
+
+                  {form.location_type === 'plats' && (
+                    <div className={styles.create__location_wrap}>
+                      <input
+                        className={styles.create__input}
+                        placeholder="Sök kommun..."
+                        value={locationSearch || form.location}
+                        onChange={e => {
+                          setLocationSearch(e.target.value)
+                          update('location', '')
+                          setShowSuggestions(true)
+                        }}
+                        onFocus={() => setShowSuggestions(true)}
+                        onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+                      />
+                      {showSuggestions && locationSearch && filteredMunicipalities.length > 0 && (
+                        <div className={styles.create__suggestions}>
+                          {filteredMunicipalities.map(m => (
+                            <button
+                              key={m}
+                              type="button"
+                              className={styles.create__suggestion}
+                              onClick={() => {
+                                update('location', m)
+                                setLocationSearch(m)
+                                setShowSuggestions(false)
+                              }}
+                            >
+                              📍 {m}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {form.location_type === 'online' && (
+                    <p className={styles.create__online_hint}>💻 Din tjänst utförs digitalt och är tillgänglig för alla.</p>
+                  )}
                 </div>
               </div>
             </div>
@@ -416,7 +485,7 @@ export default function CreateServicePage() {
                 disabled={
                   (step === 0 && (!form.category_id || !form.subcategory)) ||
                   (step === 1 && (!form.title || !form.description)) ||
-                  (step === 2 && (!form.location || (form.price_type !== 'offert' && !form.price)))
+                  (step === 2 && (!form.location || form.location === '' || (form.price_type !== 'offert' && !form.price)))
                 }
               >
                 Nästa →

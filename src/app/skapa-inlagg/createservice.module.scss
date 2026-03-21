@@ -354,6 +354,51 @@
   cursor: pointer;
 }
 
+// Plats-autocomplete
+.create__location_wrap {
+  position: relative;
+}
+
+.create__suggestions {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  z-index: 10;
+  overflow: hidden;
+}
+
+.create__suggestion {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 16px;
+  background: none;
+  border: none;
+  font-size: 14px;
+  font-family: var(--font-body);
+  color: var(--color-dark);
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s;
+
+  &:hover { background: var(--color-gray-light); }
+  &:not(:last-child) { border-bottom: 1px solid var(--color-border); }
+}
+
+.create__online_hint {
+  font-size: 13px;
+  color: var(--color-gray);
+  padding: 10px 16px;
+  background: var(--color-gray-light);
+  border-radius: var(--radius-md);
+}
+
 // Redigera inlägg
 
 .create__edit_banner {
