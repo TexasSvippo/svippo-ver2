@@ -105,6 +105,7 @@ export default function PublicProfileClient({
   const [contactEmail, setContactEmail] = useState('')
   const [contactMessage, setContactMessage] = useState('')
   const [contactSent, setContactSent] = useState(false)
+  const [ratingFilter, setRatingFilter] = useState<number | null>(null)
 
   const accountType = profile.account_type
   const isUF = accountType === 'uf-foretag'
@@ -391,25 +392,64 @@ export default function PublicProfileClient({
 
         {/* Recensioner */}
         <section id="recensioner" className={styles.pubprofile__section}>
-          <h2 className={styles.pubprofile__section_title}>Recensioner</h2>
+          <div className={styles.pubprofile__reviews_header}>
+            <h2 className={styles.pubprofile__section_title}>
+              Recensioner
+              {reviews.length > 0 && (
+                <span className={styles.pubprofile__reviews_meta}>
+                  {avgRating !== null && `⭐ ${avgRating}`} · {reviews.length} recensioner
+                </span>
+              )}
+            </h2>
+
+            {/* Stjärnfilter */}
+            {reviews.length > 0 && (
+              <div className={styles.pubprofile__rating_filters}>
+                <button
+                  className={`${styles.pubprofile__rating_filter} ${ratingFilter === null ? styles['pubprofile__rating_filter--active'] : ''}`}
+                  onClick={() => setRatingFilter(null)}
+                >
+                  Alla
+                </button>
+                {[5, 4, 3, 2, 1].map(star => (
+                  <button
+                    key={star}
+                    className={`${styles.pubprofile__rating_filter} ${ratingFilter === star ? styles['pubprofile__rating_filter--active'] : ''}`}
+                    onClick={() => setRatingFilter(ratingFilter === star ? null : star)}
+                  >
+                    {'⭐'.repeat(star)}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
           {reviews.length === 0 ? (
             <div className={styles.pubprofile__empty}>
               <p>Inga recensioner ännu.</p>
             </div>
           ) : (
             <div className={styles.pubprofile__reviews}>
-              {reviews.map(r => (
-                <div key={r.id} className={`${styles.pubprofile__review} card`}>
-                  <div className={styles.pubprofile__review_header}>
-                    <strong>{r.reviewer_name}</strong>
-                    <span>{'⭐'.repeat(r.rating)}</span>
+              {reviews
+                .filter(r => ratingFilter === null || r.rating === ratingFilter)
+                .map(r => (
+                  <div key={r.id} className={`${styles.pubprofile__review} card`}>
+                    <div className={styles.pubprofile__review_header}>
+                      <strong>{r.reviewer_name}</strong>
+                      <span>{'⭐'.repeat(r.rating)}</span>
+                    </div>
+                    <p>{r.comment}</p>
+                    <span className={styles.pubprofile__review_date}>
+                      {new Date(r.created_at).toLocaleDateString('sv-SE')}
+                    </span>
                   </div>
-                  <p>{r.comment}</p>
-                  <span className={styles.pubprofile__review_date}>
-                    {new Date(r.created_at).toLocaleDateString('sv-SE')}
-                  </span>
-                </div>
-              ))}
+                ))
+              }
+              {reviews.filter(r => ratingFilter === null || r.rating === ratingFilter).length === 0 && (
+                <p className={styles.pubprofile__empty_text}>
+                  Inga recensioner med {ratingFilter} stjärnor.
+                </p>
+              )}
             </div>
           )}
         </section>

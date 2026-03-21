@@ -93,7 +93,7 @@ export const categories = [
     label: 'Frakt & flytt',
     icon: '📦',
     subcategories: [
-      'Flyttpjälp',
+      'Flytthjälp',
       'Budtjänst',
       'Skräphantering',
       'Möbeltransport',

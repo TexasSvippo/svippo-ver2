@@ -473,6 +473,50 @@
   gap: 12px;
 }
 
+.pubprofile__reviews_header {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.pubprofile__reviews_meta {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--color-gray);
+  margin-left: 10px;
+}
+
+.pubprofile__rating_filters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pubprofile__rating_filter {
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  border: 1.5px solid var(--color-border);
+  background: white;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-gray);
+  cursor: pointer;
+  font-family: var(--font-body);
+  transition: all 0.2s;
+
+  &:hover {
+    border-color: var(--profile-accent, var(--color-primary));
+    color: var(--profile-accent, var(--color-primary));
+  }
+
+  &--active {
+    background: var(--profile-accent-light, #e0f0fa);
+    border-color: var(--profile-accent, var(--color-primary));
+    color: var(--profile-accent, var(--color-primary));
+    font-weight: 600;
+  }
+}
+
 .pubprofile__review {
   padding: 24px;
   display: flex;

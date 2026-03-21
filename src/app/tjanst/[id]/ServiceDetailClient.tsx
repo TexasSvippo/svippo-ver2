@@ -33,11 +33,22 @@ type Service = {
   custom_questions?: CustomQuestion[]
 }
 
-type Props = {
-  service: Service
+type Review = {
+  id: string
+  rating: number
+  comment: string
+  reviewer_name: string
+  created_at: string
+  service_id: string
 }
 
-export default function ServiceDetailClient({ service }: Props) {
+type Props = {
+  service: Service
+  reviews: Review[]
+  avgRating: number | null
+}
+
+export default function ServiceDetailClient({ service, reviews, avgRating }: Props) {
   const { user } = useAuth()
   const router = useRouter()
   const [showOrder, setShowOrder] = useState(false)
@@ -48,7 +59,6 @@ export default function ServiceDetailClient({ service }: Props) {
 
   const isOwner = user?.id === service.user_id
 
-  // Hämta aktiva beställningar för denna tjänst
   useEffect(() => {
     if (!isOwner) return
     const fetchOrders = async () => {
@@ -68,7 +78,7 @@ export default function ServiceDetailClient({ service }: Props) {
   }, [isOwner, service.id])
 
   const handleDelete = async () => {
-    if (inProgressCount > 0) return // Ska inte kunna klicka, men extra säkerhet
+    if (inProgressCount > 0) return
 
     const warningMsg = activeOrdersCount > 0
       ? `Du har ${activeOrdersCount} aktiv(a) beställning(ar) på denna tjänst. Är du säker på att du vill ta bort den?`
@@ -80,6 +90,8 @@ export default function ServiceDetailClient({ service }: Props) {
     await supabase.from('services').delete().eq('id', service.id)
     router.push('/profil')
   }
+
+const filteredReviews = reviews
 
   return (
     <div className={styles.detail}>
@@ -109,9 +121,42 @@ export default function ServiceDetailClient({ service }: Props) {
               <p className={styles.detail__description}>{service.description}</p>
             </div>
 
+            {/* Recensioner */}
             <div className={styles.detail__section}>
-              <h2 className={styles.detail__section_title}>Recensioner</h2>
-              <p className={styles.detail__no_reviews}>Inga recensioner ännu.</p>
+              <div className={styles.detail__reviews_header}>
+                <h2 className={styles.detail__section_title}>
+                  Recensioner
+                  {reviews.length > 0 && (
+                    <span className={styles.detail__reviews_count}>
+                      {avgRating !== null && `⭐ ${avgRating}`} · {reviews.length} recensioner
+                    </span>
+                  )}
+                </h2>
+
+              </div>
+
+              {filteredReviews.length === 0 ? (
+              <p className={styles.detail__no_reviews}>
+                Inga recensioner ännu.
+              </p>
+              ) : (
+                <div className={styles.detail__reviews}>
+                  {filteredReviews.map(r => (
+                    <div key={r.id} className={`${styles.detail__review} card`}>
+                      <div className={styles.detail__review_header}>
+                        <strong className={styles.detail__review_name}>{r.reviewer_name}</strong>
+                        <span className={styles.detail__review_stars}>{'⭐'.repeat(r.rating)}</span>
+                      </div>
+                      {r.comment && (
+                        <p className={styles.detail__review_comment}>{r.comment}</p>
+                      )}
+                      <span className={styles.detail__review_date}>
+                        {new Date(r.created_at).toLocaleDateString('sv-SE')}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
@@ -129,7 +174,7 @@ export default function ServiceDetailClient({ service }: Props) {
                     {service.user_name}
                   </Link>
                   <span className={styles.detail__seller_rating}>
-                    ⭐ {service.rating || '–'} ({service.reviews} recensioner)
+                    ⭐ {avgRating ?? service.rating ?? '–'} ({reviews.length} recensioner)
                   </span>
                   <Link href={`/svippare/${service.user_id}`} className={styles.detail__seller_profile_btn}>
                     👤 Se profil →
@@ -137,7 +182,6 @@ export default function ServiceDetailClient({ service }: Props) {
                 </div>
               </div>
 
-              {/* Prisbox */}
               <div className={styles.detail__price_box}>
                 <div className={styles.detail__price_row}>
                   <span>Pristyp</span>

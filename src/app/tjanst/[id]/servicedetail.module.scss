@@ -91,6 +91,61 @@
   color: var(--color-gray);
 }
 
+// Recensioner
+.detail__reviews_header {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.detail__reviews_count {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--color-gray);
+  margin-left: 10px;
+}
+
+.detail__reviews {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.detail__review {
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-left: 3px solid var(--color-primary) !important;
+}
+
+.detail__review_header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.detail__review_name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-dark);
+}
+
+.detail__review_stars {
+  font-size: 14px;
+}
+
+.detail__review_comment {
+  font-size: 14px;
+  color: var(--color-dark);
+  line-height: 1.6;
+}
+
+.detail__review_date {
+  font-size: 12px;
+  color: var(--color-gray);
+}
+
 // Sidebar
 .detail__sidebar {
   display: flex;
