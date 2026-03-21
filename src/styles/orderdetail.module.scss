@@ -341,3 +341,72 @@
   background: var(--color-gray-light);
   border-radius: var(--radius-sm);
 }
+
+// Beställarens recensioner
+.orderdetail__buyer_reviews {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.no_reviews {
+  font-size: 14px;
+  color: var(--color-gray);
+}
+
+.buyer_reviews_list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.buyer_review {
+  padding: 16px 20px;
+  background: white;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  border-left: 3px solid var(--color-primary);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.buyer_review__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.buyer_review__service {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-dark);
+}
+
+.buyer_review__stars { font-size: 14px; }
+
+.buyer_review__comment {
+  font-size: 14px;
+  color: var(--color-dark);
+  line-height: 1.6;
+}
+
+.buyer_review__date {
+  font-size: 12px;
+  color: var(--color-gray);
+  margin-top: 4px;
+}
+
+// Profilbild i kundkortet
+.customer_avatar {
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    display: block;
+  }
+}

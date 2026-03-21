@@ -7,8 +7,6 @@ import { supabase } from '@/lib/supabase'
 import useAuth from '@/hooks/useAuth'
 import styles from '@/styles/orderdetail.module.scss'
 
-
-
 type ProjectStatus = 'not_started' | 'in_progress' | 'almost_done' | 'completed'
 
 type Order = {
@@ -31,8 +29,13 @@ type Order = {
   created_at: string
 }
 
-type Props = {
-  params: Promise<{ id: string }>
+type Review = {
+  id: string
+  rating: number
+  comment: string
+  service_title: string
+  reviewer_name: string
+  created_at: string
 }
 
 export default function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -46,43 +49,72 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
   const [reviewText, setReviewText] = useState('')
   const [reviewRating, setReviewRating] = useState(5)
   const [showReviewForm, setShowReviewForm] = useState(false)
+  const [buyerReviews, setBuyerReviews] = useState<Review[]>([])
+  const [buyerAvatarUrl, setBuyerAvatarUrl] = useState<string | null>(null)
+  const [hasReviewed, setHasReviewed] = useState(false)
 
   useEffect(() => {
     const fetchOrder = async () => {
       const { id } = await params
       const { data } = await supabase.from('orders').select('*').eq('id', id).single()
-      if (data) setOrder(data)
+      if (data) {
+        setOrder(data)
+
+        // Hämta beställarens profilbild
+        const { data: userData } = await supabase
+          .from('users')
+          .select('avatar_url')
+          .eq('id', data.buyer_id)
+          .single()
+        setBuyerAvatarUrl(userData?.avatar_url ?? null)
+        console.log('buyerAvatarUrl:', userData?.avatar_url)
+
+        // Hämta beställarens tidigare recensioner (som reviewee)
+        const { data: reviewsData } = await supabase
+          .from('reviews')
+          .select('*')
+          .eq('reviewee_id', data.buyer_id)
+          .eq('role', 'seller')
+          .order('created_at', { ascending: false })
+        setBuyerReviews(reviewsData ?? [])
+
+        // Kolla om säljaren redan lämnat recension på denna order
+        const { data: existingReview } = await supabase
+          .from('reviews')
+          .select('id')
+          .eq('order_id', id)
+          .eq('role', 'seller')
+          .single()
+        if (existingReview) setHasReviewed(true)
+      }
       setLoading(false)
     }
     fetchOrder()
   }, [])
-  
 
-const handleStatus = async (status: 'accepted' | 'rejected') => {
-  if (!order) return
-  setUpdating(true)
-  await supabase.from('orders').update({ status }).eq('id', order.id)
-  setOrder(prev => prev ? { ...prev, status } : prev)
+  const handleStatus = async (status: 'accepted' | 'rejected') => {
+    if (!order) return
+    setUpdating(true)
+    await supabase.from('orders').update({ status }).eq('id', order.id)
+    setOrder(prev => prev ? { ...prev, status } : prev)
 
-  // Skicka notifikation till köparen
-  await supabase.from('notifications').insert({
-    user_id: order.buyer_id,
-    type: status === 'accepted' ? 'order_accepted' : 'order_rejected',
-    order_id: order.id,
-    service_title: order.service_title,
-    actor_name: order.seller_name,
-    message: status === 'accepted'
-      ? `${order.seller_name} har godkänt din beställning av "${order.service_title}"! 🎉`
-      : `${order.seller_name} har tyvärr nekat din beställning av "${order.service_title}".`,
-    action_url: `/min-bestallning/${order.id}`,
-    read: false,
-    dismissed: false,
-    email_sent: false,
-    created_at: new Date().toISOString(),
-  })
-
-  setUpdating(false)
-}
+    await supabase.from('notifications').insert({
+      user_id: order.buyer_id,
+      type: status === 'accepted' ? 'order_accepted' : 'order_rejected',
+      order_id: order.id,
+      service_title: order.service_title,
+      actor_name: order.seller_name,
+      message: status === 'accepted'
+        ? `${order.seller_name} har godkänt din beställning av "${order.service_title}"! 🎉`
+        : `${order.seller_name} har tyvärr nekat din beställning av "${order.service_title}".`,
+      action_url: `/min-bestallning/${order.id}`,
+      read: false,
+      dismissed: false,
+      email_sent: false,
+      created_at: new Date().toISOString(),
+    })
+    setUpdating(false)
+  }
 
   const handleProjectStatus = async (status: ProjectStatus) => {
     if (!order) return
@@ -139,6 +171,7 @@ const handleStatus = async (status: 'accepted' | 'rejected') => {
       created_at: new Date().toISOString(),
     })
     setReviewSuccess(true)
+    setHasReviewed(true)
     setShowReviewForm(false)
   }
 
@@ -235,6 +268,31 @@ const handleStatus = async (status: 'accepted' | 'rejected') => {
               )}
             </div>
 
+            {/* Beställarens recensioner */}
+            <div className={`${styles.orderdetail__buyer_reviews} card`}>
+              <h2 className={styles.section_title}>⭐ {order.buyer_name}s recensioner</h2>
+              {buyerReviews.length === 0 ? (
+                <p className={styles.no_reviews}>
+                  {order.buyer_name} har inga tidigare recensioner på Svippo än.
+                </p>
+              ) : (
+                <div className={styles.buyer_reviews_list}>
+                  {buyerReviews.map(r => (
+                    <div key={r.id} className={styles.buyer_review}>
+                      <div className={styles.buyer_review__header}>
+                        <span className={styles.buyer_review__service}>{r.service_title}</span>
+                        <span className={styles.buyer_review__stars}>{'⭐'.repeat(r.rating)}</span>
+                      </div>
+                      {r.comment && <p className={styles.buyer_review__comment}>{r.comment}</p>}
+                      <span className={styles.buyer_review__date}>
+                        {new Date(r.created_at).toLocaleDateString('sv-SE')}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
           </div>
 
           {/* Höger */}
@@ -242,7 +300,12 @@ const handleStatus = async (status: 'accepted' | 'rejected') => {
 
             <div className={`${styles.customer_card} card`}>
               <h2 className={styles.section_title}>👤 Kundinformation</h2>
-              <div className={styles.customer_avatar}>{order.buyer_name?.charAt(0).toUpperCase()}</div>
+              <div className={styles.customer_avatar}>
+                {buyerAvatarUrl
+                  ? <img src={buyerAvatarUrl} alt={order.buyer_name} className={styles.customer_avatar_img} />
+                  : order.buyer_name?.charAt(0).toUpperCase()
+                }
+              </div>
               <strong className={styles.customer_name}>{order.buyer_name}</strong>
               <div className={styles.customer_details}>
                 <div className={styles.detail_row}>
@@ -323,7 +386,7 @@ const handleStatus = async (status: 'accepted' | 'rejected') => {
               </div>
             )}
 
-            {projectStatus === 'completed' && isSeller && !reviewSuccess && (
+            {projectStatus === 'completed' && isSeller && !hasReviewed && !reviewSuccess && (
               <div className={`${styles.review_card} card`}>
                 <h2 className={styles.section_title}>⭐ Lämna en recension</h2>
                 {showReviewForm ? (
@@ -346,9 +409,9 @@ const handleStatus = async (status: 'accepted' | 'rejected') => {
               </div>
             )}
 
-            {reviewSuccess && (
+            {(hasReviewed || reviewSuccess) && projectStatus === 'completed' && isSeller && (
               <div className={`${styles.review_card} card`}>
-                <div className={styles.payment_done}>⭐ Tack för din recension!</div>
+                <div className={styles.payment_done}>⭐ Du har lämnat en recension för denna beställning!</div>
               </div>
             )}
 
@@ -356,7 +419,6 @@ const handleStatus = async (status: 'accepted' | 'rejected') => {
         </div>
       </div>
 
-      {/* Bekräftelsepopup */}
       {showCompleteConfirm && (
         <div className="modal-backdrop" onClick={() => setShowCompleteConfirm(false)}>
           <div className="modal-box" onClick={e => e.stopPropagation()}>
