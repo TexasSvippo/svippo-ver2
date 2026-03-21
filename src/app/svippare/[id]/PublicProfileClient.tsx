@@ -12,6 +12,7 @@ type UserProfile = {
   phone?: string
   bio?: string
   account_type: string
+  avatar_url?: string
   created_at?: string
 }
 
@@ -212,9 +213,12 @@ export default function PublicProfileClient({
       {/* Hero */}
       <div className={styles.pubprofile__hero}>
         <div className={`container ${styles.pubprofile__hero_inner}`}>
-          <div className={styles.pubprofile__avatar}>
-            {profile.name?.charAt(0).toUpperCase()}
-          </div>
+        <div className={styles.pubprofile__avatar}>
+          {profile.avatar_url
+            ? <img src={profile.avatar_url} alt={profile.name} className={styles.pubprofile__avatar_img} />
+            : profile.name?.charAt(0).toUpperCase()
+          }
+        </div>
           <div className={styles.pubprofile__hero_info}>
             <div className={styles.pubprofile__hero_top}>
               <span className={styles.pubprofile__badge}>{profileBadge}</span>

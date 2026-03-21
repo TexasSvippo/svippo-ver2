@@ -84,6 +84,7 @@ export default function CreateServicePage() {
         location_type: data.location === 'Online' ? 'online' : 'plats',
         custom_questions: data.custom_questions || [],
       })
+      setLocationSearch(data.location !== 'Online' ? data.location || '' : '')
       } else {
         router.push('/profil')
       }

@@ -127,6 +127,13 @@
   box-shadow: 0 8px 32px rgba(0,0,0,0.2);
 }
 
+.pubprofile__avatar_img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
 .pubprofile__hero_info {
   flex: 1;
   display: flex;

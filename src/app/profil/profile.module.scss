@@ -417,6 +417,83 @@
   justify-content: center;
 }
 
+// Avatar-komponent
+.avatar__img {
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.avatar__fallback {
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+
+.avatar__sm {
+  width: 48px;
+  height: 48px;
+  font-size: 20px;
+}
+
+.avatar__md {
+  width: 64px;
+  height: 64px;
+  font-size: 26px;
+}
+
+.avatar__lg {
+  width: 80px;
+  height: 80px;
+  font-size: 32px;
+}
+
+// Profilbild i inställningar
+.profile__avatar_wrap {
+  position: relative;
+  display: inline-block;
+}
+
+.profile__avatar_large_img {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.profile__avatar_upload_btn {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: white;
+  border: 2px solid white;
+  cursor: pointer;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+
+  &:hover { background: var(--color-dark); }
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+}
+
+// Välkomstbanner profilbild
+.welcome_banner__avatar_img {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+}
+
 .profile__settings_fields {
   display: flex;
   flex-direction: column;

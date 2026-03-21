@@ -7,10 +7,15 @@ export const metadata = {
 }
 
 export default async function TjansterPage() {
-  const { data: services } = await supabase
+  const { data: servicesRaw } = await supabase
     .from('services')
-    .select('*')
+    .select('*, users(avatar_url)')
     .order('created_at', { ascending: false })
+
+  const services = (servicesRaw ?? []).map(s => {
+    const { users, ...rest } = s as typeof s & { users: { avatar_url: string | null } | null }
+    return { ...rest, avatar_url: users?.avatar_url ?? null }
+  })
 
   return <TjansterClient services={services ?? []} />
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
@@ -27,7 +27,6 @@ type Request = { id: string; title: string; category_id: string; subcategory: st
 type Interest = { id: string; request_title: string; svippar_name: string; svippar_email: string; message: string; price: number }
 type Notification = { id: string; type: string; order_id: string; service_title: string; message: string; read: boolean }
 type Subscription = { id: string; category_id: string }
-
 type SocialLink = { id: string; url: string }
 
 const NAV_ITEMS = [
@@ -42,15 +41,29 @@ const NAV_ITEMS = [
   { id: 'installningar', label: 'Profilinfo & inställningar', icon: '⚙️', group: 'Min profil' },
 ]
 
+// Hjälpkomponent för avatar – används på flera ställen
+function Avatar({ url, name, size = 'md' }: { url?: string | null, name: string, size?: 'sm' | 'md' | 'lg' }) {
+  const letter = (name || '?').charAt(0).toUpperCase()
+  const sizeClass = size === 'sm' ? styles.avatar__sm : size === 'lg' ? styles.avatar__lg : styles.avatar__md
+
+  if (url) {
+    return <img src={url} alt={name} className={`${styles.avatar__img} ${sizeClass}`} />
+  }
+  return <div className={`${styles.avatar__fallback} ${sizeClass}`}><span>{letter}</span></div>
+}
+
 export default function ProfilePage() {
   const { user, loading, accountType, svippareStatus, canCreateService } = useAuth()
   const router = useRouter()
+  const avatarInputRef = useRef<HTMLInputElement>(null)
   const [activeSection, setActiveSection] = useState<Section>('oversikt')
 
   // Grundläggande profilinfo
   const [displayName, setDisplayName] = useState('')
   const [phone, setPhone] = useState('')
   const [bio, setBio] = useState('')
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
+  const [avatarUploading, setAvatarUploading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [success, setSuccess] = useState(false)
   const [editing, setEditing] = useState(false)
@@ -96,6 +109,7 @@ export default function ProfilePage() {
         setDisplayName(profileRes.data.name || '')
         setPhone(profileRes.data.phone || '')
         setBio(profileRes.data.bio || '')
+        setAvatarUrl(profileRes.data.avatar_url || null)
       }
       setServices(servicesRes.data ?? [])
       setIncomingOrders(incomingRes.data ?? [])
@@ -108,7 +122,6 @@ export default function ProfilePage() {
     fetchAll()
   }, [user])
 
-  // Hämta företagsprofil om relevant
   useEffect(() => {
     if (!user || !isCompanyType) return
     const fetchCompanyProfile = async () => {
@@ -117,7 +130,6 @@ export default function ProfilePage() {
         .select('*')
         .eq('user_id', user.id)
         .single()
-
       if (data) {
         setCompanyProfileExists(true)
         setCompanyBio(data.bio || '')
@@ -163,11 +175,43 @@ export default function ProfilePage() {
     setEditing(false)
   }
 
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !user) return
+
+    if (file.size > 2 * 1024 * 1024) {
+      alert('Bilden är för stor! Max 2MB.')
+      return
+    }
+
+    setAvatarUploading(true)
+    try {
+      const ext = file.name.split('.').pop()
+      const fileName = `${user.id}/avatar.${ext}`
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(fileName, file, { upsert: true })
+
+      if (uploadError) throw uploadError
+
+      const { data } = supabase.storage.from('avatars').getPublicUrl(fileName)
+      const publicUrl = `${data.publicUrl}?t=${Date.now()}` // cache-bust
+
+      await supabase.from('users').update({ avatar_url: publicUrl }).eq('id', user.id)
+      setAvatarUrl(publicUrl)
+    } catch (err) {
+      console.error('Avatar upload error:', err)
+      alert('Något gick fel vid uppladdning. Försök igen.')
+    } finally {
+      setAvatarUploading(false)
+    }
+  }
+
   const handleCompanySave = async () => {
     if (!user) return
     setCompanySaving(true)
     setCompanySuccess(false)
-
     const payload = {
       user_id: user.id,
       bio: companyBio,
@@ -178,14 +222,12 @@ export default function ProfilePage() {
       social_links: companySocialLinks.map(l => l.url).filter(Boolean),
       updated_at: new Date().toISOString(),
     }
-
     if (companyProfileExists) {
       await supabase.from('company_profiles').update(payload).eq('user_id', user.id)
     } else {
       await supabase.from('company_profiles').insert({ ...payload, created_at: new Date().toISOString() })
       setCompanyProfileExists(true)
     }
-
     setCompanySaving(false)
     setCompanySuccess(true)
     setCompanyEditing(false)
@@ -197,20 +239,11 @@ export default function ProfilePage() {
     )
   }
 
-  const addSocialLink = () => {
-    setCompanySocialLinks(prev => [...prev, { id: Date.now().toString(), url: '' }])
-  }
-
-  const updateSocialLink = (id: string, url: string) => {
-    setCompanySocialLinks(prev => prev.map(l => l.id === id ? { ...l, url } : l))
-  }
-
-  const removeSocialLink = (id: string) => {
-    setCompanySocialLinks(prev => prev.filter(l => l.id !== id))
-  }
+  const addSocialLink = () => setCompanySocialLinks(prev => [...prev, { id: Date.now().toString(), url: '' }])
+  const updateSocialLink = (id: string, url: string) => setCompanySocialLinks(prev => prev.map(l => l.id === id ? { ...l, url } : l))
+  const removeSocialLink = (id: string) => setCompanySocialLinks(prev => prev.filter(l => l.id !== id))
 
   const { dismiss } = useNotifications()
-
   const dismissNotif = async (id: string) => {
     await dismiss(id)
     setNotifications(prev => prev.filter(n => n.id !== id))
@@ -241,9 +274,7 @@ export default function ProfilePage() {
       {/* Sidopanel */}
       <aside className={styles.profile__sidebar}>
         <div className={styles.profile__sidebar_user}>
-          <div className={styles.profile__sidebar_avatar}>
-            <span>{(displayName || user.email || '?').charAt(0).toUpperCase()}</span>
-          </div>
+          <Avatar url={avatarUrl} name={displayName || user.email || '?'} size="sm" />
           <div>
             <strong className={styles.profile__sidebar_name}>{displayName || 'Inget namn'}</strong>
             <p className={styles.profile__sidebar_email}>{user.email}</p>
@@ -293,7 +324,7 @@ export default function ProfilePage() {
       {/* Huvudinnehåll */}
       <main className={styles.profile__main}>
 
-        {/* Pending-banner – visas endast på översikt */}
+        {/* Pending-banner */}
         {activeSection === 'oversikt' && accountType === 'svippare' && svippareStatus === 'pending' && (
           <div className={styles.profile__pending_banner}>
             <span className={styles.profile__pending_banner_icon}>⏳</span>
@@ -310,7 +341,10 @@ export default function ProfilePage() {
             <div className={styles.welcome_banner}>
               <div className={styles.welcome_banner__content}>
                 <div className={styles.welcome_banner__avatar}>
-                  {(displayName || user.email || '?').charAt(0).toUpperCase()}
+                  {avatarUrl
+                    ? <img src={avatarUrl} alt={displayName} className={styles.welcome_banner__avatar_img} />
+                    : (displayName || user.email || '?').charAt(0).toUpperCase()
+                  }
                 </div>
                 <div>
                   <p className={styles.welcome_banner__greeting}>Välkommen tillbaka 👋</p>
@@ -341,15 +375,9 @@ export default function ProfilePage() {
                       <p>{notif.message}</p>
                     </div>
                     <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexShrink: 0 }}>
-                      {notif.type === 'project_completed' && (
-                        <Link href={`/min-bestallning/${notif.order_id}`} className="btn btn-primary">Lämna recension</Link>
-                      )}
-                      {notif.type === 'request_review' && (
-                        <Link href={`/bestallning/${notif.order_id}`} className="btn btn-orange">Ta betalt</Link>
-                      )}
-                      {notif.type === 'new_order' && (
-                        <Link href={`/bestallning/${notif.order_id}`} className="btn btn-primary">Se beställning</Link>
-                      )}
+                      {notif.type === 'project_completed' && <Link href={`/min-bestallning/${notif.order_id}`} className="btn btn-primary">Lämna recension</Link>}
+                      {notif.type === 'request_review' && <Link href={`/bestallning/${notif.order_id}`} className="btn btn-orange">Ta betalt</Link>}
+                      {notif.type === 'new_order' && <Link href={`/bestallning/${notif.order_id}`} className="btn btn-primary">Se beställning</Link>}
                       <button className={styles.notifications__dismiss} onClick={() => dismissNotif(notif.id)}>✕</button>
                     </div>
                   </div>
@@ -496,11 +524,7 @@ export default function ProfilePage() {
               <button className="btn btn-primary" onClick={() => router.push('/skapa-inlagg')}>+ Ny tjänst</button>
             </div>
             {services.length === 0 ? (
-              <div className={styles.profile__empty}>
-                <span>🛠️</span>
-                <p>Du har inga aktiva tjänster ännu.</p>
-                <button className="btn btn-primary" onClick={() => router.push('/skapa-inlagg')}>Skapa din första tjänst</button>
-              </div>
+              <div className={styles.profile__empty}><span>🛠️</span><p>Du har inga aktiva tjänster ännu.</p><button className="btn btn-primary" onClick={() => router.push('/skapa-inlagg')}>Skapa din första tjänst</button></div>
             ) : (
               <div className={styles.profile__list}>
                 {services.map(s => (
@@ -558,11 +582,7 @@ export default function ProfilePage() {
           <div className={styles.profile__section}>
             <h1 className={styles.profile__section_title}>Placerade beställningar</h1>
             {placedOrders.length === 0 ? (
-              <div className={styles.profile__empty}>
-                <span>📤</span>
-                <p>Du har inte beställt några tjänster ännu.</p>
-                <button className="btn btn-primary" onClick={() => router.push('/tjanster')}>Utforska tjänster</button>
-              </div>
+              <div className={styles.profile__empty}><span>📤</span><p>Du har inte beställt några tjänster ännu.</p><button className="btn btn-primary" onClick={() => router.push('/tjanster')}>Utforska tjänster</button></div>
             ) : (
               <div className={styles.profile__list}>
                 {placedOrders.map(order => (
@@ -589,11 +609,7 @@ export default function ProfilePage() {
               <button className="btn btn-orange" onClick={() => router.push('/skapa-forfragning')}>+ Ny förfrågan</button>
             </div>
             {myRequests.length === 0 ? (
-              <div className={styles.profile__empty}>
-                <span>🙋</span>
-                <p>Du har inga förfrågningar ännu.</p>
-                <button className="btn btn-orange" onClick={() => router.push('/skapa-forfragning')}>Skapa en förfrågan</button>
-              </div>
+              <div className={styles.profile__empty}><span>🙋</span><p>Du har inga förfrågningar ännu.</p><button className="btn btn-orange" onClick={() => router.push('/skapa-forfragning')}>Skapa en förfrågan</button></div>
             ) : (
               <div className={styles.profile__list}>
                 {myRequests.map(r => (
@@ -604,9 +620,7 @@ export default function ProfilePage() {
                       <span>{r.subcategory} · {r.location}</span>
                     </Link>
                     <div className={styles.profile__item_right}>
-                      <strong className={styles.profile__item_budget}>
-                        {r.budget_type === 'prisforslag' ? 'Prisförslag' : `${r.budget} kr`}
-                      </strong>
+                      <strong className={styles.profile__item_budget}>{r.budget_type === 'prisforslag' ? 'Prisförslag' : `${r.budget} kr`}</strong>
                       <span className={`${styles.profile__item_tag} ${styles['item_tag--orange']}`}>Öppen</span>
                       <div className={styles.profile__item_actions}>
                         <button className={`btn btn-outline ${styles.profile__edit_btn}`} onClick={() => router.push(`/skapa-forfragning?edit=${r.id}`)}>✏️</button>
@@ -683,7 +697,6 @@ export default function ProfilePage() {
                 </div>
               )}
             </div>
-
             <div className={styles.profile__section_header}>
               <h2 className={styles.profile__section_title} style={{ fontSize: '20px' }}>Förfrågningar inom dina kategorier</h2>
               {subscriptions.length > 0 && (
@@ -697,7 +710,6 @@ export default function ProfilePage() {
                 </select>
               )}
             </div>
-
             {watchedRequests.length === 0 ? (
               <div className={styles.profile__empty}><span>📭</span><p>Inga förfrågningar inom dina bevakade kategorier ännu.</p></div>
             ) : (
@@ -737,13 +749,34 @@ export default function ProfilePage() {
           <div className={styles.profile__section}>
             <h1 className={styles.profile__section_title}>Profilinfo & inställningar</h1>
 
-            {/* Grundläggande info – alla användare */}
             <div className={`${styles.profile__settings} card`}>
+              {/* Profilbild */}
               <div className={styles.profile__settings_avatar}>
-                <div className={styles.profile__avatar_large}>
-                  {(displayName || user.email || '?').charAt(0).toUpperCase()}
+                <div className={styles.profile__avatar_wrap}>
+                  {avatarUrl
+                    ? <img src={avatarUrl} alt={displayName} className={styles.profile__avatar_large_img} />
+                    : <div className={styles.profile__avatar_large}>{(displayName || user.email || '?').charAt(0).toUpperCase()}</div>
+                  }
+                  <button
+                    className={styles.profile__avatar_upload_btn}
+                    onClick={() => avatarInputRef.current?.click()}
+                    disabled={avatarUploading}
+                  >
+                    {avatarUploading ? '⏳' : '📷'}
+                  </button>
+                  <input
+                    ref={avatarInputRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    onChange={handleAvatarUpload}
+                    style={{ display: 'none' }}
+                  />
                 </div>
+                <span className={styles.profile__hint}>
+                  {avatarUploading ? 'Laddar upp...' : 'Klicka på kameran för att byta profilbild'}
+                </span>
               </div>
+
               <div className={styles.profile__settings_fields}>
                 <div className={styles.profile__field}>
                   <label className={styles.profile__label}>Visningsnamn</label>
@@ -777,76 +810,42 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            {/* Företagsprofil – endast foretag och uf-foretag */}
+            {/* Företagsprofil */}
             {isCompanyType && (
               <div className={`${styles.profile__settings} card`}>
                 <div className={styles.profile__settings_fields}>
                   <h2 className={styles.profile__section_title} style={{ fontSize: '20px' }}>
                     {accountType === 'uf-foretag' ? '🎓 UF-företagsprofil' : '🏢 Företagsprofil'}
                   </h2>
-                  <p className={styles.profile__hint}>
-                    Denna information visas på din publika profilsida och hjälper kunder att hitta och kontakta dig.
-                  </p>
+                  <p className={styles.profile__hint}>Denna information visas på din publika profilsida och hjälper kunder att hitta och kontakta dig.</p>
 
                   <div className={styles.profile__field}>
                     <label className={styles.profile__label}>Om företaget</label>
-                    <textarea
-                      className={`${styles.profile__input} ${styles.profile__textarea} ${!companyEditing ? styles['profile__input--disabled'] : ''}`}
-                      value={companyBio}
-                      onChange={e => setCompanyBio(e.target.value)}
-                      disabled={!companyEditing}
-                      placeholder="Beskriv ert företag, vad ni erbjuder och er historia..."
-                      rows={5}
-                    />
+                    <textarea className={`${styles.profile__input} ${styles.profile__textarea} ${!companyEditing ? styles['profile__input--disabled'] : ''}`} value={companyBio} onChange={e => setCompanyBio(e.target.value)} disabled={!companyEditing} placeholder="Beskriv ert företag..." rows={5} />
                   </div>
 
                   {accountType === 'foretag' && (
-                  <div className={styles.profile__field}>
-                    <label className={styles.profile__label}>Organisationsnummer</label>
-                    <input
-                      className={`${styles.profile__input} ${!companyEditing ? styles['profile__input--disabled'] : ''}`}
-                      value={companyOrgNumber}
-                      onChange={e => setCompanyOrgNumber(e.target.value)}
-                      disabled={!companyEditing}
-                      placeholder="556123-4567"
-                    />
-                  </div>
+                    <div className={styles.profile__field}>
+                      <label className={styles.profile__label}>Organisationsnummer</label>
+                      <input className={`${styles.profile__input} ${!companyEditing ? styles['profile__input--disabled'] : ''}`} value={companyOrgNumber} onChange={e => setCompanyOrgNumber(e.target.value)} disabled={!companyEditing} placeholder="556123-4567" />
+                    </div>
                   )}
 
                   <div className={styles.profile__field}>
                     <label className={styles.profile__label}>Stad</label>
-                    <input
-                      className={`${styles.profile__input} ${!companyEditing ? styles['profile__input--disabled'] : ''}`}
-                      value={companyCity}
-                      onChange={e => setCompanyCity(e.target.value)}
-                      disabled={!companyEditing}
-                      placeholder="Stockholm"
-                    />
+                    <input className={`${styles.profile__input} ${!companyEditing ? styles['profile__input--disabled'] : ''}`} value={companyCity} onChange={e => setCompanyCity(e.target.value)} disabled={!companyEditing} placeholder="Stockholm" />
                   </div>
 
                   <div className={styles.profile__field}>
                     <label className={styles.profile__label}>Webbplats</label>
-                    <input
-                      className={`${styles.profile__input} ${!companyEditing ? styles['profile__input--disabled'] : ''}`}
-                      value={companyWebsite}
-                      onChange={e => setCompanyWebsite(e.target.value)}
-                      disabled={!companyEditing}
-                      placeholder="https://ertforetag.se"
-                    />
+                    <input className={`${styles.profile__input} ${!companyEditing ? styles['profile__input--disabled'] : ''}`} value={companyWebsite} onChange={e => setCompanyWebsite(e.target.value)} disabled={!companyEditing} placeholder="https://ertforetag.se" />
                   </div>
 
-                  {/* Kategorier */}
                   <div className={styles.profile__field}>
                     <label className={styles.profile__label}>Kategorier ni erbjuder tjänster inom</label>
                     <div className={styles.profile__category_grid}>
                       {categories.map(cat => (
-                        <button
-                          key={cat.id}
-                          type="button"
-                          disabled={!companyEditing}
-                          className={`${styles.profile__category_btn} ${companyCategories.includes(cat.id) ? styles['profile__category_btn--active'] : ''}`}
-                          onClick={() => companyEditing && toggleCompanyCategory(cat.id)}
-                        >
+                        <button key={cat.id} type="button" disabled={!companyEditing} className={`${styles.profile__category_btn} ${companyCategories.includes(cat.id) ? styles['profile__category_btn--active'] : ''}`} onClick={() => companyEditing && toggleCompanyCategory(cat.id)}>
                           <span>{cat.icon}</span>
                           <span>{cat.label}</span>
                         </button>
@@ -854,32 +853,15 @@ export default function ProfilePage() {
                     </div>
                   </div>
 
-                  {/* Sociala medier */}
                   <div className={styles.profile__field}>
                     <label className={styles.profile__label}>Sociala medier</label>
                     {companySocialLinks.map(link => (
                       <div key={link.id} className={styles.profile__social_row}>
-                        <input
-                          className={`${styles.profile__input} ${!companyEditing ? styles['profile__input--disabled'] : ''}`}
-                          value={link.url}
-                          onChange={e => updateSocialLink(link.id, e.target.value)}
-                          disabled={!companyEditing}
-                          placeholder="https://instagram.com/ertforetag"
-                        />
-                        {companyEditing && (
-                          <button
-                            type="button"
-                            className={styles.profile__social_remove}
-                            onClick={() => removeSocialLink(link.id)}
-                          >✕</button>
-                        )}
+                        <input className={`${styles.profile__input} ${!companyEditing ? styles['profile__input--disabled'] : ''}`} value={link.url} onChange={e => updateSocialLink(link.id, e.target.value)} disabled={!companyEditing} placeholder="https://instagram.com/ertforetag" />
+                        {companyEditing && <button type="button" className={styles.profile__social_remove} onClick={() => removeSocialLink(link.id)}>✕</button>}
                       </div>
                     ))}
-                    {companyEditing && (
-                      <button type="button" className={styles.profile__social_add} onClick={addSocialLink}>
-                        + Lägg till konto
-                      </button>
-                    )}
+                    {companyEditing && <button type="button" className={styles.profile__social_add} onClick={addSocialLink}>+ Lägg till konto</button>}
                   </div>
                 </div>
 
@@ -887,9 +869,7 @@ export default function ProfilePage() {
                 <div className={styles.profile__settings_actions}>
                   {companyEditing ? (
                     <>
-                      <button className="btn btn-primary" onClick={handleCompanySave} disabled={companySaving}>
-                        {companySaving ? 'Sparar...' : 'Spara företagsprofil'}
-                      </button>
+                      <button className="btn btn-primary" onClick={handleCompanySave} disabled={companySaving}>{companySaving ? 'Sparar...' : 'Spara företagsprofil'}</button>
                       <button className="btn btn-outline" onClick={() => setCompanyEditing(false)}>Avbryt</button>
                     </>
                   ) : (
@@ -898,7 +878,6 @@ export default function ProfilePage() {
                 </div>
               </div>
             )}
-
           </div>
         )}
 

@@ -18,6 +18,7 @@ type Service = {
   user_name: string
   user_id: string
   account_type: string
+  avatar_url?: string
   rating: number
   reviews: number
 }
@@ -192,7 +193,10 @@ export default function TjansterClient({ services }: Props) {
                       {/* Avatar + info */}
                       <div className={styles.service_card__header}>
                         <div className={`${styles.service_card__avatar} ${getAvatarStyle(s.account_type)}`}>
-                          {s.user_name?.charAt(0).toUpperCase() || '?'}
+                          {s.avatar_url
+                            ? <img src={s.avatar_url} alt={s.user_name} className={styles.service_card__avatar_img} />
+                            : s.user_name?.charAt(0).toUpperCase() || '?'
+                          }
                         </div>
                         <div className={styles.service_card__meta}>
                           <div className={styles.service_card__meta_row}>

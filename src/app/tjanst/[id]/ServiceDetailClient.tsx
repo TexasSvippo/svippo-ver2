@@ -28,6 +28,7 @@ type Service = {
   user_name: string
   user_email: string
   user_id: string
+  avatar_url?: string
   rating: number
   reviews: number
   custom_questions?: CustomQuestion[]
@@ -167,7 +168,10 @@ const filteredReviews = reviews
             <div className={`${styles.detail__seller} card`}>
               <div className={styles.detail__seller_header}>
                 <div className={styles.detail__seller_avatar}>
-                  {service.user_name?.charAt(0).toUpperCase() || '?'}
+                  {service.avatar_url
+                    ? <img src={service.avatar_url} alt={service.user_name} className={styles.detail__seller_avatar_img} />
+                    : service.user_name?.charAt(0).toUpperCase() || '?'
+                  }
                 </div>
                 <div className={styles.detail__seller_info}>
                   <Link href={`/svippare/${service.user_id}`} className={styles.detail__seller_name}>

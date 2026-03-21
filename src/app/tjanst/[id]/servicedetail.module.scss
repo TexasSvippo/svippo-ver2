@@ -182,6 +182,13 @@
   flex-shrink: 0;
 }
 
+.detail__seller_avatar_img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
 .detail__seller_info {
   display: flex;
   flex-direction: column;

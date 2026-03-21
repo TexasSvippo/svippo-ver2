@@ -8,11 +8,14 @@ type Props = {
 
 export async function generateMetadata({ params }: Props) {
   const { id } = await params
-  const { data: service } = await supabase
+  const { data: serviceRaw } = await supabase
     .from('services')
-    .select('title, description')
+    .select('*, users(avatar_url)')
     .eq('id', id)
     .single()
+
+  const { users: serviceUsers, ...serviceRest } = serviceRaw as typeof serviceRaw & { users: { avatar_url: string | null } | null }
+  const service = serviceRaw ? { ...serviceRest, avatar_url: serviceUsers?.avatar_url ?? null } : null
 
   if (!service) return { title: 'Tjänst hittades inte – Svippo' }
 
@@ -25,8 +28,8 @@ export async function generateMetadata({ params }: Props) {
 export default async function ServiceDetailPage({ params }: Props) {
   const { id } = await params
 
-  const [{ data: service }, { data: reviews }] = await Promise.all([
-    supabase.from('services').select('*').eq('id', id).single(),
+  const [{ data: serviceRaw }, { data: reviews }] = await Promise.all([
+    supabase.from('services').select('*, users(avatar_url)').eq('id', id).single(),
     supabase
       .from('reviews')
       .select('*')
@@ -34,6 +37,9 @@ export default async function ServiceDetailPage({ params }: Props) {
       .eq('role', 'buyer')
       .order('created_at', { ascending: false }),
   ])
+
+  const { users: svcUsers, ...svcRest } = serviceRaw as typeof serviceRaw & { users: { avatar_url: string | null } | null }
+  const service = serviceRaw ? { ...svcRest, avatar_url: svcUsers?.avatar_url ?? null } : null
 
   if (!service) notFound()
 

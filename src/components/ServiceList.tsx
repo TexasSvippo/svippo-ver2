@@ -16,6 +16,7 @@ type Service = {
   user_id: string
   rating: number
   reviews: number
+  avatar_url?: string | null
   created_at: string
 }
 
@@ -28,11 +29,16 @@ function StarRating({ rating }: { rating: number }) {
 }
 
 export default async function ServiceList() {
-  const { data: services, error } = await supabase
+  const { data: servicesRaw, error } = await supabase
     .from('services')
-    .select('*')
+    .select('*, users(avatar_url)')
     .order('created_at', { ascending: false })
     .limit(10)
+
+  const services = (servicesRaw ?? []).map(s => {
+    const { users, ...rest } = s as typeof s & { users: { avatar_url: string | null } | null }
+    return { ...rest, avatar_url: users?.avatar_url ?? null }
+  })
 
   if (error || !services) return null
 
@@ -59,9 +65,10 @@ export default async function ServiceList() {
           {services.map((s: Service) => (
             <Link href={`/tjanst/${s.id}`} key={s.id} className={`${styles.service_card} card`}>
               <div className={styles.service_card__avatar}>
-                <div className={styles.service_card__avatar_placeholder}>
-                  {s.user_name?.charAt(0).toUpperCase() || '?'}
-                </div>
+                {s.avatar_url
+                  ? <img src={s.avatar_url} alt={s.user_name} className={styles.service_card__avatar_img} />
+                  : <div className={styles.service_card__avatar_placeholder}>{s.user_name?.charAt(0).toUpperCase() || '?'}</div>
+                }
               </div>
 
               <div className={styles.service_card__info}>

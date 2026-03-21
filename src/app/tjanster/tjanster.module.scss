@@ -274,6 +274,13 @@
   &--uf { background: #342054; }
 }
 
+.service_card__avatar_img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
 .service_card__meta {
   flex: 1;
   display: flex;
