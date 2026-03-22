@@ -52,6 +52,13 @@ function Avatar({ url, name, size = 'md' }: { url?: string | null, name: string,
   return <div className={`${styles.avatar__fallback} ${sizeClass}`}><span>{letter}</span></div>
 }
 
+function RedirectToIntresseanmalningar({ router }: { router: ReturnType<typeof useRouter> }) {
+  useEffect(() => {
+    router.push('/intresseanmalningar')
+  }, [router])
+  return null
+}
+
 export default function ProfilePage() {
   const { user, loading, accountType, svippareStatus, canCreateService } = useAuth()
   const router = useRouter()
@@ -638,31 +645,9 @@ export default function ProfilePage() {
           </div>
         )}
 
-        {/* INTRESSEANMÄLNINGAR */}
+        {/* INTRESSEANMÄLNINGAR – redirect */}
         {activeSection === 'intresseanmalningar' && (
-          <div className={styles.profile__section}>
-            <h1 className={styles.profile__section_title}>Intresseanmälningar</h1>
-            {interests.length === 0 ? (
-              <div className={styles.profile__empty}><span>👀</span><p>Inga intresseanmälningar ännu.</p></div>
-            ) : (
-              <div className={styles.profile__list}>
-                {interests.map(interest => (
-                  <div key={interest.id} className={`${styles.profile__item} card`}>
-                    <div className={styles.profile__item_icon}>👀</div>
-                    <div className={styles.profile__item_info}>
-                      <strong>{interest.svippar_name}</strong>
-                      <span>För: {interest.request_title}</span>
-                      <p className={styles.profile__item_message}>{interest.message}</p>
-                    </div>
-                    <div className={styles.profile__item_right}>
-                      {interest.price && <strong>{interest.price} kr</strong>}
-                      <a href={`mailto:${interest.svippar_email}`} className="btn btn-primary">Kontakta</a>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          <RedirectToIntresseanmalningar router={router} />
         )}
 
         {/* MINA BEVAKNINGAR */}

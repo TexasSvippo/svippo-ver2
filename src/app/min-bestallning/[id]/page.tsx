@@ -25,6 +25,7 @@ type Order = {
   subcategory?: string
   answers?: Record<string, string>
   custom_answers?: Record<string, string>
+  from_request?: boolean
   created_at: string
 }
 
@@ -147,8 +148,11 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
                   {order.status === 'pending' ? '⏳ Väntar på godkännande' : order.status === 'accepted' ? '✅ Godkänd' : '❌ Nekad'}
                 </span>
               </div>
-              <Link href={`/tjanst/${order.service_id}`} className={orderStyles.service_link}>
-                🔗 Visa tjänsten →
+              <Link
+                href={order.from_request ? `/forfragning/${order.service_id}` : `/tjanst/${order.service_id}`}
+                className={orderStyles.service_link}
+              >
+                🔗 {order.from_request ? 'Visa din förfrågan →' : 'Visa tjänsten →'}
               </Link>
             </div>
 

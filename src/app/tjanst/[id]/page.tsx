@@ -38,8 +38,10 @@ export default async function ServiceDetailPage({ params }: Props) {
       .order('created_at', { ascending: false }),
   ])
 
-  const { users: svcUsers, ...svcRest } = serviceRaw as typeof serviceRaw & { users: { avatar_url: string | null } | null }
-  const service = serviceRaw ? { ...svcRest, avatar_url: svcUsers?.avatar_url ?? null } : null
+  const service = serviceRaw ? (() => {
+    const { users: svcUsers, ...svcRest } = serviceRaw as typeof serviceRaw & { users: { avatar_url: string | null } | null }
+    return { ...svcRest, avatar_url: svcUsers?.avatar_url ?? null }
+  })() : null
 
   if (!service) notFound()
 
