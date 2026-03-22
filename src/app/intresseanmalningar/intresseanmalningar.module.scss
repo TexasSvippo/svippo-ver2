@@ -1,0 +1,256 @@
+.page {
+  padding: 48px 0 80px;
+  min-height: calc(100vh - 68px);
+  background: var(--color-bg);
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 68px);
+  color: var(--color-gray);
+}
+
+.page__inner {
+  max-width: 860px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.page__header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.page__title {
+  font-family: var(--font-heading);
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--color-dark);
+}
+
+.page__subtitle {
+  font-size: 15px;
+  color: var(--color-gray);
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 80px 0;
+  text-align: center;
+
+  span { font-size: 48px; }
+  p { font-size: 16px; color: var(--color-gray); }
+}
+
+.groups {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+// Grupp per förfrågan
+.group {
+  background: white;
+  border-radius: var(--radius-lg);
+  border: 1.5px solid var(--color-border);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.group__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  background: white;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  font-family: var(--font-body);
+  transition: background 0.2s;
+  gap: 16px;
+
+  &:hover { background: var(--color-gray-light); }
+}
+
+.group__header_left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.group__title {
+  font-family: var(--font-heading);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-dark);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.group__count {
+  background: var(--color-orange);
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
+
+.group__header_right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.group__link {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: opacity 0.2s;
+  &:hover { opacity: 0.7; }
+}
+
+.group__chevron {
+  font-size: 11px;
+  color: var(--color-gray);
+}
+
+// Svippare-kort
+.group__cards {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border-top: 1.5px solid var(--color-border);
+}
+
+.interest_card {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border-bottom: 1px solid var(--color-border);
+  transition: background 0.15s;
+
+  &:last-child { border-bottom: none; }
+  &:hover { background: #fafafa; }
+}
+
+.interest_card__header {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.interest_card__avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: white;
+  font-size: 22px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.interest_card__avatar_img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.interest_card__info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+
+.interest_card__name_row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.interest_card__name {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-dark);
+}
+
+.interest_card__price {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-orange);
+  flex-shrink: 0;
+}
+
+.interest_card__meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.interest_card__rating {
+  font-size: 13px;
+  color: var(--color-gray);
+}
+
+.interest_card__date {
+  font-size: 12px;
+  color: var(--color-gray);
+}
+
+.interest_card__message {
+  font-size: 14px;
+  color: var(--color-dark);
+  line-height: 1.6;
+  padding: 14px 16px;
+  background: var(--color-gray-light);
+  border-radius: var(--radius-md);
+  border-left: 3px solid var(--color-orange);
+}
+
+.interest_card__actions {
+  display: flex;
+  gap: 10px;
+}
+
+.interest_card__accepted {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a7a4a;
+  padding: 8px 16px;
+  background: #e6f9f0;
+  border-radius: var(--radius-md);
+}
+
+@media (max-width: 768px) {
+  .page__inner { max-width: 100%; }
+  .group__header { padding: 16px; }
+  .group__title { font-size: 15px; }
+  .interest_card { padding: 16px; }
+  .interest_card__actions { flex-direction: column; }
+  .group__link { display: none; }
+}
