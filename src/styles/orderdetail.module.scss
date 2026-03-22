@@ -410,3 +410,43 @@
     display: block;
   }
 }
+
+
+// Typ-specifik info
+.orderdetail__type_info {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.type_info_grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.type_info_item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  &--full {
+    grid-column: 1 / -1;
+  }
+}
+
+.type_info_label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-gray);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.type_info_text {
+  font-size: 14px;
+  color: var(--color-dark);
+  line-height: 1.6;
+  white-space: pre-wrap;
+}

@@ -161,6 +161,7 @@ export default function OrderModal({
         message,
         answers: answersWithLabels,
         custom_answers: customAnswersWithLabels,
+        service_type: serviceType,
         status: 'pending',
         project_status: 'not_started',
         payment_status: 'unpaid',

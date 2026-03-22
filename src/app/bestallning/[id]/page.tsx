@@ -8,6 +8,7 @@ import useAuth from '@/hooks/useAuth'
 import styles from '@/styles/orderdetail.module.scss'
 
 type ProjectStatus = 'not_started' | 'in_progress' | 'almost_done' | 'completed'
+type ServiceType = 'typ1' | 'typ2' | 'typ3'
 
 type Order = {
   id: string
@@ -25,6 +26,7 @@ type Order = {
   status: 'pending' | 'accepted' | 'rejected'
   project_status: ProjectStatus
   payment_status: 'unpaid' | 'paid'
+  service_type: ServiceType
   subcategory?: string
   created_at: string
 }
@@ -60,16 +62,13 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
       if (data) {
         setOrder(data)
 
-        // Hämta beställarens profilbild
         const { data: userData } = await supabase
           .from('users')
           .select('avatar_url')
           .eq('id', data.buyer_id)
           .single()
         setBuyerAvatarUrl(userData?.avatar_url ?? null)
-        console.log('buyerAvatarUrl:', userData?.avatar_url)
 
-        // Hämta beställarens tidigare recensioner (som reviewee)
         const { data: reviewsData } = await supabase
           .from('reviews')
           .select('*')
@@ -78,7 +77,6 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
           .order('created_at', { ascending: false })
         setBuyerReviews(reviewsData ?? [])
 
-        // Kolla om säljaren redan lämnat recension på denna order
         const { data: existingReview } = await supabase
           .from('reviews')
           .select('id')
@@ -185,6 +183,24 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
 
   const isSeller = user?.id === order.seller_id
   const projectStatus = order.project_status
+  const serviceType = order.service_type ?? 'typ1'
+
+  // Typ-specifik info från answers
+  const preferredDate = order.answers?.['Önskat datum']
+  const preferredTime = order.answers?.['Önskad tid']
+  const address = order.answers?.['Adress']
+  const desiredDeadline = order.answers?.['Önskat slutdatum']
+  const milestones = order.answers?.['Föreslagna milstolpar']
+  const pickupAddress = order.answers?.['Upphämtningsadress']
+  const deliveryAddress = order.answers?.['Leveransadress']
+  const pickupDate = order.answers?.['Datum']
+  const pickupTime = order.answers?.['Tid']
+
+  // Filtrera bort typ-specifika nycklar från answers så de inte visas dubbelt
+  const typeSpecificKeys = ['Önskat datum', 'Önskad tid', 'Adress', 'Önskat slutdatum', 'Föreslagna milstolpar', 'Upphämtningsadress', 'Leveransadress', 'Datum', 'Tid']
+  const filteredAnswers = order.answers
+    ? Object.fromEntries(Object.entries(order.answers).filter(([key]) => !typeSpecificKeys.includes(key)))
+    : {}
 
   const PROGRESS_STEPS = [
     { status: 'not_started' as ProjectStatus, label: 'Ej påbörjat', desc: 'Projektet väntar på att starta', num: 1 },
@@ -231,6 +247,85 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
               </Link>
             </div>
 
+            {/* Typ-specifik info */}
+            {serviceType === 'typ1' && (preferredDate || address) && (
+              <div className={`${styles.orderdetail__type_info} card`}>
+                <h2 className={styles.section_title}>📅 Datum & plats</h2>
+                <div className={styles.type_info_grid}>
+                  {preferredDate && (
+                    <div className={styles.type_info_item}>
+                      <span className={styles.type_info_label}>Önskat datum</span>
+                      <strong>{preferredDate}</strong>
+                    </div>
+                  )}
+                  {preferredTime && (
+                    <div className={styles.type_info_item}>
+                      <span className={styles.type_info_label}>Önskad tid</span>
+                      <strong>{preferredTime}</strong>
+                    </div>
+                  )}
+                  {address && (
+                    <div className={styles.type_info_item}>
+                      <span className={styles.type_info_label}>Adress</span>
+                      <strong>{address}</strong>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {serviceType === 'typ2' && (desiredDeadline || milestones) && (
+              <div className={`${styles.orderdetail__type_info} card`}>
+                <h2 className={styles.section_title}>🗓️ Tidslinje</h2>
+                <div className={styles.type_info_grid}>
+                  {desiredDeadline && (
+                    <div className={styles.type_info_item}>
+                      <span className={styles.type_info_label}>Önskat slutdatum</span>
+                      <strong>{desiredDeadline}</strong>
+                    </div>
+                  )}
+                  {milestones && (
+                    <div className={`${styles.type_info_item} ${styles['type_info_item--full']}`}>
+                      <span className={styles.type_info_label}>Föreslagna milstolpar</span>
+                      <p className={styles.type_info_text}>{milestones}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {serviceType === 'typ3' && (pickupAddress || deliveryAddress) && (
+              <div className={`${styles.orderdetail__type_info} card`}>
+                <h2 className={styles.section_title}>📦 Upphämtning & leverans</h2>
+                <div className={styles.type_info_grid}>
+                  {pickupAddress && (
+                    <div className={styles.type_info_item}>
+                      <span className={styles.type_info_label}>Upphämtning</span>
+                      <strong>{pickupAddress}</strong>
+                    </div>
+                  )}
+                  {deliveryAddress && (
+                    <div className={styles.type_info_item}>
+                      <span className={styles.type_info_label}>Leverans</span>
+                      <strong>{deliveryAddress}</strong>
+                    </div>
+                  )}
+                  {pickupDate && (
+                    <div className={styles.type_info_item}>
+                      <span className={styles.type_info_label}>Datum</span>
+                      <strong>{pickupDate}</strong>
+                    </div>
+                  )}
+                  {pickupTime && (
+                    <div className={styles.type_info_item}>
+                      <span className={styles.type_info_label}>Tid</span>
+                      <strong>{pickupTime}</strong>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             <div className={`${styles.orderdetail__form} card`}>
               <h2 className={styles.section_title}>📋 Ifyllt formulär</h2>
 
@@ -239,11 +334,11 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                 <div className={`${styles.field_value} ${styles.field_message}`}>{order.message}</div>
               </div>
 
-              {order.answers && Object.keys(order.answers).length > 0 && (
+              {Object.keys(filteredAnswers).length > 0 && (
                 <div className={styles.field}>
                   <span className={styles.field_label}>Svar på frågor</span>
                   <div className={styles.answers}>
-                    {Object.entries(order.answers).map(([key, value]) => (
+                    {Object.entries(filteredAnswers).map(([key, value]) => (
                       <div key={key} className={styles.answer_row}>
                         <span className={styles.answer_key}>{key}</span>
                         <span className={styles.answer_value}>{value}</span>
@@ -302,6 +397,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
               <h2 className={styles.section_title}>👤 Kundinformation</h2>
               <div className={styles.customer_avatar}>
                 {buyerAvatarUrl
+                  // eslint-disable-next-line @next/next/no-img-element
                   ? <img src={buyerAvatarUrl} alt={order.buyer_name} className={styles.customer_avatar_img} />
                   : order.buyer_name?.charAt(0).toUpperCase()
                 }
