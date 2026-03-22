@@ -1,8 +1,11 @@
+export type ServiceType = 'typ1' | 'typ2' | 'typ3'
+
 export const categories = [
   {
     id: 'digitala-tjanster',
     label: 'Digitala tjänster',
     icon: '🖥️',
+    service_type: 'typ2' as ServiceType,
     subcategories: [
       'Webbutveckling',
       'App-utveckling',
@@ -16,6 +19,7 @@ export const categories = [
     id: 'medie-design',
     label: 'Medie & design',
     icon: '🎨',
+    service_type: 'typ2' as ServiceType,
     subcategories: [
       'Grafisk design',
       'Logotyp & varumärke',
@@ -29,6 +33,7 @@ export const categories = [
     id: 'utbildning',
     label: 'Utbildning',
     icon: '📚',
+    service_type: 'typ2' as ServiceType,
     subcategories: [
       'Läxhjälp',
       'Språkundervisning',
@@ -41,6 +46,7 @@ export const categories = [
     id: 'hushall',
     label: 'Hushållstjänster',
     icon: '🏠',
+    service_type: 'typ1' as ServiceType,
     subcategories: [
       'Städning',
       'Fönsterputsning',
@@ -54,6 +60,7 @@ export const categories = [
     id: 'bil',
     label: 'Biltjänster',
     icon: '🚗',
+    service_type: 'typ1' as ServiceType,
     subcategories: [
       'Däckbyte',
       'Biltvätt',
@@ -66,6 +73,7 @@ export const categories = [
     id: 'skonhet-halsa',
     label: 'Skönhet & hälsa',
     icon: '💆',
+    service_type: 'typ1' as ServiceType,
     subcategories: [
       'Frisör',
       'Naglar',
@@ -79,6 +87,7 @@ export const categories = [
     id: 'bygg-hantverk',
     label: 'Bygg & hantverk',
     icon: '🔨',
+    service_type: 'typ1' as ServiceType,
     subcategories: [
       'Snickeri',
       'Målning',
@@ -92,6 +101,7 @@ export const categories = [
     id: 'frakt-flytt',
     label: 'Frakt & flytt',
     icon: '📦',
+    service_type: 'typ3' as ServiceType,
     subcategories: [
       'Flytthjälp',
       'Budtjänst',

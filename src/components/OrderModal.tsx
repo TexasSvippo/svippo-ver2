@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import useAuth from '@/hooks/useAuth'
 import { orderQuestions } from '@/data/orderQuestions'
+import type { ServiceType } from '@/data/categories'
 import styles from './OrderModal.module.scss'
 
 type CustomQuestion = {
@@ -23,6 +24,7 @@ type Props = {
   priceType: string
   price: number
   location: string
+  serviceType?: ServiceType
   customQuestions: CustomQuestion[]
   onClose: () => void
 }
@@ -36,6 +38,7 @@ export default function OrderModal({
   priceType,
   price,
   location,
+  serviceType = 'typ1',
   customQuestions,
   onClose,
 }: Props) {
@@ -44,9 +47,27 @@ export default function OrderModal({
   const [saving, setSaving] = useState(false)
   const [success, setSuccess] = useState(false)
 
+  // Kontaktinfo
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
+
+  // Typ 1 – platsbunden
+  const [preferredDate, setPreferredDate] = useState('')
+  const [preferredTime, setPreferredTime] = useState('')
+  const [address, setAddress] = useState('')
+
+  // Typ 2 – digital löpande
+  const [desiredDeadline, setDesiredDeadline] = useState('')
+  const [milestones, setMilestones] = useState('')
+
+  // Typ 3 – engångstjänst
+  const [pickupAddress, setPickupAddress] = useState('')
+  const [deliveryAddress, setDeliveryAddress] = useState('')
+  const [pickupDate, setPickupDate] = useState('')
+  const [pickupTime, setPickupTime] = useState('')
+
+  // Svar på frågor
   const [answers, setAnswers] = useState<Record<string, string>>({})
   const [customAnswers, setCustomAnswers] = useState<Record<string, string>>({})
   const [message, setMessage] = useState('')
@@ -68,8 +89,15 @@ export default function OrderModal({
   const hasSubcategoryQuestions = subcategoryQuestions.length > 0
   const hasCustomQuestions = customQuestions.length > 0
 
+  // Typ-specifikt steg
+  const typeStepLabel =
+    serviceType === 'typ1' ? 'Datum & plats' :
+    serviceType === 'typ2' ? 'Tidslinje' :
+    'Upphämtning & leverans'
+
   const STEPS = [
     'Kontaktinfo',
+    typeStepLabel,
     ...(hasSubcategoryQuestions ? ['Frågor'] : []),
     ...(hasCustomQuestions ? ['Utförarens frågor'] : []),
     'Bekräfta',
@@ -78,6 +106,8 @@ export default function OrderModal({
 
   const canProceed = () => {
     if (step === 0) return name && email
+    if (STEPS[step] === 'Datum & plats') return preferredDate && address
+    if (STEPS[step] === 'Upphämtning & leverans') return pickupAddress && deliveryAddress && pickupDate
     if (STEPS[step] === 'Frågor') {
       return subcategoryQuestions.filter(q => q.required).every(q => answers[q.id])
     }
@@ -91,7 +121,6 @@ export default function OrderModal({
     if (!user) return
     setSaving(true)
     try {
-      // Bygg svar med labels som nycklar
       const answersWithLabels: Record<string, string> = {}
       subcategoryQuestions.forEach(q => {
         if (answers[q.id]) answersWithLabels[q.label] = answers[q.id]
@@ -101,6 +130,23 @@ export default function OrderModal({
       customQuestions.forEach(q => {
         if (customAnswers[q.id]) customAnswersWithLabels[q.label] = customAnswers[q.id]
       })
+
+      // Bygg typ-specifik extra data som sparas i answers
+      if (serviceType === 'typ1') {
+        if (preferredDate) answersWithLabels['Önskat datum'] = preferredDate
+        if (preferredTime) answersWithLabels['Önskad tid'] = preferredTime
+        if (address) answersWithLabels['Adress'] = address
+      }
+      if (serviceType === 'typ2') {
+        if (desiredDeadline) answersWithLabels['Önskat slutdatum'] = desiredDeadline
+        if (milestones) answersWithLabels['Föreslagna milstolpar'] = milestones
+      }
+      if (serviceType === 'typ3') {
+        if (pickupAddress) answersWithLabels['Upphämtningsadress'] = pickupAddress
+        if (deliveryAddress) answersWithLabels['Leveransadress'] = deliveryAddress
+        if (pickupDate) answersWithLabels['Datum'] = pickupDate
+        if (pickupTime) answersWithLabels['Tid'] = pickupTime
+      }
 
       const { data: order } = await supabase.from('orders').insert({
         service_id: serviceId,
@@ -121,7 +167,6 @@ export default function OrderModal({
         created_at: new Date().toISOString(),
       }).select().single()
 
-      // Skicka notifikation till utföraren
       if (order) {
         await supabase.from('notifications').insert({
           user_id: sellerId,
@@ -153,11 +198,7 @@ export default function OrderModal({
   ) => {
     if (q.type === 'select') {
       return (
-        <select
-          className={styles.input}
-          value={value}
-          onChange={e => onChange(e.target.value)}
-        >
+        <select className={styles.input} value={value} onChange={e => onChange(e.target.value)}>
           <option value="">Välj...</option>
           {q.options?.map(opt => <option key={opt} value={opt}>{opt}</option>)}
         </select>
@@ -230,7 +271,114 @@ export default function OrderModal({
               </div>
             )}
 
-            {/* Steg 2 – Underkategori-frågor */}
+            {/* Typ 1 – Datum & plats */}
+            {STEPS[step] === 'Datum & plats' && (
+              <div className={styles.fields}>
+                <p className={styles.hint}>När och var ska tjänsten utföras?</p>
+                <div className={styles.field}>
+                  <label className={styles.label}>Önskat datum <span className={styles.required}>*</span></label>
+                  <input
+                    className={styles.input}
+                    type="date"
+                    value={preferredDate}
+                    min={new Date().toISOString().split('T')[0]}
+                    onChange={e => setPreferredDate(e.target.value)}
+                  />
+                </div>
+                <div className={styles.field}>
+                  <label className={styles.label}>Önskad tid</label>
+                  <input
+                    className={styles.input}
+                    type="time"
+                    value={preferredTime}
+                    onChange={e => setPreferredTime(e.target.value)}
+                  />
+                </div>
+                <div className={styles.field}>
+                  <label className={styles.label}>Adress <span className={styles.required}>*</span></label>
+                  <input
+                    className={styles.input}
+                    placeholder="Gatuadress, stad"
+                    value={address}
+                    onChange={e => setAddress(e.target.value)}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Typ 2 – Tidslinje */}
+            {STEPS[step] === 'Tidslinje' && (
+              <div className={styles.fields}>
+                <p className={styles.hint}>Berätta om din tidsram och hur du vill dela upp projektet.</p>
+                <div className={styles.field}>
+                  <label className={styles.label}>Önskat slutdatum</label>
+                  <input
+                    className={styles.input}
+                    type="date"
+                    value={desiredDeadline}
+                    min={new Date().toISOString().split('T')[0]}
+                    onChange={e => setDesiredDeadline(e.target.value)}
+                  />
+                </div>
+                <div className={styles.field}>
+                  <label className={styles.label}>Föreslagna milstolpar <span className={styles.optional}>(valfritt)</span></label>
+                  <textarea
+                    className={styles.textarea}
+                    placeholder={`T.ex:\n1. Utkast och koncept – vecka 1\n2. Första version – vecka 2\n3. Slutleverans – vecka 3`}
+                    value={milestones}
+                    onChange={e => setMilestones(e.target.value)}
+                    rows={4}
+                  />
+                  <span className={styles.hint}>Utföraren kan justera och godkänna milstolparna när beställningen accepteras.</span>
+                </div>
+              </div>
+            )}
+
+            {/* Typ 3 – Upphämtning & leverans */}
+            {STEPS[step] === 'Upphämtning & leverans' && (
+              <div className={styles.fields}>
+                <p className={styles.hint}>Var ska upphämtning ske och vart ska det levereras?</p>
+                <div className={styles.field}>
+                  <label className={styles.label}>Upphämtningsadress <span className={styles.required}>*</span></label>
+                  <input
+                    className={styles.input}
+                    placeholder="Gatuadress, stad"
+                    value={pickupAddress}
+                    onChange={e => setPickupAddress(e.target.value)}
+                  />
+                </div>
+                <div className={styles.field}>
+                  <label className={styles.label}>Leveransadress <span className={styles.required}>*</span></label>
+                  <input
+                    className={styles.input}
+                    placeholder="Gatuadress, stad"
+                    value={deliveryAddress}
+                    onChange={e => setDeliveryAddress(e.target.value)}
+                  />
+                </div>
+                <div className={styles.field}>
+                  <label className={styles.label}>Datum <span className={styles.required}>*</span></label>
+                  <input
+                    className={styles.input}
+                    type="date"
+                    value={pickupDate}
+                    min={new Date().toISOString().split('T')[0]}
+                    onChange={e => setPickupDate(e.target.value)}
+                  />
+                </div>
+                <div className={styles.field}>
+                  <label className={styles.label}>Tid</label>
+                  <input
+                    className={styles.input}
+                    type="time"
+                    value={pickupTime}
+                    onChange={e => setPickupTime(e.target.value)}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Underkategori-frågor */}
             {STEPS[step] === 'Frågor' && (
               <div className={styles.fields}>
                 <p className={styles.hint}>Besvara frågorna så utföraren kan förbereda sig.</p>
@@ -245,7 +393,7 @@ export default function OrderModal({
               </div>
             )}
 
-            {/* Steg 3 – Utförarens egna frågor */}
+            {/* Utförarens egna frågor */}
             {STEPS[step] === 'Utförarens frågor' && (
               <div className={styles.fields}>
                 <p className={styles.hint}>Utföraren vill veta lite mer om ditt uppdrag.</p>
@@ -269,6 +417,11 @@ export default function OrderModal({
                     { label: 'Utförare', value: sellerName },
                     { label: 'Pris', value: priceType === 'offert' ? 'Offert' : `${price} kr (${priceType})` },
                     { label: 'Plats', value: location },
+                    ...(serviceType === 'typ1' && preferredDate ? [{ label: 'Datum', value: preferredDate }] : []),
+                    ...(serviceType === 'typ1' && address ? [{ label: 'Adress', value: address }] : []),
+                    ...(serviceType === 'typ2' && desiredDeadline ? [{ label: 'Slutdatum', value: desiredDeadline }] : []),
+                    ...(serviceType === 'typ3' && pickupAddress ? [{ label: 'Upphämtning', value: pickupAddress }] : []),
+                    ...(serviceType === 'typ3' && deliveryAddress ? [{ label: 'Leverans', value: deliveryAddress }] : []),
                   ].map(row => (
                     <div key={row.label} className={styles.summary_row}>
                       <span>{row.label}</span>
@@ -286,6 +439,11 @@ export default function OrderModal({
                     onChange={e => setMessage(e.target.value)}
                     rows={4}
                   />
+                </div>
+
+                <div className={styles.payment_info}>
+                  <span>💡</span>
+                  <p>Betalning sker direkt mellan dig och utföraren. Ni bestämmer upplägget själva – Svippo är inte part i transaktionen.</p>
                 </div>
               </div>
             )}

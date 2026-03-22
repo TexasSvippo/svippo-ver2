@@ -207,6 +207,28 @@
   padding: 16px 0;
 }
 
+.optional {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--color-gray);
+}
+
+.payment_info {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 16px;
+  background: #f0f8ff;
+  border-radius: var(--radius-md);
+  border: 1px solid #cce5f6;
+  font-size: 13px;
+  color: var(--color-gray);
+  line-height: 1.5;
+
+  span { flex-shrink: 0; font-size: 16px; }
+}
+
+
 .success_emoji { font-size: 56px; line-height: 1; }
 .success_title { font-family: var(--font-heading); font-size: 24px; font-weight: 700; color: var(--color-dark); }
 .success_text { font-size: 15px; color: var(--color-gray); line-height: 1.6; }

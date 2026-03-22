@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import useAuth from '@/hooks/useAuth'
 import { categories } from '@/data/categories'
+import type { ServiceType } from '@/data/categories'
 import { municipalities } from '@/data/municipalities'
 import styles from './createservice.module.scss'
 
@@ -165,23 +166,26 @@ export default function CreateServicePage() {
           custom_questions: form.custom_questions,
         }).eq('id', editId)
       } else {
-        await supabase.from('services').insert({
-          title: form.title,
-          description: form.description,
-          category_id: form.category_id,
-          subcategory: form.subcategory,
-          price_type: form.price_type,
-          price: form.price_type !== 'offert' ? Number(form.price) : null,
-          location: form.location,
-          user_id: user.id,
-          user_name: userData?.name || user.email,
-          user_email: user.email,
-          account_type: accountType,
-          custom_questions: form.custom_questions,
-          rating: 0,
-          reviews: 0,
-          created_at: new Date().toISOString(),
-        })
+      const selectedCat = categories.find(c => c.id === form.category_id)
+
+      await supabase.from('services').insert({
+        title: form.title,
+        description: form.description,
+        category_id: form.category_id,
+        subcategory: form.subcategory,
+        price_type: form.price_type,
+        price: form.price_type !== 'offert' ? Number(form.price) : null,
+        location: form.location,
+        user_id: user.id,
+        user_name: userData?.name || user.email,
+        user_email: user.email,
+        account_type: accountType,
+        service_type: selectedCat?.service_type ?? 'typ1',
+        custom_questions: form.custom_questions,
+        rating: 0,
+        reviews: 0,
+        created_at: new Date().toISOString(),
+      })
       }
       setShowSuccess(true)
     } catch (err) {

@@ -29,6 +29,7 @@ type Service = {
   user_email: string
   user_id: string
   avatar_url?: string
+  service_type?: 'typ1' | 'typ2' | 'typ3'
   rating: number
   reviews: number
   custom_questions?: CustomQuestion[]
@@ -271,6 +272,7 @@ const filteredReviews = reviews
           priceType={service.price_type}
           price={service.price}
           location={service.location}
+          serviceType={service.service_type}
           customQuestions={service.custom_questions || []}
           onClose={() => setShowOrder(false)}
         />
