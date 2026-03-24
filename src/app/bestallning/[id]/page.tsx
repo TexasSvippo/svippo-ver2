@@ -28,6 +28,7 @@ type Order = {
   payment_status: 'unpaid' | 'paid'
   service_type: ServiceType
   subcategory?: string
+  delivered_at?: string | null
   created_at: string
 }
 
@@ -152,6 +153,30 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
     setOrder(prev => prev ? { ...prev, payment_status: status } : prev)
     setUpdating(false)
   }
+
+  const handleMarkDelivered = async () => {
+  if (!order) return
+  setUpdating(true)
+  const now = new Date().toISOString()
+  await supabase.from('orders').update({ delivered_at: now }).eq('id', order.id)
+  setOrder(prev => prev ? { ...prev, delivered_at: now } : prev)
+
+  await supabase.from('notifications').insert({
+    user_id: order.buyer_id,
+    type: 'delivery_marked',
+    order_id: order.id,
+    service_title: order.service_title,
+    actor_name: order.seller_name,
+    message: `${order.seller_name} har markerat uppdraget som levererat. Allt okej? Om du inte hör av dig inom 24 timmar bekräftas uppdraget automatiskt.`,
+    action_url: `/min-bestallning/${order.id}`,
+    read: false,
+    dismissed: false,
+    email_sent: false,
+    created_at: now,
+  })
+
+  setUpdating(false)
+}
 
   const handleReview = async () => {
     if (!order || !user) return
@@ -421,6 +446,16 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
               </div>
             </div>
 
+            {order.status === 'accepted' && isSeller && (
+              <div className={`${styles.chat_card} card`}>
+                <h2 className={styles.section_title}>💬 Meddelanden</h2>
+                <p className={styles.progress_hint}>Kommunicera med {order.buyer_name} om uppdraget.</p>
+                <Link href={`/meddelanden?orderId=${order.id}`} className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
+                  💬 Öppna chatten
+                </Link>
+              </div>
+            )}
+            
             {isSeller && (
               <div className={`${styles.actions_card} card`}>
                 <h2 className={styles.section_title}>⚡ Hantera beställning</h2>
@@ -478,6 +513,28 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                     <button className="btn btn-primary" onClick={() => handlePayment('paid')} disabled={updating}>✅ Ja, jag har fått betalt</button>
                     <button className="btn btn-outline" onClick={() => handlePayment('unpaid')} disabled={updating}>⏳ Inte än</button>
                   </div>
+                )}
+              </div>
+            )}
+
+            {serviceType === 'typ3' && order.status === 'accepted' && projectStatus !== 'completed' && isSeller && (
+              <div className={`${styles.payment_card} card`}>
+                <h2 className={styles.section_title}>📦 Leverans</h2>
+                <p className={styles.progress_hint}>
+                  Har du levererat uppdraget till {order.buyer_name}?
+                </p>
+                {order.delivered_at ? (
+                  <div className={styles.payment_done}>
+                    ✅ Markerat som levererat – väntar på bekräftelse från {order.buyer_name}
+                  </div>
+                ) : (
+                  <button
+                    className="btn btn-primary"
+                    onClick={handleMarkDelivered}
+                    disabled={updating}
+                  >
+                    📦 Markera som levererat
+                  </button>
                 )}
               </div>
             )}

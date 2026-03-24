@@ -97,6 +97,9 @@ export default function Navbar() {
                         <Link href="/bestallningar" className={styles.navbar__dropdown_item} onClick={() => setMenuOpen(false)}>
                           📦 Beställningar
                         </Link>
+                        <Link href="/meddelanden" className={styles.navbar__dropdown_item} onClick={() => setMenuOpen(false)}>
+                          💬 Meddelanden
+                        </Link>
                         <Link 
                           href="/notifikationer" 
                           className={`${styles.navbar__dropdown_item} ${styles.navbar__dropdown_mobile_only}`} 

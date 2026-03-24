@@ -16,6 +16,7 @@ type Order = {
   service_title: string
   seller_id: string
   seller_name: string
+  seller_email?: string
   buyer_id: string
   buyer_name: string
   buyer_email: string
@@ -26,6 +27,12 @@ type Order = {
   answers?: Record<string, string>
   custom_answers?: Record<string, string>
   from_request?: boolean
+  service_type?: 'typ1' | 'typ2' | 'typ3'
+  dispute_status?: string | null
+  dispute_message?: string | null
+  delivered_at?: string | null
+  chat_enabled?: boolean
+  email_triggers?: Record<string, boolean>
   created_at: string
 }
 
@@ -35,6 +42,19 @@ const STATUS_STEPS = [
   { key: 'almost_done', label: 'Nästan klart', desc: 'Sista finishen återstår', num: 3 },
   { key: 'completed', label: 'Slutfört', desc: 'Projektet är klart! 🎉', num: 4 },
 ]
+
+// [MEJLPLATS] – Triggerlogik för mejlutskick
+// När Resend är aktiverat ersätts dessa med faktiska mejlutskick
+async function triggerEmail(type: string, orderId: string) {
+  try {
+    await supabase.from('orders').update({
+      email_triggers: { [type]: true, [`${type}_at`]: new Date().toISOString() }
+    }).eq('id', orderId)
+    console.log(`[MEJLPLATS] Trigger: ${type} för order ${orderId}`)
+  } catch (err) {
+    console.error('Email trigger error:', err)
+  }
+}
 
 export default function MyOrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { user } = useAuth()
@@ -47,12 +67,22 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
   const [reviewRating, setReviewRating] = useState(5)
   const [reviewText, setReviewText] = useState('')
 
+  // Avvikelseflöde
+  const [showDisputeForm, setShowDisputeForm] = useState(false)
+  const [disputeMessage, setDisputeMessage] = useState('')
+  const [disputeSending, setDisputeSending] = useState(false)
+  const [disputeSent, setDisputeSent] = useState(false)
+
+  // Typ 3 – bekräftelse
+  const [confirmingDelivery, setConfirmingDelivery] = useState(false)
+
   useEffect(() => {
     const fetchOrder = async () => {
       const { id } = await params
       const { data } = await supabase.from('orders').select('*').eq('id', id).single()
       if (data) {
         setOrder(data)
+        if (data.dispute_status) setDisputeSent(true)
         if (user) {
           const { data: existing } = await supabase
             .from('reviews')
@@ -84,7 +114,6 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
       created_at: new Date().toISOString(),
     })
 
-    // Uppdatera tjänstens snittbetyg
     const { data: reviews } = await supabase
       .from('reviews')
       .select('rating')
@@ -97,9 +126,85 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
       }).eq('id', order.service_id)
     }
 
+    // [MEJLPLATS] – Skicka tack-mejl till beställaren
+    await triggerEmail('review_sent', order.id)
+
     setReviewSuccess(true)
     setAlreadyReviewed(true)
     setShowReviewForm(false)
+  }
+
+  // Avvikelseflöde
+  const handleDispute = async () => {
+    if (!order || !disputeMessage) return
+    setDisputeSending(true)
+    try {
+      await supabase.from('orders').update({
+        dispute_status: 'open',
+        dispute_message: disputeMessage,
+        dispute_at: new Date().toISOString(),
+      }).eq('id', order.id)
+
+      // Notifiera utföraren
+      await supabase.from('notifications').insert({
+        user_id: order.seller_id,
+        type: 'dispute_opened',
+        order_id: order.id,
+        service_title: order.service_title,
+        actor_name: order.buyer_name,
+        message: `${order.buyer_name} har rapporterat ett problem med "${order.service_title}". Svippo tittar på det – håll kommunikationsytan öppen.`,
+        action_url: `/bestallning/${order.id}`,
+        read: false,
+        dismissed: false,
+        email_sent: false,
+        created_at: new Date().toISOString(),
+      })
+
+      // [MEJLPLATS] – Skicka mejl till Svippo-admin och utföraren
+      await triggerEmail('dispute_opened', order.id)
+
+      setOrder(prev => prev ? { ...prev, dispute_status: 'open', dispute_message: disputeMessage } : prev)
+      setDisputeSent(true)
+      setShowDisputeForm(false)
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setDisputeSending(false)
+    }
+  }
+
+  // Typ 3 – Beställaren bekräftar leverans manuellt
+  const handleConfirmDelivery = async () => {
+    if (!order) return
+    setConfirmingDelivery(true)
+    try {
+      await supabase.from('orders').update({
+        project_status: 'completed',
+      }).eq('id', order.id)
+
+      await supabase.from('notifications').insert({
+        user_id: order.seller_id,
+        type: 'project_completed',
+        order_id: order.id,
+        service_title: order.service_title,
+        actor_name: order.buyer_name,
+        message: `${order.buyer_name} har bekräftat att leveransen gick bra! 🎉`,
+        action_url: `/bestallning/${order.id}`,
+        read: false,
+        dismissed: false,
+        email_sent: false,
+        created_at: new Date().toISOString(),
+      })
+
+      // [MEJLPLATS] – Skicka bekräftelsemejl till båda parter
+      await triggerEmail('delivery_confirmed', order.id)
+
+      setOrder(prev => prev ? { ...prev, project_status: 'completed' } : prev)
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setConfirmingDelivery(false)
+    }
   }
 
   if (loading) return <div className={styles.loading}>Laddar beställning...</div>
@@ -117,6 +222,9 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
 
   const projectStatus = order.project_status || 'not_started'
   const currentStepIndex = STATUS_STEPS.findIndex(s => s.key === projectStatus)
+  const isTyp3 = order.service_type === 'typ3'
+  const isDelivered = !!order.delivered_at
+  const hasDispute = !!order.dispute_status
 
   return (
     <div className={styles.myorder}>
@@ -128,6 +236,16 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
 
         {projectStatus === 'completed' && (
           <div className={orderStyles.completed_banner}>🎉 Detta projekt är avslutat</div>
+        )}
+
+        {hasDispute && (
+          <div className={styles.dispute_banner}>
+            <span>⚠️</span>
+            <div>
+              <strong>Ärendet är rapporterat</strong>
+              <p>Vi har tagit emot ditt ärende och återkommer inom 24 timmar. Under tiden kan du kontakta {order.seller_name} direkt via e-post.</p>
+            </div>
+          </div>
         )}
 
         <div className={styles.myorder__layout}>
@@ -189,7 +307,7 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
               </div>
             )}
 
-            {order.status === 'accepted' && (
+            {order.status === 'accepted' && !isTyp3 && (
               <div className={`${styles.myorder__progress} card`}>
                 <h2 className={orderStyles.section_title}>📊 Projektstatus</h2>
                 <p className={orderStyles.progress_hint}>Följ hur {order.seller_name} arbetar med ditt projekt.</p>
@@ -214,6 +332,35 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
               </div>
             )}
 
+            {/* Typ 3 – bekräftelse vid leverans */}
+            {isTyp3 && isDelivered && projectStatus !== 'completed' && (
+              <div className={`${styles.myorder__delivery} card`}>
+                <h2 className={orderStyles.section_title}>📦 Leverans</h2>
+                <p className={orderStyles.progress_hint}>
+                  {order.seller_name} har markerat uppdraget som levererat. Stämmer allt?
+                </p>
+                <div className={styles.delivery_actions}>
+                  <button
+                    className="btn btn-primary"
+                    onClick={handleConfirmDelivery}
+                    disabled={confirmingDelivery}
+                  >
+                    {confirmingDelivery ? 'Bekräftar...' : '✅ Ja, allt är okej!'}
+                  </button>
+                  <button
+                    className="btn btn-outline"
+                    style={{ color: 'var(--color-orange)', borderColor: 'var(--color-orange)' }}
+                    onClick={() => setShowDisputeForm(true)}
+                  >
+                    ⚠️ Något stämmer inte
+                  </button>
+                </div>
+                <p className={styles.delivery_auto_hint}>
+                  Om du inte svarar bekräftas uppdraget automatiskt inom 24 timmar.
+                </p>
+              </div>
+            )}
+
           </div>
 
           {/* Höger */}
@@ -227,6 +374,81 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
                 👤 Se profil
               </Link>
             </div>
+
+            {/* CHATT */}
+            {order.status === 'accepted' && (
+              <div className={`${styles.svipposafe_card} card`}>
+                <div className={styles.svipposafe__header}>
+                  <span>💬</span>
+                  <strong>Meddelanden</strong>
+                </div>
+                <p className={styles.svipposafe__text}>
+                  Kommunicera med {order.seller_name} om uppdraget.
+                </p>
+                <Link href={`/meddelanden?orderId=${order.id}`} className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
+                  💬 Öppna chatten
+                </Link>
+              </div>
+            )}
+
+            {/* SvippoSafe */}
+            {order.status === 'accepted' && projectStatus !== 'completed' && !hasDispute && (
+              <div className={`${styles.svipposafe_card} card`}>
+                <div className={styles.svipposafe__header}>
+                  <span>🛡️</span>
+                  <strong>SvippoSafe</strong>
+                </div>
+                <p className={styles.svipposafe__text}>
+                  Om något inte stämmer med ditt uppdrag hjälper vi till att lösa det.
+                </p>
+                {!showDisputeForm ? (
+                  <button
+                    className={`btn btn-outline ${styles.svipposafe__btn}`}
+                    onClick={() => setShowDisputeForm(true)}
+                  >
+                    ⚠️ Rapportera ett problem
+                  </button>
+                ) : (
+                  <div className={styles.dispute_form}>
+                    <label className={styles.dispute_label}>Berätta vad som hände</label>
+                    <textarea
+                      className="form-textarea"
+                      placeholder="Beskriv problemet så hjälper vi dig..."
+                      value={disputeMessage}
+                      onChange={e => setDisputeMessage(e.target.value)}
+                      rows={4}
+                    />
+                    <div className={styles.dispute_actions}>
+                      <button
+                        className="btn btn-outline"
+                        onClick={() => { setShowDisputeForm(false); setDisputeMessage('') }}
+                      >
+                        Avbryt
+                      </button>
+                      <button
+                        className="btn btn-orange"
+                        onClick={handleDispute}
+                        disabled={!disputeMessage || disputeSending}
+                      >
+                        {disputeSending ? 'Skickar...' : 'Skicka'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {disputeSent && (
+              <div className={`${styles.svipposafe_card} card`}>
+                <div className={styles.dispute_sent}>
+                  <span>✅</span>
+                  <div>
+                    <strong>Ärendet är skickat</strong>
+                    <p>Vi återkommer inom 24 timmar.</p>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {projectStatus === 'completed' && !alreadyReviewed && !reviewSuccess && (
               <div className={`${orderStyles.review_card} card`}>
@@ -261,6 +483,33 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
           </div>
         </div>
       </div>
+
+      {/* Avvikelse-popup för Typ 3 */}
+      {showDisputeForm && isTyp3 && (
+        <div className="modal-backdrop" onClick={() => setShowDisputeForm(false)}>
+          <div className="modal-box" onClick={e => e.stopPropagation()}>
+            <h2 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '8px' }}>⚠️ Rapportera ett problem</h2>
+            <p style={{ color: 'var(--color-gray)', marginBottom: '16px' }}>Berätta vad som hände så hjälper vi dig.</p>
+            <textarea
+              className="form-textarea"
+              placeholder="Beskriv problemet..."
+              value={disputeMessage}
+              onChange={e => setDisputeMessage(e.target.value)}
+              rows={4}
+            />
+            <div style={{ display: 'flex', gap: '12px', marginTop: '16px', justifyContent: 'flex-end' }}>
+              <button className="btn btn-outline" onClick={() => setShowDisputeForm(false)}>Avbryt</button>
+              <button
+                className="btn btn-orange"
+                onClick={handleDispute}
+                disabled={!disputeMessage || disputeSending}
+              >
+                {disputeSending ? 'Skickar...' : 'Skicka ärendet'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

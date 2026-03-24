@@ -83,3 +83,123 @@
   gap: 12px;
   text-align: center;
 }
+
+// Avvikelseflöde
+.dispute_banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px 20px;
+  background: #fff8e1;
+  border: 1.5px solid var(--color-orange);
+  border-radius: var(--radius-md);
+  margin-bottom: 8px;
+
+  span { font-size: 20px; flex-shrink: 0; }
+  strong { font-size: 14px; font-weight: 700; color: var(--color-dark); display: block; }
+  p { font-size: 13px; color: var(--color-gray); margin: 4px 0 0; }
+}
+
+// [CHATTPLATS]
+.myorder__chat {
+  padding: 20px 24px;
+}
+
+.chat_placeholder {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+
+  strong { font-size: 15px; font-weight: 600; color: var(--color-dark); display: block; }
+  p { font-size: 13px; color: var(--color-gray); margin: 4px 0 0; }
+}
+
+.chat_placeholder__icon {
+  font-size: 28px;
+  flex-shrink: 0;
+}
+
+// Typ 3 – leveransbekräftelse
+.myorder__delivery {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.delivery_actions {
+  display: flex;
+  gap: 12px;
+}
+
+.delivery_auto_hint {
+  font-size: 12px;
+  color: var(--color-gray);
+  font-style: italic;
+}
+
+// SvippoSafe
+.svipposafe_card {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.svipposafe__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-dark);
+
+  span { font-size: 18px; }
+}
+
+.svipposafe__text {
+  font-size: 13px;
+  color: var(--color-gray);
+  line-height: 1.5;
+}
+
+.svipposafe__btn {
+  width: 100%;
+  justify-content: center;
+}
+
+.dispute_form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dispute_label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-dark);
+}
+
+.dispute_actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.dispute_sent {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 14px;
+
+  span { font-size: 18px; flex-shrink: 0; }
+  strong { font-weight: 700; color: var(--color-dark); display: block; }
+  p { color: var(--color-gray); margin: 4px 0 0; font-size: 13px; }
+}
+
+.chat_card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 24px !important;
+}
