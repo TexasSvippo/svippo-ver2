@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
 import useAuth from './useAuth'
 
@@ -14,6 +14,11 @@ export type NotificationType =
   | 'new_interest'
   | 'new_review'
   | 'new_request_in_category'
+  | 'new_message'
+  | 'delivery_marked'
+  | 'dispute_opened'
+  | 'auto_confirmed'
+  | 'interest_rejected'
 
 export type Notification = {
   id: string
@@ -35,6 +40,7 @@ export function useNotifications() {
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
   const [loading, setLoading] = useState(true)
+  const isMounted = useRef(true)
 
   const fetchNotifications = useCallback(async () => {
     if (!user) return
@@ -44,13 +50,18 @@ export function useNotifications() {
       .eq('user_id', user.id)
       .eq('dismissed', false)
       .order('created_at', { ascending: false })
+    if (!isMounted.current) return
     setNotifications(data ?? [])
     setUnreadCount(data?.filter(n => !n.read).length ?? 0)
     setLoading(false)
   }, [user])
 
   useEffect(() => {
-    fetchNotifications()
+    isMounted.current = true
+    if (!user) return
+    const run = async () => { await fetchNotifications() }
+    run()
+    return () => { isMounted.current = false }
   }, [fetchNotifications])
 
   // Realtid via Supabase Realtime
@@ -101,7 +112,6 @@ export function useNotifications() {
     setUnreadCount(0)
   }
 
-  // Skapa en notifikation
   const createNotification = async (params: {
     userId: string
     type: NotificationType

@@ -3,7 +3,7 @@
 import OrderModal from '@/components/OrderModal'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import useAuth from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
 import styles from './servicedetail.module.scss'
@@ -51,8 +51,9 @@ type Props = {
 }
 
 export default function ServiceDetailClient({ service, reviews, avgRating }: Props) {
-  const { user } = useAuth()
+const { user } = useAuth()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [showOrder, setShowOrder] = useState(false)
   const [showLoginPrompt, setShowLoginPrompt] = useState(false)
   const [deleting, setDeleting] = useState(false)
@@ -60,6 +61,14 @@ export default function ServiceDetailClient({ service, reviews, avgRating }: Pro
   const [inProgressCount, setInProgressCount] = useState(0)
 
   const isOwner = user?.id === service.user_id
+  const shouldAutoOpen = searchParams.get('order') === 'true' && !isOwner
+
+  useEffect(() => {
+    if (shouldAutoOpen && user) {
+      const timer = setTimeout(() => setShowOrder(true), 0)
+      return () => clearTimeout(timer)
+    }
+  }, [shouldAutoOpen, user])
 
   useEffect(() => {
     if (!isOwner) return
@@ -91,6 +100,61 @@ export default function ServiceDetailClient({ service, reviews, avgRating }: Pro
     setDeleting(true)
     await supabase.from('services').delete().eq('id', service.id)
     router.push('/profil')
+  }
+
+const handleContact = async () => {
+    if (!user) {
+      setShowLoginPrompt(true)
+      return
+    }
+
+    // Kolla om konversation redan finns mellan dessa två för denna tjänst
+    const { data: existing } = await supabase
+      .from('conversations')
+      .select('id')
+      .eq('anchor_id', service.id)
+      .eq('participant_1_id', user.id)
+      .eq('participant_2_id', service.user_id)
+      .limit(1)
+
+    if (existing && existing.length > 0) {
+      router.push(`/meddelanden/${existing[0].id}`)
+      return
+    }
+
+    // Kolla omvänt (ifall rollerna är bytta)
+    const { data: existingReverse } = await supabase
+      .from('conversations')
+      .select('id')
+      .eq('anchor_id', service.id)
+      .eq('participant_1_id', service.user_id)
+      .eq('participant_2_id', user.id)
+      .limit(1)
+
+    if (existingReverse && existingReverse.length > 0) {
+      router.push(`/meddelanden/${existingReverse[0].id}`)
+      return
+    }
+
+    // Skapa ny Typ A-konversation – skapas först när meddelande skickas
+    // Navigera till meddelanden med info om vem vi pratar med
+    const { data: newConv } = await supabase
+      .from('conversations')
+      .insert({
+        type: 'inquiry',
+        anchor_type: 'listing',
+        anchor_id: service.id,
+        assignment_id: null,
+        participant_1_id: user.id,
+        participant_2_id: service.user_id,
+        created_at: new Date().toISOString(),
+      })
+      .select()
+      .single()
+
+    if (newConv) {
+      router.push(`/meddelanden/${newConv.id}`)
+    }
   }
 
 const filteredReviews = reviews
@@ -240,12 +304,12 @@ const filteredReviews = reviews
               )}
 
               {!isOwner && (
-                <a
-                  href={`mailto:${service.user_email}`}
+                <button
                   className={`btn btn-outline ${styles.detail__question_btn}`}
+                  onClick={handleContact}
                 >
-                  💬 Har du en fråga?
-                </a>
+                  💬 Kontakta Svipparen
+                </button>
               )}
             </div>
 

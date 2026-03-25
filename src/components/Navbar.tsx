@@ -8,6 +8,7 @@ import useAuth from '@/hooks/useAuth'
 import CreateModal from './CreateModal'
 import SearchBar from './SearchBar'
 import { useNotifications } from '@/hooks/useNotifications'
+import { useUnreadMessages } from '@/hooks/useUnreadMessages'
 import styles from './Navbar.module.scss'
 import Image from 'next/image'
 

@@ -96,15 +96,16 @@ export default function MeddelandenPage() {
 
     const init = async () => {
       // Om vi kom hit via en beställningssida – hitta eller skapa konversation
-      if (orderId) {
-        const { data: existing } = await supabase
+        if (orderId) {
+        const { data: existingList } = await supabase
           .from('conversations')
           .select('id')
           .eq('assignment_id', orderId)
-          .single()
+          .order('created_at', { ascending: true })
+          .limit(1)
 
-        if (existing) {
-          router.replace(`/meddelanden/${existing.id}`)
+        if (existingList && existingList.length > 0) {
+          router.replace(`/meddelanden/${existingList[0].id}`)
           return
         }
 

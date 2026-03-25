@@ -44,18 +44,31 @@ type Order = {
   answers?: Record<string, string>
 }
 
+type Service = {
+  id: string
+  title: string
+  price: number
+  price_type: string
+  location: string
+  user_id: string
+  user_name: string
+  subcategory: string
+}
+
 export default function KonversationPage({ params }: { params: Promise<{ id: string }> }) {
   const { user } = useAuth()
   const router = useRouter()
   const [conversation, setConversation] = useState<Conversation | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
   const [order, setOrder] = useState<Order | null>(null)
+  const [service, setService] = useState<Service | null>(null)
   const [otherPartyName, setOtherPartyName] = useState('')
   const [otherPartyAvatar, setOtherPartyAvatar] = useState<string | null>(null)
   const [input, setInput] = useState('')
   const [sending, setSending] = useState(false)
   const [loading, setLoading] = useState(true)
   const bottomRef = useRef<HTMLDivElement>(null)
+  const messagesRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!user) return
@@ -91,7 +104,7 @@ export default function KonversationPage({ params }: { params: Promise<{ id: str
       setOtherPartyName(otherUser?.name ?? 'Okänd')
       setOtherPartyAvatar(otherUser?.avatar_url ?? null)
 
-      // Hämta order-info om kopplad
+      // Hämta order-info om kopplad (Typ B)
       if (conv.assignment_id) {
         const { data: orderData } = await supabase
           .from('orders')
@@ -99,6 +112,16 @@ export default function KonversationPage({ params }: { params: Promise<{ id: str
           .eq('id', conv.assignment_id)
           .single()
         if (orderData) setOrder(orderData)
+      }
+
+      // Hämta tjänsteinfo om Typ A (ingen order ännu)
+      if (!conv.assignment_id && conv.anchor_type === 'listing') {
+        const { data: serviceData } = await supabase
+          .from('services')
+          .select('id, title, price, price_type, location, user_id, user_name, subcategory')
+          .eq('id', conv.anchor_id)
+          .single()
+        if (serviceData) setService(serviceData)
       }
 
       // Hämta meddelanden
@@ -152,7 +175,7 @@ export default function KonversationPage({ params }: { params: Promise<{ id: str
               .update({ read_by: [...newMsg.read_by, user?.id] })
               .eq('id', newMsg.id)
           }
-          scrollToBottom()
+          scrollToBottom(true)
         }
       )
       .subscribe()
@@ -160,12 +183,28 @@ export default function KonversationPage({ params }: { params: Promise<{ id: str
     return () => { supabase.removeChannel(channel) }
   }, [conversation, user])
 
+  const isFirstLoad = useRef(true)
+
   useEffect(() => {
-    scrollToBottom()
+    if (isFirstLoad.current) {
+      scrollToBottom(false)
+      isFirstLoad.current = false
+    } else {
+      scrollToBottom(true)
+    }
   }, [messages])
 
-  const scrollToBottom = () => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+  const scrollToBottom = (smooth = false) => {
+    if (messagesRef.current) {
+      messagesRef.current.scrollTop = smooth
+        ? messagesRef.current.scrollHeight
+        : messagesRef.current.scrollHeight
+      if (smooth) {
+        messagesRef.current.scrollTo({ top: messagesRef.current.scrollHeight, behavior: 'smooth' })
+      } else {
+        messagesRef.current.scrollTop = messagesRef.current.scrollHeight
+      }
+    }
   }
 
   const handleSend = async () => {
@@ -291,7 +330,7 @@ export default function KonversationPage({ params }: { params: Promise<{ id: str
           </div>
 
           {/* Meddelandeyta */}
-          <div className={styles.chat__messages}>
+          <div className={styles.chat__messages} ref={messagesRef}>
             {messages.length === 0 && (
               <div className={styles.chat__empty}>
                 Inga meddelanden än. Skicka ett för att starta konversationen.
@@ -369,52 +408,87 @@ export default function KonversationPage({ params }: { params: Promise<{ id: str
         </div>
 
         {/* Höger – kontextkort */}
-        {order && (
+        {(order || service) && (
           <div className={styles.sidebar}>
             <div className={`${styles.context_card} card`}>
-              <h2 className={styles.context_title}>📦 Uppdrag</h2>
-              <strong className={styles.context_service}>{order.service_title}</strong>
 
-              <div className={styles.context_rows}>
-                <div className={styles.context_row}>
-                  <span>Status</span>
-                  <strong>{order.status === 'accepted' ? '✅ Godkänd' : order.status === 'pending' ? '⏳ Väntar' : '❌ Nekad'}</strong>
-                </div>
-                <div className={styles.context_row}>
-                  <span>Projektstatus</span>
-                  <strong>{projectStatusLabel[order.project_status] ?? order.project_status}</strong>
-                </div>
-                {order.answers?.['Önskat datum'] && (
-                  <div className={styles.context_row}>
-                    <span>Datum</span>
-                    <strong>{order.answers['Önskat datum']}</strong>
+              {/* Typ B – uppdragskort */}
+              {order && (
+                <>
+                  <h2 className={styles.context_title}>📦 Uppdrag</h2>
+                  <strong className={styles.context_service}>{order.service_title}</strong>
+                  <div className={styles.context_rows}>
+                    <div className={styles.context_row}>
+                      <span>Status</span>
+                      <strong>{order.status === 'accepted' ? '✅ Godkänd' : order.status === 'pending' ? '⏳ Väntar' : '❌ Nekad'}</strong>
+                    </div>
+                    <div className={styles.context_row}>
+                      <span>Projektstatus</span>
+                      <strong>{projectStatusLabel[order.project_status] ?? order.project_status}</strong>
+                    </div>
+                    {order.answers?.['Önskat datum'] && (
+                      <div className={styles.context_row}>
+                        <span>Datum</span>
+                        <strong>{order.answers['Önskat datum']}</strong>
+                      </div>
+                    )}
+                    {order.answers?.['Adress'] && (
+                      <div className={styles.context_row}>
+                        <span>Adress</span>
+                        <strong>{order.answers['Adress']}</strong>
+                      </div>
+                    )}
+                    {order.answers?.['Upphämtningsadress'] && (
+                      <div className={styles.context_row}>
+                        <span>Upphämtning</span>
+                        <strong>{order.answers['Upphämtningsadress']}</strong>
+                      </div>
+                    )}
+                    {order.answers?.['Leveransadress'] && (
+                      <div className={styles.context_row}>
+                        <span>Leverans</span>
+                        <strong>{order.answers['Leveransadress']}</strong>
+                      </div>
+                    )}
                   </div>
-                )}
-                {order.answers?.['Adress'] && (
-                  <div className={styles.context_row}>
-                    <span>Adress</span>
-                    <strong>{order.answers['Adress']}</strong>
-                  </div>
-                )}
-                {order.answers?.['Upphämtningsadress'] && (
-                  <div className={styles.context_row}>
-                    <span>Upphämtning</span>
-                    <strong>{order.answers['Upphämtningsadress']}</strong>
-                  </div>
-                )}
-                {order.answers?.['Leveransadress'] && (
-                  <div className={styles.context_row}>
-                    <span>Leverans</span>
-                    <strong>{order.answers['Leveransadress']}</strong>
-                  </div>
-                )}
-              </div>
-
-              {orderLink && (
-                <Link href={orderLink} className="btn btn-outline" style={{ width: '100%', justifyContent: 'center', marginTop: '8px' }}>
-                  📋 Visa beställningen
-                </Link>
+                  {orderLink && (
+                    <Link href={orderLink} className="btn btn-outline" style={{ width: '100%', justifyContent: 'center', marginTop: '8px' }}>
+                      📋 Visa beställningen
+                    </Link>
+                  )}
+                </>
               )}
+
+              {/* Typ A – tjänstekort */}
+              {service && !order && (
+                <>
+                  <h2 className={styles.context_title}>🛠️ Tjänst</h2>
+                  <strong className={styles.context_service}>{service.title}</strong>
+                  <div className={styles.context_rows}>
+                    <div className={styles.context_row}>
+                      <span>Kategori</span>
+                      <strong>{service.subcategory}</strong>
+                    </div>
+                    <div className={styles.context_row}>
+                      <span>Plats</span>
+                      <strong>{service.location}</strong>
+                    </div>
+                    <div className={styles.context_row}>
+                      <span>Pris</span>
+                      <strong>{service.price_type === 'offert' ? 'Offert' : `${service.price} kr (${service.price_type})`}</strong>
+                    </div>
+                  </div>
+                  <Link href={`/tjanst/${service.id}`} className="btn btn-outline" style={{ width: '100%', justifyContent: 'center', marginTop: '8px' }}>
+                    🔗 Visa tjänsten
+                  </Link>
+                  {user?.id !== service.user_id && (
+                    <Link href={`/tjanst/${service.id}?order=true`} className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', marginTop: '8px' }}>
+                      🛒 Beställ tjänsten
+                    </Link>
+                  )}
+                </>
+              )}
+
             </div>
           </div>
         )}
