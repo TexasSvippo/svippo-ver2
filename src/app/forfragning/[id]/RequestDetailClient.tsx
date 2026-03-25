@@ -30,7 +30,7 @@ type Props = {
 }
 
 export default function RequestDetailClient({ request }: Props) {
-  const { user } = useAuth()
+  const { user, accountType } = useAuth()
   const router = useRouter()
   const [showInterestForm, setShowInterestForm] = useState(false)
   const [showLoginPrompt, setShowLoginPrompt] = useState(false)
@@ -128,6 +128,60 @@ export default function RequestDetailClient({ request }: Props) {
     router.push('/profil')
   }
 
+  const handleContact = async () => {
+    if (!user) {
+      setShowLoginPrompt(true)
+      return
+    }
+
+    // Kolla om konversation redan finns
+    const { data: existing } = await supabase
+      .from('conversations')
+      .select('id')
+      .eq('anchor_id', request.id)
+      .eq('participant_1_id', user.id)
+      .eq('participant_2_id', request.user_id)
+      .limit(1)
+
+    if (existing && existing.length > 0) {
+      router.push(`/meddelanden/${existing[0].id}`)
+      return
+    }
+
+    // Kolla omvänt
+    const { data: existingReverse } = await supabase
+      .from('conversations')
+      .select('id')
+      .eq('anchor_id', request.id)
+      .eq('participant_1_id', request.user_id)
+      .eq('participant_2_id', user.id)
+      .limit(1)
+
+    if (existingReverse && existingReverse.length > 0) {
+      router.push(`/meddelanden/${existingReverse[0].id}`)
+      return
+    }
+
+    // Skapa ny Typ A-konversation kopplad till förfrågan
+    const { data: newConv } = await supabase
+      .from('conversations')
+      .insert({
+        type: 'inquiry',
+        anchor_type: 'request',
+        anchor_id: request.id,
+        assignment_id: null,
+        participant_1_id: user.id,
+        participant_2_id: request.user_id,
+        created_at: new Date().toISOString(),
+      })
+      .select()
+      .single()
+
+    if (newConv) {
+      router.push(`/meddelanden/${newConv.id}`)
+    }
+  }
+
   const isOwner = user?.id === request.user_id
 
   return (
@@ -209,18 +263,30 @@ export default function RequestDetailClient({ request }: Props) {
               </div>
 
               {!isOwner && (
-                success ? (
-                  <div className={styles.success_box}>
-                    ✅ Din intresseanmälan är skickad!
-                  </div>
-                ) : (
+                <>
+                  {user && accountType === 'bestellare' ? (
+                    <div style={{ fontSize: '13px', color: 'var(--color-gray)', textAlign: 'center', padding: '8px 0' }}>
+                      Endast Svippare och företag kan anmäla intresse.
+                    </div>
+                  ) : success ? (
+                    <div className={styles.success_box}>
+                      ✅ Din intresseanmälan är skickad!
+                    </div>
+                  ) : (
+                    <button
+                      className={`btn btn-orange ${serviceStyles.detail__order_btn}`}
+                      onClick={() => user ? setShowInterestForm(true) : setShowLoginPrompt(true)}
+                    >
+                      🙋 Jag kan hjälpa!
+                    </button>
+                  )}
                   <button
-                    className={`btn btn-orange ${serviceStyles.detail__order_btn}`}
-                    onClick={() => user ? setShowInterestForm(true) : setShowLoginPrompt(true)}
+                    className={`btn btn-outline ${serviceStyles.detail__question_btn}`}
+                    onClick={handleContact}
                   >
-                    🙋 Jag kan hjälpa!
+                    💬 Kontakta beställaren
                   </button>
-                )
+                </>
               )}
             </div>
 

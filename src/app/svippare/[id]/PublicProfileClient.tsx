@@ -2,7 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { categories as allCategories } from '@/data/categories'
+import { supabase } from '@/lib/supabase'
+import useAuth from '@/hooks/useAuth'
 import styles from './publicprofile.module.scss'
 
 type UserProfile = {
@@ -101,6 +104,8 @@ export default function PublicProfileClient({
   reviews,
   avgRating,
 }: Props) {
+  const { user } = useAuth()
+  const router = useRouter()
   const [activeNav, setActiveNav] = useState('tjanster')
   const [contactName, setContactName] = useState('')
   const [contactEmail, setContactEmail] = useState('')
@@ -182,8 +187,61 @@ export default function PublicProfileClient({
     }
   }
 
+  const handleContact = async () => {
+    if (!user) {
+      router.push('/logga-in')
+      return
+    }
+
+    // Kolla om konversation redan finns
+    const { data: existing } = await supabase
+      .from('conversations')
+      .select('id')
+      .eq('anchor_type', 'listing')
+      .eq('participant_1_id', user.id)
+      .eq('participant_2_id', profile.id)
+      .limit(1)
+
+    if (existing && existing.length > 0) {
+      router.push(`/meddelanden/${existing[0].id}`)
+      return
+    }
+
+    const { data: existingReverse } = await supabase
+      .from('conversations')
+      .select('id')
+      .eq('anchor_type', 'listing')
+      .eq('participant_1_id', profile.id)
+      .eq('participant_2_id', user.id)
+      .limit(1)
+
+    if (existingReverse && existingReverse.length > 0) {
+      router.push(`/meddelanden/${existingReverse[0].id}`)
+      return
+    }
+
+    // Skapa ny konversation
+    const { data: newConv } = await supabase
+      .from('conversations')
+      .insert({
+        type: 'inquiry',
+        anchor_type: 'listing',
+        anchor_id: profile.id,
+        assignment_id: null,
+        participant_1_id: user.id,
+        participant_2_id: profile.id,
+        created_at: new Date().toISOString(),
+      })
+      .select()
+      .single()
+
+    if (newConv) {
+      router.push(`/meddelanden/${newConv.id}`)
+    }
+  }
+
   return (
-    <div className={`${styles.pubprofile} ${profileTypeClass}`}>
+    <div className={`${styles.pubprofile} ${profileTypeClass}`}>  
 
       {/* Sticky meny */}
       <div className={styles.pubprofile__nav}>
@@ -491,44 +549,35 @@ export default function PublicProfileClient({
           </div>
 
           <div className={`${styles.pubprofile__contact_right} card`}>
-            {contactSent ? (
-              <div className={styles.pubprofile__contact_success}>
-                <span>🎉</span>
-                <strong>Meddelande skickat!</strong>
-                <p>{isCompany || isUF ? 'Vi återkommer till dig snart.' : `${profile.name} återkommer till dig snart.`}</p>
-              </div>
-            ) : (
-              <div className={styles.pubprofile__contact_form}>
-                <div className="form-group">
-                  <label className="form-label">Ditt namn</label>
-                  <input className="form-input" placeholder="För- och efternamn" value={contactName} onChange={e => setContactName(e.target.value)} />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">E-post</label>
-                  <input className="form-input" placeholder="din@email.se" type="email" value={contactEmail} onChange={e => setContactEmail(e.target.value)} />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Meddelande</label>
-                  <textarea className="form-textarea" placeholder="Beskriv vad du behöver hjälp med..." value={contactMessage} onChange={e => setContactMessage(e.target.value)} rows={4} />
-                </div>
-                <button
-                  className="btn btn-primary"
-                  style={{ width: '100%' }}
-                  disabled={!contactName || !contactEmail || !contactMessage}
-                  onClick={() => setContactSent(true)}
+            <div className={styles.pubprofile__contact_form}>
+              <p style={{ color: 'var(--color-gray)', fontSize: '14px', marginBottom: '16px' }}>
+                Skicka ett meddelande direkt via Svippos inbyggda chatt. Säkert och enkelt.
+              </p>
+              <button
+                className="btn btn-primary"
+                style={{ width: '100%', justifyContent: 'center' }}
+                onClick={handleContact}
+              >
+                💬 Skicka meddelande via Svippo
+              </button>
+              <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--color-border)' }}>
+                <a
+                  href={`mailto:${profile.email}`}
+                  className="btn btn-outline"
+                  style={{ width: '100%', justifyContent: 'center' }}
                 >
-                  Skicka meddelande
-                </button>
+                  📧 Skicka e-post direkt
+                </a>
               </div>
-            )}
+            </div>
           </div>
         </section>
 
       </div>
       {/* Mobil sticky CTA */}
       <div className={styles.pubprofile__mobile_cta}>
-        <button className="btn btn-primary" onClick={() => scrollTo('kontakt')}>
-          💬 Kontakta {isCompany || isUF ? 'oss' : 'mig'}
+        <button className="btn btn-primary" onClick={handleContact}>
+          💬 Skicka meddelande
         </button>
       </div>
     </div>

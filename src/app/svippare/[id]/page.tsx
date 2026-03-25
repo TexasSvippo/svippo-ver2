@@ -37,6 +37,7 @@ export default async function PublicProfilePage({ params }: Props) {
   ])
 
   if (!profile) notFound()
+  if (profile.account_type === 'bestellare') notFound()
 
   // Hämta utökad profil beroende på kontotyp
   let svippareProfile = null

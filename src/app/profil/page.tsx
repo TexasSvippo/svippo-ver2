@@ -41,11 +41,9 @@ const NAV_ITEMS = [
   { id: 'installningar', label: 'Profilinfo & inställningar', icon: '⚙️', group: 'Min profil' },
 ]
 
-// Hjälpkomponent för avatar – används på flera ställen
 function Avatar({ url, name, size = 'md' }: { url?: string | null, name: string, size?: 'sm' | 'md' | 'lg' }) {
   const letter = (name || '?').charAt(0).toUpperCase()
   const sizeClass = size === 'sm' ? styles.avatar__sm : size === 'lg' ? styles.avatar__lg : styles.avatar__md
-
   if (url) {
     return <img src={url} alt={name} className={`${styles.avatar__img} ${sizeClass}`} />
   }
@@ -65,7 +63,6 @@ export default function ProfilePage() {
   const avatarInputRef = useRef<HTMLInputElement>(null)
   const [activeSection, setActiveSection] = useState<Section>('oversikt')
 
-  // Grundläggande profilinfo
   const [displayName, setDisplayName] = useState('')
   const [phone, setPhone] = useState('')
   const [bio, setBio] = useState('')
@@ -75,7 +72,6 @@ export default function ProfilePage() {
   const [success, setSuccess] = useState(false)
   const [editing, setEditing] = useState(false)
 
-  // Företagsprofil
   const [companyBio, setCompanyBio] = useState('')
   const [companyOrgNumber, setCompanyOrgNumber] = useState('')
   const [companyWebsite, setCompanyWebsite] = useState('')
@@ -98,6 +94,7 @@ export default function ProfilePage() {
   const [selectedWatchCategory, setSelectedWatchCategory] = useState('')
 
   const isCompanyType = accountType === 'foretag' || accountType === 'uf-foretag'
+  const isBestellare = accountType === 'bestellare'
 
   useEffect(() => {
     if (!user) return
@@ -132,11 +129,7 @@ export default function ProfilePage() {
   useEffect(() => {
     if (!user || !isCompanyType) return
     const fetchCompanyProfile = async () => {
-      const { data } = await supabase
-        .from('company_profiles')
-        .select('*')
-        .eq('user_id', user.id)
-        .single()
+      const { data } = await supabase.from('company_profiles').select('*').eq('user_id', user.id).single()
       if (data) {
         setCompanyProfileExists(true)
         setCompanyBio(data.bio || '')
@@ -144,9 +137,7 @@ export default function ProfilePage() {
         setCompanyWebsite(data.website || '')
         setCompanyCity(data.city || '')
         setCompanyCategories(data.categories || [])
-        setCompanySocialLinks(
-          (data.social_links || []).map((url: string, i: number) => ({ id: String(i), url }))
-        )
+        setCompanySocialLinks((data.social_links || []).map((url: string, i: number) => ({ id: String(i), url })))
       }
     }
     fetchCompanyProfile()
@@ -162,11 +153,7 @@ export default function ProfilePage() {
       const categoryIds = subscriptions.map(s => s.category_id.split(':')[0])
       const unique = [...new Set(categoryIds)]
       const { data } = await supabase
-        .from('requests')
-        .select('*')
-        .in('category_id', unique)
-        .neq('user_id', user.id)
-        .order('created_at', { ascending: false })
+        .from('requests').select('*').in('category_id', unique).neq('user_id', user.id).order('created_at', { ascending: false })
       setWatchedRequests(data ?? [])
     }
     fetchWatched()
@@ -185,26 +172,15 @@ export default function ProfilePage() {
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file || !user) return
-
-    if (file.size > 2 * 1024 * 1024) {
-      alert('Bilden är för stor! Max 2MB.')
-      return
-    }
-
+    if (file.size > 2 * 1024 * 1024) { alert('Bilden är för stor! Max 2MB.'); return }
     setAvatarUploading(true)
     try {
       const ext = file.name.split('.').pop()
       const fileName = `${user.id}/avatar.${ext}`
-
-      const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(fileName, file, { upsert: true })
-
+      const { error: uploadError } = await supabase.storage.from('avatars').upload(fileName, file, { upsert: true })
       if (uploadError) throw uploadError
-
       const { data } = supabase.storage.from('avatars').getPublicUrl(fileName)
-      const publicUrl = `${data.publicUrl}?t=${Date.now()}` // cache-bust
-
+      const publicUrl = `${data.publicUrl}?t=${Date.now()}`
       await supabase.from('users').update({ avatar_url: publicUrl }).eq('id', user.id)
       setAvatarUrl(publicUrl)
     } catch (err) {
@@ -220,12 +196,8 @@ export default function ProfilePage() {
     setCompanySaving(true)
     setCompanySuccess(false)
     const payload = {
-      user_id: user.id,
-      bio: companyBio,
-      org_number: companyOrgNumber,
-      website: companyWebsite,
-      city: companyCity,
-      categories: companyCategories,
+      user_id: user.id, bio: companyBio, org_number: companyOrgNumber,
+      website: companyWebsite, city: companyCity, categories: companyCategories,
       social_links: companySocialLinks.map(l => l.url).filter(Boolean),
       updated_at: new Date().toISOString(),
     }
@@ -241,9 +213,7 @@ export default function ProfilePage() {
   }
 
   const toggleCompanyCategory = (catId: string) => {
-    setCompanyCategories(prev =>
-      prev.includes(catId) ? prev.filter(c => c !== catId) : [...prev, catId]
-    )
+    setCompanyCategories(prev => prev.includes(catId) ? prev.filter(c => c !== catId) : [...prev, catId])
   }
 
   const addSocialLink = () => setCompanySocialLinks(prev => [...prev, { id: Date.now().toString(), url: '' }])
@@ -285,9 +255,11 @@ export default function ProfilePage() {
           <div>
             <strong className={styles.profile__sidebar_name}>{displayName || 'Inget namn'}</strong>
             <p className={styles.profile__sidebar_email}>{user.email}</p>
-            <Link href={`/svippare/${user.id}`} className={styles.profile__sidebar_publink}>
-              👁️ Se publik profil →
-            </Link>
+            {!isBestellare && (
+              <Link href={`/svippare/${user.id}`} className={styles.profile__sidebar_publink}>
+                👁️ Se publik profil →
+              </Link>
+            )}
           </div>
         </div>
 
@@ -356,15 +328,19 @@ export default function ProfilePage() {
                 <div>
                   <p className={styles.welcome_banner__greeting}>Välkommen tillbaka 👋</p>
                   <h1 className={styles.welcome_banner__name}>{displayName || 'Inget namn'}</h1>
-                  <Link href={`/svippare/${user.id}`} className={styles.welcome_banner__publink}>
-                    Se din publika profil →
-                  </Link>
+                  {!isBestellare && (
+                    <Link href={`/svippare/${user.id}`} className={styles.welcome_banner__publink}>
+                      Se din publika profil →
+                    </Link>
+                  )}
                 </div>
               </div>
               <div className={styles.welcome_banner__actions}>
-                <button className="btn btn-primary" onClick={() => router.push('/skapa-inlagg')}>
-                  🛠️ Skapa tjänst
-                </button>
+                {canCreateService && (
+                  <button className="btn btn-primary" onClick={() => router.push('/skapa-inlagg')}>
+                    🛠️ Skapa tjänst
+                  </button>
+                )}
                 <button className="btn btn-orange" onClick={() => router.push('/skapa-forfragning')}>
                   🙋 Skapa förfrågan
                 </button>
@@ -394,14 +370,18 @@ export default function ProfilePage() {
             )}
 
             <div className={styles.profile__stats}>
-              <div className={`${styles.profile__stat_card} ${styles['profile__stat_card--blue']}`} onClick={() => setActiveSection('mina-tjanster')}>
-                <div className={styles.stat_icon_wrap}>🛠️</div>
-                <div className={styles.stat_info}><strong>{services.length}</strong><span>Aktiva tjänster</span></div>
-              </div>
-              <div className={`${styles.profile__stat_card} ${styles['profile__stat_card--orange']}`} onClick={() => setActiveSection('inkomna-bestallningar')}>
-                <div className={styles.stat_icon_wrap}>📥</div>
-                <div className={styles.stat_info}><strong>{pendingOrders.length}</strong><span>Nya beställningar</span></div>
-              </div>
+              {canCreateService && (
+                <div className={`${styles.profile__stat_card} ${styles['profile__stat_card--blue']}`} onClick={() => setActiveSection('mina-tjanster')}>
+                  <div className={styles.stat_icon_wrap}>🛠️</div>
+                  <div className={styles.stat_info}><strong>{services.length}</strong><span>Aktiva tjänster</span></div>
+                </div>
+              )}
+              {canCreateService && (
+                <div className={`${styles.profile__stat_card} ${styles['profile__stat_card--orange']}`} onClick={() => setActiveSection('inkomna-bestallningar')}>
+                  <div className={styles.stat_icon_wrap}>📥</div>
+                  <div className={styles.stat_info}><strong>{pendingOrders.length}</strong><span>Nya beställningar</span></div>
+                </div>
+              )}
               <div className={`${styles.profile__stat_card} ${styles['profile__stat_card--green']}`} onClick={() => setActiveSection('mina-forfragningar')}>
                 <div className={styles.stat_icon_wrap}>🙋</div>
                 <div className={styles.stat_info}><strong>{myRequests.length}</strong><span>Förfrågningar</span></div>
@@ -412,60 +392,80 @@ export default function ProfilePage() {
               </div>
             </div>
 
+            {/* Bli Svippare-banner för beställare */}
+            {isBestellare && (
+              <div className={`${styles.profile__block} card`} style={{ marginBottom: '24px', padding: '28px', display: 'flex', alignItems: 'center', gap: '20px' }}>
+                <span style={{ fontSize: '40px', flexShrink: 0 }}>⚡</span>
+                <div style={{ flex: 1 }}>
+                  <h2 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '6px' }}>Vill du sälja dina kunskaper?</h2>
+                  <p style={{ color: 'var(--color-gray)', fontSize: '14px', margin: 0 }}>Bli en Svippare och börja tjäna pengar på dina färdigheter – helt gratis att komma igång.</p>
+                </div>
+                <Link href="/bli-svippare" className="btn btn-primary" style={{ flexShrink: 0 }}>
+                  ⚡ Ansök nu
+                </Link>
+              </div>
+            )}
+
             <div className={styles.profile__dashboard}>
               <div className={styles.profile__dashboard_left}>
-                <div className={`${styles.profile__block} card`}>
-                  <div className={styles.profile__block_header}>
-                    <div className={styles.profile__block_title}><span>🛠️</span><h2>Mina tjänster</h2></div>
-                    <button className={styles.profile__block_link} onClick={() => setActiveSection('mina-tjanster')}>Se alla →</button>
-                  </div>
-                  {services.length === 0 ? (
-                    <div className={styles.profile__block_empty}>
-                      <p>Inga aktiva tjänster ännu</p>
-                      <button className="btn btn-primary" onClick={() => router.push('/skapa-inlagg')}>+ Skapa tjänst</button>
-                    </div>
-                  ) : (
-                    <div className={styles.profile__block_list}>
-                      {services.slice(0, 3).map(s => (
-                        <Link href={`/tjanst/${s.id}`} key={s.id} className={styles.profile__block_item}>
-                          <div className={styles.profile__block_item_info}>
-                            <strong>{s.title}</strong>
-                            <span>{s.subcategory} · {s.location}</span>
-                          </div>
-                          <span className={`${styles.profile__item_tag} ${styles['item_tag--blue']}`}>
-                            {s.price_type === 'offert' ? 'Offert' : `${s.price} kr`}
-                          </span>
-                        </Link>
-                      ))}
-                      <button className="btn btn-primary" onClick={() => router.push('/skapa-inlagg')}>+ Ny tjänst</button>
-                    </div>
-                  )}
-                </div>
 
-                <div className={`${styles.profile__block} card`}>
-                  <div className={styles.profile__block_header}>
-                    <div className={styles.profile__block_title}>
-                      <span>📥</span><h2>Inkomna beställningar</h2>
-                      {pendingOrders.length > 0 && <span className={styles.profile__nav_badge}>{pendingOrders.length}</span>}
+                {canCreateService && (
+                  <div className={`${styles.profile__block} card`}>
+                    <div className={styles.profile__block_header}>
+                      <div className={styles.profile__block_title}><span>🛠️</span><h2>Mina tjänster</h2></div>
+                      <button className={styles.profile__block_link} onClick={() => setActiveSection('mina-tjanster')}>Se alla →</button>
                     </div>
-                    <button className={styles.profile__block_link} onClick={() => setActiveSection('inkomna-bestallningar')}>Se alla →</button>
+                    {services.length === 0 ? (
+                      <div className={styles.profile__block_empty}>
+                        <p>Inga aktiva tjänster ännu</p>
+                        <button className="btn btn-primary" onClick={() => router.push('/skapa-inlagg')}>+ Skapa tjänst</button>
+                      </div>
+                    ) : (
+                      <div className={styles.profile__block_list}>
+                        {services.slice(0, 3).map(s => (
+                          <Link href={`/tjanst/${s.id}`} key={s.id} className={styles.profile__block_item}>
+                            <div className={styles.profile__block_item_info}>
+                              <strong>{s.title}</strong>
+                              <span>{s.subcategory} · {s.location}</span>
+                            </div>
+                            <span className={`${styles.profile__item_tag} ${styles['item_tag--blue']}`}>
+                              {s.price_type === 'offert' ? 'Offert' : `${s.price} kr`}
+                            </span>
+                          </Link>
+                        ))}
+                        <button className="btn btn-primary" onClick={() => router.push('/skapa-inlagg')}>+ Ny tjänst</button>
+                      </div>
+                    )}
                   </div>
-                  {incomingOrders.length === 0 ? (
-                    <div className={styles.profile__block_empty}><p>Inga beställningar ännu</p></div>
-                  ) : (
-                    <div className={styles.profile__block_list}>
-                      {incomingOrders.slice(0, 3).map(order => (
-                        <Link href={`/bestallning/${order.id}`} key={order.id} className={styles.profile__block_item}>
-                          <div className={styles.profile__block_item_info}>
-                            <strong>{order.buyer_name}</strong>
-                            <span>{order.service_title}</span>
-                          </div>
-                          <span className={`${styles.profile__item_tag} ${statusTag(order)}`}>{statusLabel(order)}</span>
-                        </Link>
-                      ))}
+                )}
+
+                {canCreateService && (
+                  <div className={`${styles.profile__block} card`}>
+                    <div className={styles.profile__block_header}>
+                      <div className={styles.profile__block_title}>
+                        <span>📥</span><h2>Inkomna beställningar</h2>
+                        {pendingOrders.length > 0 && <span className={styles.profile__nav_badge}>{pendingOrders.length}</span>}
+                      </div>
+                      <button className={styles.profile__block_link} onClick={() => setActiveSection('inkomna-bestallningar')}>Se alla →</button>
                     </div>
-                  )}
-                </div>
+                    {incomingOrders.length === 0 ? (
+                      <div className={styles.profile__block_empty}><p>Inga beställningar ännu</p></div>
+                    ) : (
+                      <div className={styles.profile__block_list}>
+                        {incomingOrders.slice(0, 3).map(order => (
+                          <Link href={`/bestallning/${order.id}`} key={order.id} className={styles.profile__block_item}>
+                            <div className={styles.profile__block_item_info}>
+                              <strong>{order.buyer_name}</strong>
+                              <span>{order.service_title}</span>
+                            </div>
+                            <span className={`${styles.profile__item_tag} ${statusTag(order)}`}>{statusLabel(order)}</span>
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
               </div>
 
               <div className={styles.profile__dashboard_right}>
@@ -735,31 +735,18 @@ export default function ProfilePage() {
             <h1 className={styles.profile__section_title}>Profilinfo & inställningar</h1>
 
             <div className={`${styles.profile__settings} card`}>
-              {/* Profilbild */}
               <div className={styles.profile__settings_avatar}>
                 <div className={styles.profile__avatar_wrap}>
                   {avatarUrl
                     ? <img src={avatarUrl} alt={displayName} className={styles.profile__avatar_large_img} />
                     : <div className={styles.profile__avatar_large}>{(displayName || user.email || '?').charAt(0).toUpperCase()}</div>
                   }
-                  <button
-                    className={styles.profile__avatar_upload_btn}
-                    onClick={() => avatarInputRef.current?.click()}
-                    disabled={avatarUploading}
-                  >
+                  <button className={styles.profile__avatar_upload_btn} onClick={() => avatarInputRef.current?.click()} disabled={avatarUploading}>
                     {avatarUploading ? '⏳' : '📷'}
                   </button>
-                  <input
-                    ref={avatarInputRef}
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp"
-                    onChange={handleAvatarUpload}
-                    style={{ display: 'none' }}
-                  />
+                  <input ref={avatarInputRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={handleAvatarUpload} style={{ display: 'none' }} />
                 </div>
-                <span className={styles.profile__hint}>
-                  {avatarUploading ? 'Laddar upp...' : 'Klicka på kameran för att byta profilbild'}
-                </span>
+                <span className={styles.profile__hint}>{avatarUploading ? 'Laddar upp...' : 'Klicka på kameran för att byta profilbild'}</span>
               </div>
 
               <div className={styles.profile__settings_fields}>
@@ -795,7 +782,6 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            {/* Företagsprofil */}
             {isCompanyType && (
               <div className={`${styles.profile__settings} card`}>
                 <div className={styles.profile__settings_fields}>
@@ -803,29 +789,24 @@ export default function ProfilePage() {
                     {accountType === 'uf-foretag' ? '🎓 UF-företagsprofil' : '🏢 Företagsprofil'}
                   </h2>
                   <p className={styles.profile__hint}>Denna information visas på din publika profilsida och hjälper kunder att hitta och kontakta dig.</p>
-
                   <div className={styles.profile__field}>
                     <label className={styles.profile__label}>Om företaget</label>
                     <textarea className={`${styles.profile__input} ${styles.profile__textarea} ${!companyEditing ? styles['profile__input--disabled'] : ''}`} value={companyBio} onChange={e => setCompanyBio(e.target.value)} disabled={!companyEditing} placeholder="Beskriv ert företag..." rows={5} />
                   </div>
-
                   {accountType === 'foretag' && (
                     <div className={styles.profile__field}>
                       <label className={styles.profile__label}>Organisationsnummer</label>
                       <input className={`${styles.profile__input} ${!companyEditing ? styles['profile__input--disabled'] : ''}`} value={companyOrgNumber} onChange={e => setCompanyOrgNumber(e.target.value)} disabled={!companyEditing} placeholder="556123-4567" />
                     </div>
                   )}
-
                   <div className={styles.profile__field}>
                     <label className={styles.profile__label}>Stad</label>
                     <input className={`${styles.profile__input} ${!companyEditing ? styles['profile__input--disabled'] : ''}`} value={companyCity} onChange={e => setCompanyCity(e.target.value)} disabled={!companyEditing} placeholder="Stockholm" />
                   </div>
-
                   <div className={styles.profile__field}>
                     <label className={styles.profile__label}>Webbplats</label>
                     <input className={`${styles.profile__input} ${!companyEditing ? styles['profile__input--disabled'] : ''}`} value={companyWebsite} onChange={e => setCompanyWebsite(e.target.value)} disabled={!companyEditing} placeholder="https://ertforetag.se" />
                   </div>
-
                   <div className={styles.profile__field}>
                     <label className={styles.profile__label}>Kategorier ni erbjuder tjänster inom</label>
                     <div className={styles.profile__category_grid}>
@@ -837,7 +818,6 @@ export default function ProfilePage() {
                       ))}
                     </div>
                   </div>
-
                   <div className={styles.profile__field}>
                     <label className={styles.profile__label}>Sociala medier</label>
                     {companySocialLinks.map(link => (
@@ -849,7 +829,6 @@ export default function ProfilePage() {
                     {companyEditing && <button type="button" className={styles.profile__social_add} onClick={addSocialLink}>+ Lägg till konto</button>}
                   </div>
                 </div>
-
                 {companySuccess && <div className={styles.profile__success}>✅ Företagsprofilen uppdaterades!</div>}
                 <div className={styles.profile__settings_actions}>
                   {companyEditing ? (

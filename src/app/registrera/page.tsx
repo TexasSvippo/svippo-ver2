@@ -2,18 +2,25 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import styles from '@/styles/auth.module.scss'
 import modalStyles from './register.module.scss'
+import useAuth from '@/hooks/useAuth'
 
 type AccountType = 'privatperson' | 'foretag' | 'uf-foretag'
 type Step = 'register' | 'svippare-popup'
 
 export default function RegisterPage() {
   const router = useRouter()
-  const [accountType, setAccountType] = useState<AccountType>('privatperson')
+const { user, loading: authLoading } = useAuth()
+const [accountType, setAccountType] = useState<AccountType>('privatperson')
   const [name, setName] = useState('')
+
+  useEffect(() => {
+    if (!authLoading && user) router.replace('/profil')
+  }, [user, authLoading])
+
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
   const [password, setPassword] = useState('')

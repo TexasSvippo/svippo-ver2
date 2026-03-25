@@ -55,6 +55,19 @@ type Service = {
   subcategory: string
 }
 
+type Request = {
+  id: string
+  title: string
+  description: string
+  budget: number
+  budget_type: string
+  location: string
+  user_id: string
+  user_name: string
+  subcategory: string
+  deadline?: string
+}
+
 export default function KonversationPage({ params }: { params: Promise<{ id: string }> }) {
   const { user } = useAuth()
   const router = useRouter()
@@ -62,6 +75,7 @@ export default function KonversationPage({ params }: { params: Promise<{ id: str
   const [messages, setMessages] = useState<Message[]>([])
   const [order, setOrder] = useState<Order | null>(null)
   const [service, setService] = useState<Service | null>(null)
+  const [request, setRequest] = useState<Request | null>(null)
   const [otherPartyName, setOtherPartyName] = useState('')
   const [otherPartyAvatar, setOtherPartyAvatar] = useState<string | null>(null)
   const [input, setInput] = useState('')
@@ -114,7 +128,7 @@ export default function KonversationPage({ params }: { params: Promise<{ id: str
         if (orderData) setOrder(orderData)
       }
 
-      // Hämta tjänsteinfo om Typ A (ingen order ännu)
+      // Hämta tjänsteinfo om Typ A kopplad till annons
       if (!conv.assignment_id && conv.anchor_type === 'listing') {
         const { data: serviceData } = await supabase
           .from('services')
@@ -122,6 +136,16 @@ export default function KonversationPage({ params }: { params: Promise<{ id: str
           .eq('id', conv.anchor_id)
           .single()
         if (serviceData) setService(serviceData)
+      }
+
+      // Hämta förfrågningsinfo om Typ A kopplad till förfrågan
+      if (!conv.assignment_id && conv.anchor_type === 'request') {
+        const { data: requestData } = await supabase
+          .from('requests')
+          .select('id, title, description, budget, budget_type, location, user_id, user_name, subcategory, deadline')
+          .eq('id', conv.anchor_id)
+          .single()
+        if (requestData) setRequest(requestData)
       }
 
       // Hämta meddelanden
@@ -408,7 +432,7 @@ export default function KonversationPage({ params }: { params: Promise<{ id: str
         </div>
 
         {/* Höger – kontextkort */}
-        {(order || service) && (
+        {(order || service || request) && (
           <div className={styles.sidebar}>
             <div className={`${styles.context_card} card`}>
 
@@ -456,6 +480,37 @@ export default function KonversationPage({ params }: { params: Promise<{ id: str
                       📋 Visa beställningen
                     </Link>
                   )}
+                </>
+              )}
+
+              {/* Typ A – förfrågningskort */}
+              {request && !order && (
+                <>
+                  <h2 className={styles.context_title}>🙋 Förfrågan</h2>
+                  <strong className={styles.context_service}>{request.title}</strong>
+                  <div className={styles.context_rows}>
+                    <div className={styles.context_row}>
+                      <span>Kategori</span>
+                      <strong>{request.subcategory}</strong>
+                    </div>
+                    <div className={styles.context_row}>
+                      <span>Plats</span>
+                      <strong>{request.location}</strong>
+                    </div>
+                    <div className={styles.context_row}>
+                      <span>Budget</span>
+                      <strong>{request.budget_type === 'prisforslag' ? 'Prisförslag' : `${request.budget} kr`}</strong>
+                    </div>
+                    {request.deadline && request.deadline !== 'ingen' && (
+                      <div className={styles.context_row}>
+                        <span>Deadline</span>
+                        <strong>{new Date(request.deadline).toLocaleDateString('sv-SE')}</strong>
+                      </div>
+                    )}
+                  </div>
+                  <Link href={`/forfragning/${request.id}`} className="btn btn-outline" style={{ width: '100%', justifyContent: 'center', marginTop: '8px' }}>
+                    🔗 Visa förfrågan
+                  </Link>
                 </>
               )}
 

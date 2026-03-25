@@ -1,22 +1,35 @@
+'use client'
+
 import Link from 'next/link'
+import useAuth from '@/hooks/useAuth'
 import styles from './CtaSection.module.scss'
 
 export default function CtaSection() {
+  const { user, accountType } = useAuth()
+  const isCompanyOrUF = accountType === 'foretag' || accountType === 'uf-foretag'
+
+
   return (
     <section className={styles.cta}>
       <div className={`container ${styles.cta__inner}`}>
 
-        <div className={`${styles.cta__card} ${styles['cta__card--seller']}`}>
-          <div className={styles.cta__card_content}>
-            <span className={styles.cta__badge}>Bli Svippare</span>
-            <h2 className={styles.cta__title}>Sälj dina tjänster</h2>
-            <p className={styles.cta__text}>
-              Skapa ett konto, publicera dina tjänster och börja tjäna pengar – helt gratis.
-            </p>
-            <Link href="/registrera" className="btn btn-primary">Bli Svippare direkt →</Link>
+        {!isCompanyOrUF && (
+          <div className={`${styles.cta__card} ${styles['cta__card--seller']}`}>
+            <div className={styles.cta__card_content}>
+              <span className={styles.cta__badge}>Bli Svippare</span>
+              <h2 className={styles.cta__title}>Sälj dina tjänster</h2>
+              <p className={styles.cta__text}>
+                Skapa ett konto, publicera dina tjänster och börja tjäna pengar – helt gratis.
+              </p>
+              {!user ? (
+                <Link href="/registrera" className="btn btn-primary">Bli Svippare direkt →</Link>
+              ) : accountType === 'bestellare' ? (
+                <Link href="/bli-svippare" className="btn btn-primary">Ansök om att bli Svippare →</Link>
+              ) : null}
+            </div>
+            <div className={styles.cta__illustration}>🧑‍💻</div>
           </div>
-          <div className={styles.cta__illustration}>🧑‍💻</div>
-        </div>
+        )}
 
         <div className={`${styles.cta__card} ${styles['cta__card--buyer']}`}>
           <div className={styles.cta__card_content}>
@@ -44,7 +57,12 @@ export default function CtaSection() {
             verklighet med hjälp av en Svippare.
           </p>
           <div className={styles.cta__bottom_actions}>
-            <Link href="/registrera" className="btn btn-primary">Skapa ett konto</Link>
+            {!user
+              ? <Link href="/registrera" className="btn btn-primary">Skapa ett konto</Link>
+              : accountType === 'bestellare'
+              ? <Link href="/bli-svippare" className="btn btn-primary">Bli en Svippare</Link>
+              : <Link href="/profil" className="btn btn-primary">Gå till din profil</Link>
+            }
             <Link href="/tjanster" className="btn btn-outline-white">Utforska tjänster</Link>
           </div>
         </div>
