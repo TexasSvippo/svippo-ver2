@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import useAuth from '@/hooks/useAuth'
-import { categories } from '@/data/categories'
+import { categories, RUT_SUBCATEGORIES, ROT_SUBCATEGORIES } from '@/data/categories'
 import type { ServiceType } from '@/data/categories'
 import { municipalities } from '@/data/municipalities'
 import styles from './createservice.module.scss'
@@ -29,6 +29,8 @@ type FormData = {
   location: string
   location_type: 'plats' | 'online'
   custom_questions: CustomQuestion[]
+  offers_rut: boolean
+  offers_rot: boolean
 }
 
 const STEPS = ['Kategori', 'Detaljer', 'Pris & plats', 'Egna frågor', 'Granska']
@@ -50,6 +52,7 @@ export default function CreateServicePage() {
     options: '',
     required: false,
   })
+
   const [form, setForm] = useState<FormData>({
     title: '',
     description: '',
@@ -60,6 +63,8 @@ export default function CreateServicePage() {
     location: '',
     location_type: 'plats',
     custom_questions: [],
+    offers_rut: false,
+    offers_rot: false,
   })
 
   const [locationSearch, setLocationSearch] = useState('')
@@ -84,6 +89,8 @@ export default function CreateServicePage() {
         location: data.location || '',
         location_type: data.location === 'Online' ? 'online' : 'plats',
         custom_questions: data.custom_questions || [],
+        offers_rut: data.offers_rut || false,
+        offers_rot: data.offers_rot || false,
       })
       setLocationSearch(data.location !== 'Online' ? data.location || '' : '')
       } else {
@@ -164,29 +171,35 @@ export default function CreateServicePage() {
           price: form.price_type !== 'offert' ? Number(form.price) : null,
           location: form.location,
           custom_questions: form.custom_questions,
+          offers_rut: form.offers_rut,
+          offers_rot: form.offers_rot,
         }).eq('id', editId)
       } else {
-      const selectedCat = categories.find(c => c.id === form.category_id)
+        const selectedCat = categories.find(c => c.id === form.category_id)
 
-      await supabase.from('services').insert({
-        title: form.title,
-        description: form.description,
-        category_id: form.category_id,
-        subcategory: form.subcategory,
-        price_type: form.price_type,
-        price: form.price_type !== 'offert' ? Number(form.price) : null,
-        location: form.location,
-        user_id: user.id,
-        user_name: userData?.name || user.email,
-        user_email: user.email,
-        account_type: accountType,
-        service_type: selectedCat?.service_type ?? 'typ1',
-        custom_questions: form.custom_questions,
-        rating: 0,
-        reviews: 0,
-        created_at: new Date().toISOString(),
-      })
+        await supabase.from('services').insert({
+          title: form.title,
+          description: form.description,
+          category_id: form.category_id,
+          subcategory: form.subcategory,
+          price_type: form.price_type,
+          price: form.price_type !== 'offert' ? Number(form.price) : null,
+          location: form.location,
+          user_id: user.id,
+          user_name: userData?.name || user.email,
+          user_email: user.email,
+          account_type: accountType,
+          service_type: selectedCat?.service_type ?? 'typ1',
+          custom_questions: form.custom_questions,
+          offers_rut: form.offers_rut,
+          offers_rot: form.offers_rot,
+          rating: 0,
+          reviews: 0,
+          created_at: new Date().toISOString(),
+        })
       }
+
+
       setShowSuccess(true)
     } catch (err) {
       console.error(err)
@@ -367,6 +380,41 @@ export default function CreateServicePage() {
                     <p className={styles.create__online_hint}>💻 Din tjänst utförs digitalt och är tillgänglig för alla.</p>
                   )}
                 </div>
+
+                {accountType === 'foretag' && RUT_SUBCATEGORIES.includes(form.subcategory) && (
+                  <div className={styles.create__field}>
+                    <label className={styles.create__label}>RUT-avdrag</label>
+                    <label className={styles.create__checkbox_label}>
+                      <input
+                        type="checkbox"
+                        checked={form.offers_rut}
+                        onChange={e => setForm(prev => ({ ...prev, offers_rut: e.target.checked, offers_rot: false }))}
+                      />
+                      Vi erbjuder RUT-avdrag – kunden betalar ca 50% av priset
+                    </label>
+                    <p className={styles.create__online_hint}>
+                      💡 RUT-avdrag gäller hushållsnära tjänster. Ni fakturerar kunden på det reducerade beloppet och söker resten från Skatteverket.
+                    </p>
+                  </div>
+                )}
+
+                {accountType === 'foretag' && ROT_SUBCATEGORIES.includes(form.subcategory) && (
+                  <div className={styles.create__field}>
+                    <label className={styles.create__label}>ROT-avdrag</label>
+                    <label className={styles.create__checkbox_label}>
+                      <input
+                        type="checkbox"
+                        checked={form.offers_rot}
+                        onChange={e => setForm(prev => ({ ...prev, offers_rot: e.target.checked, offers_rut: false }))}
+                      />
+                      Vi erbjuder ROT-avdrag – kunden betalar ca 70% av priset
+                    </label>
+                    <p className={styles.create__online_hint}>
+                      💡 ROT-avdrag gäller bygg- och hantverksarbeten. Ni fakturerar kunden på det reducerade beloppet och söker resten från Skatteverket.
+                    </p>
+                  </div>
+                )}
+
               </div>
             </div>
           )}
@@ -467,6 +515,9 @@ export default function CreateServicePage() {
                   { label: 'Pris', value: form.price_type === 'offert' ? 'Offert' : `${form.price} kr (${form.price_type})` },
                   { label: 'Plats', value: form.location },
                   { label: 'Egna frågor', value: form.custom_questions.length > 0 ? `${form.custom_questions.length} frågor` : 'Inga' },
+                  ...(form.offers_rut ? [{ label: 'RUT-avdrag', value: '✅ Erbjuds' }] : []),
+                  ...(form.offers_rot ? [{ label: 'ROT-avdrag', value: '✅ Erbjuds' }] : []),
+                  
                 ].map(row => (
                   <div key={row.label} className={styles.create__review_row}>
                     <span className={styles.create__review_label}>{row.label}</span>

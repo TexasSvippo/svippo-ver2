@@ -18,11 +18,13 @@ type Section =
   | 'intresseanmalningar'
   | 'mina-bevakningar'
   | 'recensioner'
+  | 'karriar'
   | 'installningar'
 
 type Service = { id: string; title: string; subcategory: string; price_type: string; price: number; location: string }
 type Order = { id: string; service_title: string; buyer_name: string; buyer_email: string; message: string; status: string; project_status: string }
 type PlacedOrder = { id: string; service_title: string; seller_name: string; message: string; status: string; project_status: string }
+type KarriarOrder = { id: string; service_title: string; buyer_name: string; project_status: string; created_at: string }
 type Request = { id: string; title: string; category_id: string; subcategory: string; budget: number; budget_type: string; location: string }
 type Interest = { id: string; request_title: string; svippar_name: string; svippar_email: string; message: string; price: number }
 type Notification = { id: string; type: string; order_id: string; service_title: string; message: string; read: boolean }
@@ -38,6 +40,7 @@ const NAV_ITEMS = [
   { id: 'intresseanmalningar', label: 'Intresseanmälningar', icon: '👀', group: 'Förfrågningar' },
   { id: 'placerade-bestallningar', label: 'Placerade beställningar', icon: '📤', group: 'Förfrågningar' },
   { id: 'recensioner', label: 'Recensioner & betyg', icon: '⭐', group: 'Min profil' },
+  { id: 'karriar', label: 'Min karriär', icon: '🏆', group: 'Min profil', svippareOnly: true },
   { id: 'installningar', label: 'Profilinfo & inställningar', icon: '⚙️', group: 'Min profil' },
 ]
 
@@ -96,6 +99,11 @@ export default function ProfilePage() {
   const isCompanyType = accountType === 'foretag' || accountType === 'uf-foretag'
   const isBestellare = accountType === 'bestellare'
 
+  const [karriarOrders, setKarriarOrders] = useState<KarriarOrder[]>([])
+  const [karriarReviews, setKarriarReviews] = useState<{ rating: number }[]>([])
+  const [showAchievementPopup, setShowAchievementPopup] = useState(false)
+  const [achievementTitle, setAchievementTitle] = useState('')
+
   useEffect(() => {
     if (!user) return
     const fetchAll = async () => {
@@ -122,6 +130,24 @@ export default function ProfilePage() {
       setInterests(interestsRes.data ?? [])
       setNotifications(notifsRes.data ?? [])
       setSubscriptions(subsRes.data ?? [])
+
+      // Hämta karriärdata för utförare
+      if (canCreateService) {
+        const { data: completedOrders } = await supabase
+          .from('orders')
+          .select('id, service_title, buyer_name, project_status, created_at')
+          .eq('seller_id', user.id)
+          .eq('project_status', 'completed')
+          .order('created_at', { ascending: false })
+        setKarriarOrders(completedOrders ?? [])
+
+        const { data: receivedReviews } = await supabase
+          .from('reviews')
+          .select('rating')
+          .eq('reviewee_id', user.id)
+          .eq('role', 'buyer')
+        setKarriarReviews(receivedReviews ?? [])
+      }
     }
     fetchAll()
   }, [user])
@@ -720,6 +746,127 @@ export default function ProfilePage() {
             )}
           </div>
         )}
+
+        {/* KARRIÄR */}
+        {activeSection === 'karriar' && (
+          <div className={styles.profile__section}>
+            <h1 className={styles.profile__section_title}>🏆 Min karriär</h1>
+
+            {/* Stats */}
+            <div className={styles.profile__stats} style={{ marginBottom: '24px' }}>
+              <div className={`${styles.profile__stat_card} ${styles['profile__stat_card--blue']}`}>
+                <div className={styles.stat_icon_wrap}>✅</div>
+                <div className={styles.stat_info}>
+                  <strong>{karriarOrders.length}</strong>
+                  <span>Utförda uppdrag</span>
+                </div>
+              </div>
+              <div className={`${styles.profile__stat_card} ${styles['profile__stat_card--orange']}`}>
+                <div className={styles.stat_icon_wrap}>👥</div>
+                <div className={styles.stat_info}>
+                  <strong>{new Set(karriarOrders.map(o => o.buyer_name)).size}</strong>
+                  <span>Nöjda kunder</span>
+                </div>
+              </div>
+              <div className={`${styles.profile__stat_card} ${styles['profile__stat_card--green']}`}>
+                <div className={styles.stat_icon_wrap}>⭐</div>
+                <div className={styles.stat_info}>
+                  <strong>
+                    {karriarReviews.length > 0
+                      ? (karriarReviews.reduce((sum, r) => sum + r.rating, 0) / karriarReviews.length).toFixed(1)
+                      : '–'}
+                  </strong>
+                  <span>Snittbetyg</span>
+                </div>
+              </div>
+              <div className={`${styles.profile__stat_card} ${styles['profile__stat_card--purple']}`}>
+                <div className={styles.stat_icon_wrap}>💬</div>
+                <div className={styles.stat_info}>
+                  <strong>{karriarReviews.length}</strong>
+                  <span>Recensioner</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Milstolpar */}
+            <div className={`${styles.profile__block} card`} style={{ marginBottom: '24px' }}>
+              <div className={styles.profile__block_header}>
+                <div className={styles.profile__block_title}><span>🎯</span><h2>Milstolpar</h2></div>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '12px', padding: '16px 0' }}>
+                {[
+                  { icon: '🥉', label: 'Första uppdraget', desc: 'Slutfört 1 uppdrag', target: 1 },
+                  { icon: '🥈', label: 'På gång!', desc: 'Slutfört 5 uppdrag', target: 5 },
+                  { icon: '🥇', label: 'Proffs', desc: 'Slutfört 10 uppdrag', target: 10 },
+                  { icon: '💎', label: 'Veteran', desc: 'Slutfört 25 uppdrag', target: 25 },
+                  { icon: '🏆', label: 'Legend', desc: 'Slutfört 50 uppdrag', target: 50 },
+                  { icon: '⭐', label: 'Första stjärnan', desc: 'Fått 1 recension', target: 1, type: 'reviews' },
+                  { icon: '🌟', label: 'Högt betyg', desc: 'Snittbetyg över 4.5', target: 4.5, type: 'rating' },
+                ].map(milestone => {
+                  const avgRating = karriarReviews.length > 0
+                    ? karriarReviews.reduce((sum, r) => sum + r.rating, 0) / karriarReviews.length
+                    : 0
+                  const achieved =
+                    milestone.type === 'reviews' ? karriarReviews.length >= milestone.target :
+                    milestone.type === 'rating' ? avgRating >= milestone.target :
+                    karriarOrders.length >= milestone.target
+
+                  return (
+                    <div
+                      key={milestone.label}
+                      style={{
+                        padding: '16px',
+                        borderRadius: 'var(--radius-md)',
+                        background: achieved ? 'linear-gradient(135deg, #f0f8ff, #e8f4fd)' : 'var(--color-bg)',
+                        border: `1.5px solid ${achieved ? 'var(--color-primary)' : 'var(--color-border)'}`,
+                        opacity: achieved ? 1 : 0.5,
+                        textAlign: 'center',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: '6px',
+                      }}
+                    >
+                      <span style={{ fontSize: '32px', filter: achieved ? 'none' : 'grayscale(100%)' }}>
+                        {milestone.icon}
+                      </span>
+                      <strong style={{ fontSize: '13px', color: 'var(--color-dark)' }}>{milestone.label}</strong>
+                      <span style={{ fontSize: '12px', color: 'var(--color-gray)' }}>{milestone.desc}</span>
+                      {achieved && (
+                        <span style={{ fontSize: '11px', color: 'var(--color-primary)', fontWeight: 600 }}>✓ Uppnådd!</span>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* Senaste uppdrag */}
+            <div className={`${styles.profile__block} card`}>
+              <div className={styles.profile__block_header}>
+                <div className={styles.profile__block_title}><span>📋</span><h2>Utförda uppdrag</h2></div>
+              </div>
+              {karriarOrders.length === 0 ? (
+                <div className={styles.profile__block_empty}>
+                  <p>Inga utförda uppdrag ännu. Ditt första väntar! 🚀</p>
+                </div>
+              ) : (
+                <div className={styles.profile__block_list}>
+                  {karriarOrders.map(order => (
+                    <Link href={`/bestallning/${order.id}`} key={order.id} className={styles.profile__block_item}>
+                      <div className={styles.profile__block_item_info}>
+                        <strong>{order.service_title}</strong>
+                        <span>{order.buyer_name} · {new Date(order.created_at).toLocaleDateString('sv-SE')}</span>
+                      </div>
+                      <span className={`${styles.profile__item_tag} ${styles['item_tag--completed']}`}>✅ Utfört</span>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
 
         {/* RECENSIONER */}
         {activeSection === 'recensioner' && (

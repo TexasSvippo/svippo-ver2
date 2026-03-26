@@ -33,6 +33,8 @@ type Service = {
   rating: number
   reviews: number
   custom_questions?: CustomQuestion[]
+  offers_rut?: boolean
+  offers_rot?: boolean
 }
 
 type Review = {
@@ -179,6 +181,12 @@ const filteredReviews = reviews
           <div className={styles.detail__main}>
             <div className={styles.detail__badges}>
               <span className={styles.detail__badge}>{service.subcategory}</span>
+              {service.offers_rut && (
+                <span className={`${styles.detail__badge} ${styles['detail__badge--rut']}`}>✅ RUT-avdrag</span>
+              )}
+              {service.offers_rot && (
+                <span className={`${styles.detail__badge} ${styles['detail__badge--rot']}`}>✅ ROT-avdrag</span>
+              )}
             </div>
 
             <h1 className={styles.detail__title}>{service.title}</h1>
@@ -257,16 +265,36 @@ const filteredReviews = reviews
                   <span>Pristyp</span>
                   <span className={styles.detail__price_type}>{service.price_type}</span>
                 </div>
+
                 {service.price_type !== 'offert' && (
                   <div className={styles.detail__price_row}>
                     <span>Pris</span>
                     <strong className={styles.detail__price}>{service.price} kr</strong>
                   </div>
                 )}
+
                 <div className={styles.detail__price_row}>
                   <span>Plats</span>
                   <span>{service.location}</span>
                 </div>
+                {service.offers_rut && (
+                  <div className={styles.detail__rut_info}>
+                    <span>💰</span>
+                    <div>
+                      <strong>RUT-avdrag tillämpas</strong>
+                      <p>Du betalar ca 50% av priset efter skattereduktion. Max 75 000 kr/år.</p>
+                    </div>
+                  </div>
+                )}
+                {service.offers_rot && (
+                  <div className={styles.detail__rut_info}>
+                    <span>💰</span>
+                    <div>
+                      <strong>ROT-avdrag tillämpas</strong>
+                      <p>Du betalar ca 70% av priset efter skattereduktion. Max 50 000 kr/år.</p>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {isOwner ? (
@@ -339,6 +367,8 @@ const filteredReviews = reviews
           location={service.location}
           serviceType={service.service_type}
           customQuestions={service.custom_questions || []}
+          offersRut={service.offers_rut}
+          offersRot={service.offers_rot}
           onClose={() => setShowOrder(false)}
         />
       )}

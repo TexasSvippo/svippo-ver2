@@ -1,5 +1,23 @@
 export type ServiceType = 'typ1' | 'typ2' | 'typ3'
 
+export const RUT_SUBCATEGORIES = [
+  'Städning',
+  'Fönsterputsning',
+  'Trädgård & utemiljö',
+  'Barnpassning',
+  'Matlagning',
+  'Hundvakt & djurskötsel',
+]
+
+export const ROT_SUBCATEGORIES = [
+  'Snickeri',
+  'Målning',
+  'El-arbeten',
+  'VVS',
+  'Kakling',
+  'Montering',
+]
+
 export const categories = [
   {
     id: 'digitala-tjanster',

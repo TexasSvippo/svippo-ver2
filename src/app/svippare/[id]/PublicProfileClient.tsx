@@ -187,11 +187,12 @@ export default function PublicProfileClient({
     }
   }
 
-  const handleContact = async () => {
+ const handleContact = async () => {
     if (!user) {
       router.push('/logga-in')
       return
     }
+    if (user.id === profile.id) return
 
     // Kolla om konversation redan finns
     const { data: existing } = await supabase

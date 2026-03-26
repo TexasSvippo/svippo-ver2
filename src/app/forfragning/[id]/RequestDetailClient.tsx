@@ -134,6 +134,7 @@ export default function RequestDetailClient({ request }: Props) {
       setShowLoginPrompt(true)
       return
     }
+    if (user.id === request.user_id) return
 
     // Kolla om konversation redan finns
     const { data: existing } = await supabase
@@ -335,11 +336,11 @@ export default function RequestDetailClient({ request }: Props) {
         </div>
       </div>
 
-      {/* Intresse-popup */}
+      {/* Intresse-drawer */}
       {showInterestForm && (
-        <div className="modal-backdrop" onClick={() => setShowInterestForm(false)}>
-          <div className="modal-box" onClick={e => e.stopPropagation()}>
-            <div className={styles.modal_header}>
+        <div className={styles.drawer_overlay} onClick={() => setShowInterestForm(false)}>
+          <div className={styles.drawer} onClick={e => e.stopPropagation()}>
+            <div className={styles.drawer_header}>
               <div>
                 <h2>Visa intresse</h2>
                 <p>{request.title}</p>
@@ -347,7 +348,7 @@ export default function RequestDetailClient({ request }: Props) {
               <button onClick={() => setShowInterestForm(false)}>✕</button>
             </div>
 
-            <div className={styles.modal_fields}>
+            <div className={styles.drawer_fields}>
               <div className="form-group">
                 <label className="form-label">Namn</label>
                 <input className="form-input" value={userProfile?.name || user?.email || ''} disabled />
@@ -382,7 +383,7 @@ export default function RequestDetailClient({ request }: Props) {
               </div>
             </div>
 
-            <div className={styles.modal_actions}>
+            <div className={styles.drawer_footer}>
               <button className="btn btn-outline" onClick={() => setShowInterestForm(false)}>Avbryt</button>
               <button
                 className="btn btn-orange"

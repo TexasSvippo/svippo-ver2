@@ -48,6 +48,10 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
   const [loading, setLoading] = useState(true)
   const [updating, setUpdating] = useState(false)
   const [showCompleteConfirm, setShowCompleteConfirm] = useState(false)
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false)
+  const [successType, setSuccessType] = useState<'delivered' | 'completed'>('completed')
+  const [successGif] = useState(() => Math.ceil(Math.random() * 4))
+  const [successIdx] = useState(() => Math.floor(Math.random() * 4))
   const [reviewSuccess, setReviewSuccess] = useState(false)
   const [reviewText, setReviewText] = useState('')
   const [reviewRating, setReviewRating] = useState(5)
@@ -115,6 +119,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
     setUpdating(false)
   }
 
+  // Typ1 & Typ2 – markera som slutfört direkt
   const handleProjectStatus = async (status: ProjectStatus) => {
     if (!order) return
     setUpdating(true)
@@ -128,8 +133,12 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
           type: 'project_completed',
           order_id: order.id,
           service_title: order.service_title,
+          actor_name: order.seller_name,
           message: `${order.seller_name} har markerat projektet "${order.service_title}" som slutfört!`,
+          action_url: `/min-bestallning/${order.id}`,
           read: false,
+          dismissed: false,
+          email_sent: false,
           created_at: new Date().toISOString(),
         },
         {
@@ -139,10 +148,38 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
           service_title: order.service_title,
           message: `Projektet "${order.service_title}" är slutfört – glöm inte ta betalt och lämna en recension!`,
           read: false,
+          dismissed: false,
+          email_sent: false,
           created_at: new Date().toISOString(),
         }
       ])
     }
+    setUpdating(false)
+  }
+
+  // Typ3 – "Slutfört" triggar leveransflödet istället
+  const handleTyp3Complete = async () => {
+    if (!order) return
+    setUpdating(true)
+    const now = new Date().toISOString()
+
+    await supabase.from('orders').update({ delivered_at: now }).eq('id', order.id)
+    setOrder(prev => prev ? { ...prev, delivered_at: now } : prev)
+
+    await supabase.from('notifications').insert({
+      user_id: order.buyer_id,
+      type: 'delivery_marked',
+      order_id: order.id,
+      service_title: order.service_title,
+      actor_name: order.seller_name,
+      message: `${order.seller_name} har markerat uppdraget som levererat. Allt okej? Om du inte hör av dig inom 24 timmar bekräftas uppdraget automatiskt.`,
+      action_url: `/min-bestallning/${order.id}`,
+      read: false,
+      dismissed: false,
+      email_sent: false,
+      created_at: now,
+    })
+
     setUpdating(false)
   }
 
@@ -153,30 +190,6 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
     setOrder(prev => prev ? { ...prev, payment_status: status } : prev)
     setUpdating(false)
   }
-
-  const handleMarkDelivered = async () => {
-  if (!order) return
-  setUpdating(true)
-  const now = new Date().toISOString()
-  await supabase.from('orders').update({ delivered_at: now }).eq('id', order.id)
-  setOrder(prev => prev ? { ...prev, delivered_at: now } : prev)
-
-  await supabase.from('notifications').insert({
-    user_id: order.buyer_id,
-    type: 'delivery_marked',
-    order_id: order.id,
-    service_title: order.service_title,
-    actor_name: order.seller_name,
-    message: `${order.seller_name} har markerat uppdraget som levererat. Allt okej? Om du inte hör av dig inom 24 timmar bekräftas uppdraget automatiskt.`,
-    action_url: `/min-bestallning/${order.id}`,
-    read: false,
-    dismissed: false,
-    email_sent: false,
-    created_at: now,
-  })
-
-  setUpdating(false)
-}
 
   const handleReview = async () => {
     if (!order || !user) return
@@ -209,8 +222,8 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
   const isSeller = user?.id === order.seller_id
   const projectStatus = order.project_status
   const serviceType = order.service_type ?? 'typ1'
+  const isTyp3 = serviceType === 'typ3'
 
-  // Typ-specifik info från answers
   const preferredDate = order.answers?.['Önskat datum']
   const preferredTime = order.answers?.['Önskad tid']
   const address = order.answers?.['Adress']
@@ -221,13 +234,18 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
   const pickupDate = order.answers?.['Datum']
   const pickupTime = order.answers?.['Tid']
 
-  // Filtrera bort typ-specifika nycklar från answers så de inte visas dubbelt
   const typeSpecificKeys = ['Önskat datum', 'Önskad tid', 'Adress', 'Önskat slutdatum', 'Föreslagna milstolpar', 'Upphämtningsadress', 'Leveransadress', 'Datum', 'Tid']
   const filteredAnswers = order.answers
     ? Object.fromEntries(Object.entries(order.answers).filter(([key]) => !typeSpecificKeys.includes(key)))
     : {}
 
-  const PROGRESS_STEPS = [
+  // Typ3: sista steget heter "Markera som levererat" och triggar leveransflödet
+  const PROGRESS_STEPS = isTyp3 ? [
+    { status: 'not_started' as ProjectStatus, label: 'Ej påbörjat', desc: 'Uppdraget väntar på att starta', num: 1 },
+    { status: 'in_progress' as ProjectStatus, label: 'Pågår', desc: 'Uppdraget är igång', num: 2 },
+    { status: 'almost_done' as ProjectStatus, label: 'Nästan klart', desc: 'Sista finishen återstår', num: 3 },
+    { status: 'completed' as ProjectStatus, label: 'Markera som levererat', desc: order.delivered_at ? '✅ Väntar på bekräftelse från beställaren' : 'Klicka när du levererat uppdraget', num: 4 },
+  ] : [
     { status: 'not_started' as ProjectStatus, label: 'Ej påbörjat', desc: 'Projektet väntar på att starta', num: 1 },
     { status: 'in_progress' as ProjectStatus, label: 'Pågår', desc: 'Projektet är igång', num: 2 },
     { status: 'almost_done' as ProjectStatus, label: 'Nästan klart', desc: 'Sista finishen återstår', num: 3 },
@@ -235,18 +253,30 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
   ]
 
   const stepOrder = ['not_started', 'in_progress', 'almost_done', 'completed']
-  const currentIdx = stepOrder.indexOf(projectStatus)
+  const currentIdx = isTyp3
+    ? (order.delivered_at ? 3 : stepOrder.indexOf(projectStatus))
+    : stepOrder.indexOf(projectStatus)
 
   return (
-    <div className={`${styles.orderdetail} ${projectStatus === 'completed' ? styles['orderdetail--completed'] : ''}`}>
+    <div className={`${styles.orderdetail} ${projectStatus === 'completed' && !isTyp3 ? styles['orderdetail--completed'] : ''}`}>
       <div className={`container ${styles.orderdetail__inner}`}>
 
         <button className={styles.orderdetail__back} onClick={() => router.push('/profil')}>
           ← Tillbaka till profil
         </button>
 
-        {projectStatus === 'completed' && (
+        {projectStatus === 'completed' && !isTyp3 && (
           <div className={styles.completed_banner}>🎉 Detta projekt är avslutat</div>
+        )}
+
+        {isTyp3 && order.delivered_at && projectStatus !== 'completed' && (
+          <div className={styles.completed_banner} style={{ background: '#fff3e0', color: '#e65100' }}>
+            📦 Väntar på bekräftelse från {order.buyer_name}
+          </div>
+        )}
+
+        {isTyp3 && projectStatus === 'completed' && (
+          <div className={styles.completed_banner}>🎉 Uppdraget är bekräftat och avslutat</div>
         )}
 
         <div className={styles.orderdetail__layout}>
@@ -277,24 +307,9 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
               <div className={`${styles.orderdetail__type_info} card`}>
                 <h2 className={styles.section_title}>📅 Datum & plats</h2>
                 <div className={styles.type_info_grid}>
-                  {preferredDate && (
-                    <div className={styles.type_info_item}>
-                      <span className={styles.type_info_label}>Önskat datum</span>
-                      <strong>{preferredDate}</strong>
-                    </div>
-                  )}
-                  {preferredTime && (
-                    <div className={styles.type_info_item}>
-                      <span className={styles.type_info_label}>Önskad tid</span>
-                      <strong>{preferredTime}</strong>
-                    </div>
-                  )}
-                  {address && (
-                    <div className={styles.type_info_item}>
-                      <span className={styles.type_info_label}>Adress</span>
-                      <strong>{address}</strong>
-                    </div>
-                  )}
+                  {preferredDate && <div className={styles.type_info_item}><span className={styles.type_info_label}>Önskat datum</span><strong>{preferredDate}</strong></div>}
+                  {preferredTime && <div className={styles.type_info_item}><span className={styles.type_info_label}>Önskad tid</span><strong>{preferredTime}</strong></div>}
+                  {address && <div className={styles.type_info_item}><span className={styles.type_info_label}>Adress</span><strong>{address}</strong></div>}
                 </div>
               </div>
             )}
@@ -303,18 +318,8 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
               <div className={`${styles.orderdetail__type_info} card`}>
                 <h2 className={styles.section_title}>🗓️ Tidslinje</h2>
                 <div className={styles.type_info_grid}>
-                  {desiredDeadline && (
-                    <div className={styles.type_info_item}>
-                      <span className={styles.type_info_label}>Önskat slutdatum</span>
-                      <strong>{desiredDeadline}</strong>
-                    </div>
-                  )}
-                  {milestones && (
-                    <div className={`${styles.type_info_item} ${styles['type_info_item--full']}`}>
-                      <span className={styles.type_info_label}>Föreslagna milstolpar</span>
-                      <p className={styles.type_info_text}>{milestones}</p>
-                    </div>
-                  )}
+                  {desiredDeadline && <div className={styles.type_info_item}><span className={styles.type_info_label}>Önskat slutdatum</span><strong>{desiredDeadline}</strong></div>}
+                  {milestones && <div className={`${styles.type_info_item} ${styles['type_info_item--full']}`}><span className={styles.type_info_label}>Föreslagna milstolpar</span><p className={styles.type_info_text}>{milestones}</p></div>}
                 </div>
               </div>
             )}
@@ -323,42 +328,20 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
               <div className={`${styles.orderdetail__type_info} card`}>
                 <h2 className={styles.section_title}>📦 Upphämtning & leverans</h2>
                 <div className={styles.type_info_grid}>
-                  {pickupAddress && (
-                    <div className={styles.type_info_item}>
-                      <span className={styles.type_info_label}>Upphämtning</span>
-                      <strong>{pickupAddress}</strong>
-                    </div>
-                  )}
-                  {deliveryAddress && (
-                    <div className={styles.type_info_item}>
-                      <span className={styles.type_info_label}>Leverans</span>
-                      <strong>{deliveryAddress}</strong>
-                    </div>
-                  )}
-                  {pickupDate && (
-                    <div className={styles.type_info_item}>
-                      <span className={styles.type_info_label}>Datum</span>
-                      <strong>{pickupDate}</strong>
-                    </div>
-                  )}
-                  {pickupTime && (
-                    <div className={styles.type_info_item}>
-                      <span className={styles.type_info_label}>Tid</span>
-                      <strong>{pickupTime}</strong>
-                    </div>
-                  )}
+                  {pickupAddress && <div className={styles.type_info_item}><span className={styles.type_info_label}>Upphämtning</span><strong>{pickupAddress}</strong></div>}
+                  {deliveryAddress && <div className={styles.type_info_item}><span className={styles.type_info_label}>Leverans</span><strong>{deliveryAddress}</strong></div>}
+                  {pickupDate && <div className={styles.type_info_item}><span className={styles.type_info_label}>Datum</span><strong>{pickupDate}</strong></div>}
+                  {pickupTime && <div className={styles.type_info_item}><span className={styles.type_info_label}>Tid</span><strong>{pickupTime}</strong></div>}
                 </div>
               </div>
             )}
 
             <div className={`${styles.orderdetail__form} card`}>
               <h2 className={styles.section_title}>📋 Ifyllt formulär</h2>
-
               <div className={styles.field}>
                 <span className={styles.field_label}>Meddelande</span>
                 <div className={`${styles.field_value} ${styles.field_message}`}>{order.message}</div>
               </div>
-
               {Object.keys(filteredAnswers).length > 0 && (
                 <div className={styles.field}>
                   <span className={styles.field_label}>Svar på frågor</span>
@@ -372,7 +355,6 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                   </div>
                 </div>
               )}
-
               {order.custom_answers && Object.keys(order.custom_answers).length > 0 && (
                 <div className={styles.field}>
                   <span className={styles.field_label}>Svar på dina frågor</span>
@@ -388,13 +370,10 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
               )}
             </div>
 
-            {/* Beställarens recensioner */}
             <div className={`${styles.orderdetail__buyer_reviews} card`}>
               <h2 className={styles.section_title}>⭐ {order.buyer_name}s recensioner</h2>
               {buyerReviews.length === 0 ? (
-                <p className={styles.no_reviews}>
-                  {order.buyer_name} har inga tidigare recensioner på Svippo än.
-                </p>
+                <p className={styles.no_reviews}>{order.buyer_name} har inga tidigare recensioner på Svippo än.</p>
               ) : (
                 <div className={styles.buyer_reviews_list}>
                   {buyerReviews.map(r => (
@@ -404,9 +383,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                         <span className={styles.buyer_review__stars}>{'⭐'.repeat(r.rating)}</span>
                       </div>
                       {r.comment && <p className={styles.buyer_review__comment}>{r.comment}</p>}
-                      <span className={styles.buyer_review__date}>
-                        {new Date(r.created_at).toLocaleDateString('sv-SE')}
-                      </span>
+                      <span className={styles.buyer_review__date}>{new Date(r.created_at).toLocaleDateString('sv-SE')}</span>
                     </div>
                   ))}
                 </div>
@@ -429,16 +406,8 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
               </div>
               <strong className={styles.customer_name}>{order.buyer_name}</strong>
               <div className={styles.customer_details}>
-                <div className={styles.detail_row}>
-                  <span>📧</span>
-                  <a href={`mailto:${order.buyer_email}`}>{order.buyer_email}</a>
-                </div>
-                {order.buyer_phone && (
-                  <div className={styles.detail_row}>
-                    <span>📱</span>
-                    <a href={`tel:${order.buyer_phone}`}>{order.buyer_phone}</a>
-                  </div>
-                )}
+                <div className={styles.detail_row}><span>📧</span><a href={`mailto:${order.buyer_email}`}>{order.buyer_email}</a></div>
+                {order.buyer_phone && <div className={styles.detail_row}><span>📱</span><a href={`tel:${order.buyer_phone}`}>{order.buyer_phone}</a></div>}
               </div>
               <div className={styles.contact_actions}>
                 <a href={`mailto:${order.buyer_email}`} className="btn btn-primary">✉️ Skicka e-post</a>
@@ -455,7 +424,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                 </Link>
               </div>
             )}
-            
+
             {isSeller && (
               <div className={`${styles.actions_card} card`}>
                 <h2 className={styles.section_title}>⚡ Hantera beställning</h2>
@@ -477,20 +446,32 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
             {order.status === 'accepted' && isSeller && (
               <div className={`${styles.progress_card} card`}>
                 <h2 className={styles.section_title}>📊 Projektstatus</h2>
-                <p className={styles.progress_hint}>Uppdatera hur långt projektet kommit.</p>
+                <p className={styles.progress_hint}>
+                  {isTyp3 ? 'Uppdatera hur uppdraget fortskrider.' : 'Uppdatera hur långt projektet kommit.'}
+                </p>
                 <div className={styles.progress_steps}>
                   {PROGRESS_STEPS.map((step, idx) => {
                     const isDone = idx < currentIdx
                     const isActive = idx === currentIdx
-                    const isCompleted = step.status === 'completed' && projectStatus === 'completed'
+                    const isCompleted = !isTyp3 && step.status === 'completed' && projectStatus === 'completed'
+                    const isDelivered = isTyp3 && idx === 3 && !!order.delivered_at
+
                     return (
                       <button
                         key={step.status}
-                        className={`${styles.progress_step} ${isActive ? styles['progress_step--active'] : ''} ${isDone ? styles['progress_step--done'] : ''} ${isCompleted ? styles['progress_step--completed'] : ''}`}
-                        onClick={() => step.status === 'completed' ? setShowCompleteConfirm(true) : handleProjectStatus(step.status)}
-                        disabled={updating || projectStatus === 'completed'}
+                        className={`${styles.progress_step} ${isActive || isDelivered ? styles['progress_step--active'] : ''} ${isDone ? styles['progress_step--done'] : ''} ${isCompleted ? styles['progress_step--completed'] : ''}`}
+                        onClick={() => {
+                          if (isTyp3 && idx === 3) {
+                            if (!order.delivered_at) setShowCompleteConfirm(true)
+                          } else if (!isTyp3 && step.status === 'completed') {
+                            setShowCompleteConfirm(true)
+                          } else {
+                            handleProjectStatus(step.status)
+                          }
+                        }}
+                        disabled={updating || (!isTyp3 && projectStatus === 'completed') || (isTyp3 && !!order.delivered_at && idx === 3)}
                       >
-                        <div className={styles.progress_dot}>{isDone || isCompleted ? '✓' : step.num}</div>
+                        <div className={styles.progress_dot}>{isDone || isCompleted || isDelivered ? '✓' : step.num}</div>
                         <div className={styles.progress_info}>
                           <strong>{step.label}</strong>
                           <span>{step.desc}</span>
@@ -513,28 +494,6 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                     <button className="btn btn-primary" onClick={() => handlePayment('paid')} disabled={updating}>✅ Ja, jag har fått betalt</button>
                     <button className="btn btn-outline" onClick={() => handlePayment('unpaid')} disabled={updating}>⏳ Inte än</button>
                   </div>
-                )}
-              </div>
-            )}
-
-            {serviceType === 'typ3' && order.status === 'accepted' && projectStatus !== 'completed' && isSeller && (
-              <div className={`${styles.payment_card} card`}>
-                <h2 className={styles.section_title}>📦 Leverans</h2>
-                <p className={styles.progress_hint}>
-                  Har du levererat uppdraget till {order.buyer_name}?
-                </p>
-                {order.delivered_at ? (
-                  <div className={styles.payment_done}>
-                    ✅ Markerat som levererat – väntar på bekräftelse från {order.buyer_name}
-                  </div>
-                ) : (
-                  <button
-                    className="btn btn-primary"
-                    onClick={handleMarkDelivered}
-                    disabled={updating}
-                  >
-                    📦 Markera som levererat
-                  </button>
                 )}
               </div>
             )}
@@ -572,25 +531,116 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
         </div>
       </div>
 
+      {/* Bekräftelsepopup – Typ1/2 slutfört, Typ3 levererat */}
       {showCompleteConfirm && (
         <div className="modal-backdrop" onClick={() => setShowCompleteConfirm(false)}>
           <div className="modal-box" onClick={e => e.stopPropagation()}>
-            <h2 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '8px' }}>Är du säker? 🎉</h2>
-            <p style={{ color: 'var(--color-gray)', marginBottom: '16px' }}>Detta går inte att ångra. Projektet markeras som slutfört och beställaren meddelas.</p>
+            <h2 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '8px' }}>
+              {isTyp3 ? 'Markera som levererat? 📦' : 'Är du säker? 🎉'}
+            </h2>
+            <p style={{ color: 'var(--color-gray)', marginBottom: '16px' }}>
+              {isTyp3
+                ? 'Beställaren meddelas och får 24 timmar på sig att bekräfta eller rapportera ett problem.'
+                : 'Detta går inte att ångra. Projektet markeras som slutfört och beställaren meddelas.'}
+            </p>
             <div className={styles.confirm_checklist}>
-              {['✅ Beställaren meddelas att projektet är klart', '⭐ Båda parter får möjlighet att lämna recensioner', '💰 Du påminns om att ta betalt', '🔒 Projektstatus låses och kan inte ändras'].map(item => (
+              {isTyp3 ? [
+                '📦 Beställaren meddelas att leveransen är gjord',
+                '✅ Beställaren bekräftar eller rapporterar problem',
+                '⏱️ Auto-bekräftelse sker efter 24 timmar om inget svar',
+              ].map(item => (
+                <div key={item} className={styles.confirm_item}>{item}</div>
+              )) : [
+                '✅ Beställaren meddelas att projektet är klart',
+                '⭐ Båda parter får möjlighet att lämna recensioner',
+                '💰 Du påminns om att ta betalt',
+                '🔒 Projektstatus låses och kan inte ändras',
+              ].map(item => (
                 <div key={item} className={styles.confirm_item}>{item}</div>
               ))}
             </div>
             <div style={{ display: 'flex', gap: '12px', marginTop: '20px', justifyContent: 'flex-end' }}>
               <button className="btn btn-outline" onClick={() => setShowCompleteConfirm(false)}>Avbryt</button>
-              <button className="btn btn-primary" onClick={async () => { await handleProjectStatus('completed'); setShowCompleteConfirm(false) }} disabled={updating}>
-                {updating ? 'Slutför...' : '🎉 Ja, projektet är klart!'}
+              <button
+                className="btn btn-primary"
+                onClick={async () => {
+                  if (isTyp3) {
+                    await handleTyp3Complete()
+                    setSuccessType('delivered')
+                  } else {
+                    await handleProjectStatus('completed')
+                    setSuccessType('completed')
+                  }
+                  setShowCompleteConfirm(false)
+                  setShowSuccessPopup(true)
+                }}
+                disabled={updating}
+              >
+                {updating ? 'Sparar...' : isTyp3 ? '📦 Ja, leveransen är gjord!' : '🎉 Ja, projektet är klart!'}
               </button>
             </div>
           </div>
         </div>
       )}
+
+      {showSuccessPopup && (() => {
+        const headings = successType === 'delivered' ? [
+          'Svippo i mål! 🚀',
+          'Du svippade klart! ⚡',
+          'Leveransen är gjord! 📦',
+          'En Svippare som levererar! 💪',
+        ] : [
+          'Projektet i hamn! 🎉',
+          'Du är en stjärna! ⭐',
+          'Svippad och klar! ⚡',
+          'Ännu ett uppdrag bockat! 🏆',
+        ]
+        const texts = successType === 'delivered' ? [
+          `${order.buyer_name} har meddelats och bekräftar inom 24 timmar – eller så sker det automatiskt.`,
+          `Bollen ligger nu hos ${order.buyer_name}. Snyggt svippad!`,
+          `${order.buyer_name} kollar att allt stämmer. Hör av dig om något är oklart.`,
+          `Grym insats! ${order.buyer_name} meddelades precis om leveransen.`,
+        ] : [
+          `${order.buyer_name} har meddelats – nu väntar förhoppningsvis en fin recension!`,
+          `Snyggt jobbat! ${order.buyer_name} ser till att du får din välförtjänta recension.`,
+          `Ännu ett uppdrag i ryggsäcken. Svippo är stolt över dig!`,
+          `${order.buyer_name} vet nu att jobbet är klart. Bra svippat!`,
+        ]
+
+        return (
+          <div className="modal-backdrop" onClick={() => setShowSuccessPopup(false)}>
+            <div className="modal-box" onClick={e => e.stopPropagation()} style={{ textAlign: 'center', padding: '0', overflow: 'hidden', maxWidth: '400px' }}>
+              <img
+                src={`/gifs/completed-${successGif}.gif`}
+                alt="Celebration"
+                style={{ width: '100%', height: '220px', objectFit: 'cover' }}
+              />
+              <div style={{ padding: '24px' }}>
+                <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#22c55e', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', fontSize: '20px', color: 'white', fontWeight: 700 }}>
+                  ✓
+                </div>
+                <p style={{ fontSize: '12px', color: 'var(--color-gray)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>
+                  {successType === 'delivered' ? 'Leverans markerad' : 'Projekt utfört'}
+                </p>
+                <h2 style={{ fontSize: '22px', fontWeight: 800, marginBottom: '10px', color: 'var(--color-dark)' }}>
+                  {headings[successIdx]}
+                </h2>
+                <p style={{ color: 'var(--color-gray)', fontSize: '14px', lineHeight: '1.6', marginBottom: '24px' }}>
+                  {texts[successIdx]}
+                </p>
+                <button
+                  className="btn btn-primary"
+                  style={{ width: '100%', justifyContent: 'center' }}
+                  onClick={() => setShowSuccessPopup(false)}
+                >
+                  Grymt! Låt mig fortsätta
+                </button>
+              </div>
+            </div>
+          </div>
+        )
+      })()}
+      
     </div>
   )
 }

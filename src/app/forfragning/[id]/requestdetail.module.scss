@@ -63,51 +63,6 @@
   }
 }
 
-.modal_header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 24px;
-
-  h2 {
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--color-dark);
-  }
-
-  p {
-    font-size: 14px;
-    color: var(--color-gray);
-    margin-top: 4px;
-  }
-
-  button {
-    background: none;
-    border: none;
-    font-size: 18px;
-    cursor: pointer;
-    color: var(--color-gray);
-    padding: 4px;
-
-    &:hover {
-      color: var(--color-dark);
-    }
-  }
-}
-
-.modal_fields {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
-.modal_actions {
-  display: flex;
-  gap: 12px;
-  justify-content: flex-end;
-}
-
 .owner_actions {
   display: flex;
   gap: 8px;
@@ -134,16 +89,109 @@
   &:disabled { opacity: 0.5; cursor: not-allowed; }
 }
 
+/* ── Intresse-drawer ── */
+.drawer_overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: stretch;
+  justify-content: flex-end;
+  z-index: 999;
+}
+
+.drawer {
+  background: white;
+  width: 100%;
+  max-width: 520px;
+  height: 100vh;
+  overflow-y: auto;
+  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.12);
+  display: flex;
+  flex-direction: column;
+}
+
+.drawer_header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 28px 32px 20px;
+  border-bottom: 1px solid var(--color-border);
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 2;
+
+  h2 {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--color-dark);
+  }
+
+  p {
+    font-size: 14px;
+    color: var(--color-gray);
+    margin-top: 4px;
+  }
+
+  button {
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    color: var(--color-gray);
+    padding: 4px;
+    flex-shrink: 0;
+
+    &:hover {
+      color: var(--color-dark);
+    }
+  }
+}
+
+.drawer_fields {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px 32px;
+  flex: 1;
+}
+
+.drawer_footer {
+  display: flex;
+  gap: 12px;
+  padding: 20px 32px;
+  border-top: 1px solid var(--color-border);
+  position: sticky;
+  bottom: 0;
+  background: white;
+  z-index: 2;
+
+  button {
+    flex: 1;
+    justify-content: center;
+  }
+}
+
 @media (max-width: 768px) {
-  .detail__layout {
-    grid-template-columns: 1fr;
+  .drawer {
+    max-width: 100%;
+    width: 100%;
+    height: 100vh;
+    border-radius: 0;
   }
 
-  .detail__sidebar {
-    position: static;
+  .drawer_fields {
+    padding: 20px;
   }
 
-  .detail__title {
-    font-size: 24px;
+  .drawer_header {
+    padding: 20px 20px 16px;
+  }
+
+  .drawer_footer {
+    padding: 16px 20px;
   }
 }

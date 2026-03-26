@@ -26,6 +26,8 @@ type Props = {
   location: string
   serviceType?: ServiceType
   customQuestions: CustomQuestion[]
+  offersRut?: boolean
+  offersRot?: boolean
   onClose: () => void
 }
 
@@ -40,6 +42,8 @@ export default function OrderModal({
   location,
   serviceType = 'typ1',
   customQuestions,
+  offersRut = false,
+  offersRot = false,
   onClose,
 }: Props) {
   const { user } = useAuth()
@@ -259,6 +263,18 @@ export default function OrderModal({
             {step === 0 && (
               <div className={styles.fields}>
                 <p className={styles.hint}>Dina uppgifter är hämtade från din profil.</p>
+                {offersRut && (
+                  <div className={styles.payment_info}>
+                    <span>💰</span>
+                    <p>Denna tjänst erbjuder <strong>RUT-avdrag</strong> – du betalar ca 50% av priset ({Math.round(price * 0.5)} kr) efter skattereduktion. Max 75 000 kr/år.</p>
+                  </div>
+                )}
+                {offersRot && (
+                  <div className={styles.payment_info}>
+                    <span>💰</span>
+                    <p>Denna tjänst erbjuder <strong>ROT-avdrag</strong> – du betalar ca 70% av priset ({Math.round(price * 0.7)} kr) efter skattereduktion. Max 50 000 kr/år.</p>
+                  </div>
+                )}
                 {[
                   { label: 'Namn', value: name },
                   { label: 'E-post', value: email },
