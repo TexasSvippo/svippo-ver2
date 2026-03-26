@@ -41,6 +41,7 @@ export default function RequestDetailClient({ request }: Props) {
   const [deleting, setDeleting] = useState(false)
   const [userProfile, setUserProfile] = useState<{ name: string, email: string, phone: string } | null>(null)
   const [interestsCount, setInterestsCount] = useState(0)
+  const [showUpgradePrompt, setShowUpgradePrompt] = useState(false)
 
   useEffect(() => {
     if (!user) return
@@ -264,28 +265,30 @@ export default function RequestDetailClient({ request }: Props) {
 
               {!isOwner && (
                 <>
-                  {user && accountType === 'bestellare' ? (
-                    <div style={{ fontSize: '13px', color: 'var(--color-gray)', textAlign: 'center', padding: '8px 0' }}>
-                      Endast Svippare och företag kan anmäla intresse.
-                    </div>
-                  ) : success ? (
+                  {success ? (
                     <div className={styles.success_box}>
                       ✅ Din intresseanmälan är skickad!
                     </div>
                   ) : (
                     <button
                       className={`btn btn-orange ${serviceStyles.detail__order_btn}`}
-                      onClick={() => user ? setShowInterestForm(true) : setShowLoginPrompt(true)}
+                      onClick={() => {
+                        if (!user) { setShowLoginPrompt(true); return }
+                        if (accountType === 'bestellare') { setShowUpgradePrompt(true); return }
+                        setShowInterestForm(true)
+                      }}
                     >
                       🙋 Jag kan hjälpa!
                     </button>
                   )}
-                  <button
-                    className={`btn btn-outline ${serviceStyles.detail__question_btn}`}
-                    onClick={handleContact}
-                  >
-                    💬 Kontakta beställaren
-                  </button>
+                  {user && accountType !== 'bestellare' && (
+                    <button
+                      className={`btn btn-outline ${serviceStyles.detail__question_btn}`}
+                      onClick={handleContact}
+                    >
+                      💬 Kontakta beställaren
+                    </button>
+                  )}
                 </>
               )}
             </div>
@@ -387,6 +390,33 @@ export default function RequestDetailClient({ request }: Props) {
                 disabled={saving || !message}
               >
                 {saving ? 'Skickar...' : 'Skicka intresseanmälan'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Uppgradera till Svippare-popup */}
+      {showUpgradePrompt && (
+        <div className="modal-backdrop" onClick={() => setShowUpgradePrompt(false)}>
+          <div className="modal-box" onClick={e => e.stopPropagation()}>
+            <div style={{ textAlign: 'center', marginBottom: '16px', fontSize: '40px' }}>🔒</div>
+            <h2 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '8px', textAlign: 'center' }}>
+              Du kan inte anmäla intresse
+            </h2>
+            <p style={{ color: 'var(--color-gray)', textAlign: 'center', marginBottom: '20px' }}>
+              För att anmäla intresse på förfrågningar behöver du vara godkänd Svippare, företag eller UF-företag.
+            </p>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <Link href="/bli-svippare" className="btn btn-primary" style={{ flex: 1, justifyContent: 'center' }}>
+                Ansök om att bli Svippare
+              </Link>
+              <button
+                className="btn btn-outline"
+                style={{ flex: 1, justifyContent: 'center' }}
+                onClick={() => setShowUpgradePrompt(false)}
+              >
+                Stäng
               </button>
             </div>
           </div>
