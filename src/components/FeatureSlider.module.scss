@@ -1,0 +1,235 @@
+.fs {
+  background: #F4F6F8;
+  padding: 80px 0;
+  overflow: hidden;
+}
+
+.fs__inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* Header */
+.fs__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 40px;
+}
+
+.fs__title {
+  font-size: 36px;
+  font-weight: 800;
+  color: var(--color-dark);
+  line-height: 1.2;
+}
+
+.fs__nav {
+  display: flex;
+  gap: 8px;
+}
+
+.fs__nav_btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1.5px solid var(--color-border);
+  background: white;
+  font-size: 22px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-dark);
+  transition: all 0.2s;
+  line-height: 1;
+
+  &:hover {
+    background: var(--color-primary);
+    color: white;
+    border-color: var(--color-primary);
+  }
+}
+
+/* Desktop track */
+.fs__track_wrap {
+  overflow: hidden;
+  margin-right: -200px;
+  padding-right: 200px;
+}
+
+.fs__track {
+  display: flex;
+  gap: 12px;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  padding-bottom: 25px;
+}
+
+/* Kort */
+.fs__card {
+  width: 850px;
+  flex-shrink: 0;
+  background: white;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  opacity: 0.45;
+  transition: opacity 0.3s;
+  border-radius: 12px;
+
+  &--active {
+    opacity: 1;
+  }
+}
+
+.fs__card_img_wrap {
+  overflow: hidden;
+  height: 320px;
+}
+
+.fs__card_img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.fs__card_body {
+  padding: 40px 36px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 12px;
+}
+
+.fs__card_label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-primary);
+}
+
+.fs__card_title {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--color-dark);
+  line-height: 1.2;
+}
+
+.fs__card_desc {
+  font-size: 18px;
+  color: var(--color-gray);
+  line-height: 1.7;
+  letter-spacing: -0.5px;
+}
+
+.fs__card_cta {
+  display: inline-flex;
+  align-items: center;
+  padding: 12px 24px;
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--color-dark);
+  color: var(--color-dark);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  width: fit-content;
+  margin-top: 8px;
+  transition: all 0.2s;
+
+  &:hover {
+    background: var(--color-dark);
+    color: white;
+  }
+}
+
+/* Dots – bara mobil */
+.fs__dots {
+  display: none;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 24px;
+  padding: 0 24px;
+}
+
+.fs__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: none;
+  background: var(--color-border);
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &--active {
+    background: var(--color-primary);
+    width: 24px;
+    border-radius: 4px;
+  }
+}
+
+/* Mobil */
+@media (max-width: 768px) {
+  .fs {
+    padding: 60px 0;
+  }
+
+  .fs__inner {
+    padding: 0;
+  }
+
+  .fs__header {
+    padding: 0 24px;
+    margin-bottom: 32px;
+  }
+
+  .fs__nav {
+    display: none;
+  }
+
+  .fs__dots {
+    display: flex;
+  }
+
+  .fs__track_wrap {
+    overflow-x: auto;
+    overflow-y: visible;
+    margin-right: 0;
+    padding-right: 0;
+    padding-left: 24px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  .fs__track {
+    transform: none !important;
+    width: max-content;
+    padding-right: 24px;
+    gap: 16px;
+  }
+
+  .fs__card {
+    width: calc(100vw - 72px);
+    grid-template-columns: 1fr;
+    opacity: 1;
+  }
+
+  .fs__card_img_wrap {
+    height: 200px;
+  }
+
+  .fs__card_body {
+    padding: 20px 24px;
+  }
+
+  .fs__card_title {
+    font-size: 20px;
+  }
+}

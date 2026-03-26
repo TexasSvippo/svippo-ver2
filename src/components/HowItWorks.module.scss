@@ -1,0 +1,103 @@
+.hiw {
+  padding: 80px 0 60px;
+  overflow: hidden;
+}
+
+.hiw__header {
+  margin-bottom: 40px;
+}
+
+.hiw__title {
+  font-size: 36px;
+  font-weight: 800;
+  color: var(--color-dark);
+  line-height: 1.2;
+}
+
+/* Scrollbar-spår */
+.hiw__track_wrap {
+  padding-left: max(24px, calc((100vw - 1200px) / 2));
+  overflow-x: auto;
+  overflow-y: visible;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.hiw__track {
+  display: flex;
+  gap: 24px;
+  padding-right: 48px;
+  width: max-content;
+}
+
+/* Kort */
+.hiw__card {
+  width: 320px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.hiw__card_img_wrap {
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  height: 380px;
+}
+
+.hiw__card_img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hiw__card_body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hiw__card_num {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-gray);
+  letter-spacing: -1px;
+}
+
+.hiw__card_title {
+  font-size: 25px;
+  font-weight: 700;
+  color: var(--color-dark);
+  line-height: 1.3;
+}
+
+.hiw__card_desc {
+  font-size: 17px;
+  color: var(--color-gray);
+  line-height: 1.6;
+}
+
+/* Desktop – visa 3 kort i grid */
+@media (min-width: 1024px) {
+  .hiw__track_wrap {
+    overflow-x: visible;
+    padding-left: 0;
+  }
+
+  .hiw__track {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    width: auto;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  .hiw__card {
+    width: auto;
+  }
+}
