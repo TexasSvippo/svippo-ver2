@@ -107,6 +107,7 @@ const handleContact = async () => {
       setShowLoginPrompt(true)
       return
     }
+    if (user.id === service.user_id) return
 
     // Kolla om konversation redan finns mellan dessa två för denna tjänst
     const { data: existing } = await supabase
