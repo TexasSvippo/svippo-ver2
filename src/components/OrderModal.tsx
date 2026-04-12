@@ -180,7 +180,7 @@ export default function OrderModal({
           service_title: serviceTitle,
           actor_name: name,
           message: `${name} har beställt din tjänst "${serviceTitle}"!`,
-          action_url: `/bestallning/${order.id}`,
+          action_url: `/order/${order.id}`,
           read: false,
           dismissed: false,
           email_sent: false,

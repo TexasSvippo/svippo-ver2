@@ -42,7 +42,7 @@ export default function IntresseanmalningarPage() {
   const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'price_asc' | 'price_desc' | 'rating'>('newest')
 
   useEffect(() => {
-    if (!loading && !user) router.push('/logga-in')
+    if (!loading && !user) router.push('/login')
   }, [loading, user])
 
   useEffect(() => {
@@ -134,7 +134,7 @@ export default function IntresseanmalningarPage() {
           service_title: interest.request_title,
           actor_name: userData?.name || '',
           message: `Din intresseanmälan för "${interest.request_title}" har godkänts! 🎉`,
-          action_url: `/bestallning/${order.id}`,
+          action_url: `/order/${order.id}`,
           read: false,
           dismissed: false,
           email_sent: false,
@@ -162,7 +162,7 @@ export default function IntresseanmalningarPage() {
       type: 'interest_rejected',
       actor_name: '',
       message: `Tack för ditt intresse för "${interest.request_title}" – en annan utförare valdes den här gången.`,
-      action_url: `/forfragningar`,
+      action_url: `/requests`,
       read: false,
       dismissed: false,
       email_sent: false,
@@ -232,14 +232,14 @@ export default function IntresseanmalningarPage() {
               {interests.length} totalt · {interests.filter(i => i.status === 'pending').length} väntande
             </p>
           </div>
-          <Link href="/profil" className="btn btn-outline">← Tillbaka till profil</Link>
+          <Link href="/profile" className="btn btn-outline">← Tillbaka till profil</Link>
         </div>
 
         {interests.length === 0 ? (
           <div className={styles.empty}>
             <span>📭</span>
             <p>Inga intresseanmälningar ännu.</p>
-            <Link href="/skapa-forfragning" className="btn btn-orange">Skapa en förfrågan</Link>
+            <Link href="/create-request" className="btn btn-orange">Skapa en förfrågan</Link>
           </div>
         ) : (
           <>
@@ -415,7 +415,7 @@ export default function IntresseanmalningarPage() {
                         {/* Åtgärd */}
                         <div className={styles.table_cell} onClick={e => e.stopPropagation()}>
                           <div className={styles.action_cell}>
-                            <Link href={`/svippare/${interest.svippar_id}`} className={styles.action_btn}>
+                            <Link href={`/provider/${interest.svippar_id}`} className={styles.action_btn}>
                               👤
                             </Link>
                             <a href={`mailto:${interest.svippar_email}`} className={styles.action_btn}>
@@ -450,7 +450,7 @@ export default function IntresseanmalningarPage() {
                             <p>{interest.message}</p>
                           </div>
                           <div className={styles.expanded_actions}>
-                            <Link href={`/svippare/${interest.svippar_id}`} className="btn btn-outline">
+                            <Link href={`/provider/${interest.svippar_id}`} className="btn btn-outline">
                               👤 Se profil
                             </Link>
                             <a href={`mailto:${interest.svippar_email}`} className="btn btn-outline">

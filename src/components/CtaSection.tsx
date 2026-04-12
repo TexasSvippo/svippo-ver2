@@ -22,9 +22,9 @@ export default function CtaSection() {
                 Skapa ett konto, publicera dina tjänster och börja tjäna pengar – helt gratis.
               </p>
               {!user ? (
-                <Link href="/registrera" className="btn btn-primary">Bli Svippare direkt →</Link>
+                <Link href="/register" className="btn btn-primary">Bli Svippare direkt →</Link>
               ) : accountType === 'bestellare' ? (
-                <Link href="/bli-svippare" className="btn btn-primary">Ansök om att bli Svippare →</Link>
+                <Link href="/become-svippare" className="btn btn-primary">Ansök om att bli Svippare →</Link>
               ) : null}
             </div>
             <div className={styles.cta__illustration}>🧑‍💻</div>
@@ -38,7 +38,7 @@ export default function CtaSection() {
             <p className={styles.cta__text}>
               Hitta pålitliga personer nära dig som kan hjälpa dig med precis det du behöver.
             </p>
-            <Link href="/tjanster" className="btn btn-orange">Utforska tjänster →</Link>
+            <Link href="/services" className="btn btn-orange">Utforska tjänster →</Link>
           </div>
           <div className={styles.cta__illustration}>🛠️</div>
         </div>
@@ -58,12 +58,12 @@ export default function CtaSection() {
           </p>
           <div className={styles.cta__bottom_actions}>
             {!user
-              ? <Link href="/registrera" className="btn btn-primary">Skapa ett konto</Link>
+              ? <Link href="/register" className="btn btn-primary">Skapa ett konto</Link>
               : accountType === 'bestellare'
-              ? <Link href="/bli-svippare" className="btn btn-primary">Bli en Svippare</Link>
-              : <Link href="/profil" className="btn btn-primary">Gå till din profil</Link>
+              ? <Link href="/become-svippare" className="btn btn-primary">Bli en Svippare</Link>
+              : <Link href="/profile" className="btn btn-primary">Gå till din profil</Link>
             }
-            <Link href="/tjanster" className="btn btn-outline-white">Utforska tjänster</Link>
+            <Link href="/services" className="btn btn-outline-white">Utforska tjänster</Link>
           </div>
         </div>
       </div>

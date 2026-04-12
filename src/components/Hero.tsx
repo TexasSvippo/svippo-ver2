@@ -35,14 +35,14 @@ export default function Hero() {
             <button
               key={tag}
               className={styles.hero__tag}
-              onClick={() => router.push(`/tjanster?search=${encodeURIComponent(tag)}`)}
+              onClick={() => router.push(`/services?search=${encodeURIComponent(tag)}`)}
             >
               {tag}
             </button>
           ))}
           <button
             className={`${styles.hero__tag} ${styles['hero__tag--active']}`}
-            onClick={() => router.push('/tjanster')}
+            onClick={() => router.push('/services')}
           >
             Utforska
           </button>

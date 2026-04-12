@@ -46,8 +46,8 @@ export default function Navbar() {
         </Link>
 
         <div className={styles.navbar__links}>
-          <Link href="/tjanster" className={styles.navbar__link}>Tjänster</Link>
-          <Link href="/forfragningar" className={styles.navbar__link}>Förfrågningar</Link>
+          <Link href="/services" className={styles.navbar__link}>Tjänster</Link>
+          <Link href="/requests" className={styles.navbar__link}>Förfrågningar</Link>
         </div>
 
         <SearchBar />
@@ -57,7 +57,7 @@ export default function Navbar() {
             <>
               {user ? (
                 <>
-                  <Link href="/notifikationer" className={styles.navbar__notif_btn}>
+                  <Link href="/notifications" className={styles.navbar__notif_btn}>
                     🔔
                     {unreadCount > 0 && (
                       <span className={styles.navbar__notif_badge}>{unreadCount}</span>
@@ -85,23 +85,23 @@ export default function Navbar() {
                     {menuOpen && (
                       <div className={styles.navbar__dropdown}>
                         <div className={styles.navbar__dropdown_email}>{user.email}</div>
-                        <Link href="/profil" className={styles.navbar__dropdown_item} onClick={() => setMenuOpen(false)}>
+                        <Link href="/profile" className={styles.navbar__dropdown_item} onClick={() => setMenuOpen(false)}>
                           👤 Min profil
                         </Link>
-                        <Link href="/tjanster" className={styles.navbar__dropdown_item} onClick={() => setMenuOpen(false)}>
+                        <Link href="/services" className={styles.navbar__dropdown_item} onClick={() => setMenuOpen(false)}>
                           🛠️ Tjänster
                         </Link>
-                        <Link href="/forfragningar" className={styles.navbar__dropdown_item} onClick={() => setMenuOpen(false)}>
+                        <Link href="/requests" className={styles.navbar__dropdown_item} onClick={() => setMenuOpen(false)}>
                           🙋 Förfrågningar
                         </Link>
                         <Link href="/bestallningar" className={styles.navbar__dropdown_item} onClick={() => setMenuOpen(false)}>
                           📦 Beställningar
                         </Link>
-                        <Link href="/meddelanden" className={styles.navbar__dropdown_item} onClick={() => setMenuOpen(false)}>
+                        <Link href="/messages" className={styles.navbar__dropdown_item} onClick={() => setMenuOpen(false)}>
                           💬 Meddelanden
                         </Link>
                         <Link 
-                          href="/notifikationer" 
+                          href="/notifications" 
                           className={`${styles.navbar__dropdown_item} ${styles.navbar__dropdown_mobile_only}`} 
                           onClick={() => setMenuOpen(false)}
                         >
@@ -128,8 +128,8 @@ export default function Navbar() {
                 </>
               ) : (
                 <>
-                  <Link href="/logga-in" className={styles.navbar__link}>Logga in</Link>
-                  <Link href="/registrera" className="btn btn-orange">Skapa konto</Link>
+                  <Link href="/login" className={styles.navbar__link}>Logga in</Link>
+                  <Link href="/register" className="btn btn-orange">Skapa konto</Link>
                 </>
               )}
             </>

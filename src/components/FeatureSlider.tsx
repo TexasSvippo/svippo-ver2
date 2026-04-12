@@ -11,7 +11,7 @@ const SLIDES = [
     title: 'Svippo 2.0',
     desc: 'Vi har byggt om plattformen från grunden – snabbare, smidigare och mer intuitiv än någonsin.',
     cta: 'Läs mer',
-    href: '/tjanster',
+    href: '/services',
   },
   {
     image: '/images/feature-2.png',
@@ -19,7 +19,7 @@ const SLIDES = [
     title: 'Kom igång snabbt',
     desc: 'Skapa ditt konto, publicera din första tjänst och börja ta emot beställningar – allt på under 10 minuter.',
     cta: 'Skapa ett konto',
-    href: '/registrera',
+    href: '/register',
   },
   {
     image: '/images/feature-3.png',
@@ -27,7 +27,7 @@ const SLIDES = [
     title: 'Svippa på ditt sätt',
     desc: 'Välj uppdrag som passar din vardag. Du bestämmer när, var och hur du jobbar.',
     cta: 'Utforska tjänster',
-    href: '/tjanster',
+    href: '/services',
   },
 ]
 

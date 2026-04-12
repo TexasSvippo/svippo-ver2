@@ -28,7 +28,7 @@ export default function CreateModal({ onClose }: Props) {
 
           <button
             className={`${styles.modal__option} ${styles['modal__option--service']}`}
-            onClick={() => handleChoice('/skapa-inlagg')}
+            onClick={() => handleChoice('/create-service')}
           >
             <div className={styles.modal__option_icon}>🛠️</div>
             <div className={styles.modal__option_content}>
@@ -40,7 +40,7 @@ export default function CreateModal({ onClose }: Props) {
 
           <button
             className={`${styles.modal__option} ${styles['modal__option--request']}`}
-            onClick={() => handleChoice('/skapa-forfragning')}
+            onClick={() => handleChoice('/create-request')}
           >
             <div className={styles.modal__option_icon}>🙋</div>
             <div className={styles.modal__option_content}>

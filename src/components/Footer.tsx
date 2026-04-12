@@ -25,12 +25,12 @@ export default function Footer() {
 
           <div className={styles.footer__column}>
             <h4 className={styles.footer__heading}>Tjänster</h4>
-            <Link href="/tjanster/digitala">Digitala tjänster</Link>
-            <Link href="/tjanster/medie-design">Medie och design</Link>
-            <Link href="/tjanster/utbildning">Utbildning</Link>
-            <Link href="/tjanster/hushall">Hushållstjänster</Link>
-            <Link href="/tjanster/bil">Biltjänster</Link>
-            <Link href="/tjanster/skonhet">Skönhet och hälsa</Link>
+            <Link href="/services/digitala">Digitala tjänster</Link>
+            <Link href="/services/medie-design">Medie och design</Link>
+            <Link href="/services/utbildning">Utbildning</Link>
+            <Link href="/services/hushall">Hushållstjänster</Link>
+            <Link href="/services/bil">Biltjänster</Link>
+            <Link href="/services/skonhet">Skönhet och hälsa</Link>
           </div>
 
           <div className={styles.footer__column}>

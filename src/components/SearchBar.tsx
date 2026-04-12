@@ -225,7 +225,7 @@ export default function SearchBar({ hideTypePicker = false, defaultType = 'tjans
                 ? services.map(s => (
                   <Link
                     key={s.id}
-                    href={`/tjanst/${s.id}`}
+                    href={`/service/${s.id}`}
                     className={styles.searchbar__result}
                     onClick={() => { setShowDropdown(false); setSearch('') }}
                   >
@@ -241,7 +241,7 @@ export default function SearchBar({ hideTypePicker = false, defaultType = 'tjans
                 : requests.map(r => (
                   <Link
                     key={r.id}
-                    href={`/forfragning/${r.id}`}
+                    href={`/request/${r.id}`}
                     className={styles.searchbar__result}
                     onClick={() => { setShowDropdown(false); setSearch('') }}
                   >

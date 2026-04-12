@@ -20,7 +20,7 @@ export default function Categories() {
         <div className={styles.categories__grid}>
           {categories.map((cat) => (
             <Link
-              href={`/tjanster?kategori=${cat.slug}`}
+              href={`/services?kategori=${cat.slug}`}
               key={cat.label}
               className={styles.categories__item}
             >

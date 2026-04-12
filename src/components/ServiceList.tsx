@@ -47,7 +47,7 @@ export default async function ServiceList() {
       <div className="container">
         <div className={styles.servicelist__empty}>
           <p>Inga tjänster hittades ännu.</p>
-          <Link href="/skapa-inlagg" className="btn btn-primary">Skapa första tjänsten</Link>
+          <Link href="/create-service" className="btn btn-primary">Skapa första tjänsten</Link>
         </div>
       </div>
     </section>
@@ -58,12 +58,12 @@ export default async function ServiceList() {
       <div className="container">
         <div className={styles.servicelist__header}>
           <h2 className={styles.servicelist__title}>Populärt just nu 🔥</h2>
-          <Link href="/tjanster" className={styles.servicelist__see_all}>Se alla →</Link>
+          <Link href="/services" className={styles.servicelist__see_all}>Se alla →</Link>
         </div>
 
         <div className={styles.servicelist__list}>
           {services.map((s: Service) => (
-            <Link href={`/tjanst/${s.id}`} key={s.id} className={`${styles.service_card} card`}>
+            <Link href={`/service/${s.id}`} key={s.id} className={`${styles.service_card} card`}>
               <div className={styles.service_card__avatar}>
                 {s.avatar_url
                   ? <img src={s.avatar_url} alt={s.user_name} className={styles.service_card__avatar_img} />

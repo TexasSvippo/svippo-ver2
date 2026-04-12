@@ -193,7 +193,7 @@ export default function ChatBox({
         service_title: '',
         actor_name: currentUserName,
         message: `${currentUserName}: ${input.trim().slice(0, 60)}${input.trim().length > 60 ? '...' : ''}`,
-        action_url: `/meddelanden`,
+        action_url: `/messages`,
         read: false,
         dismissed: false,
         email_sent: false,
