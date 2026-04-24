@@ -29,7 +29,7 @@ export default function Navbar() {
     }
     document.addEventListener('mousedown', handleClick)
     return () => document.removeEventListener('mousedown', handleClick)
-  }, [styles.navbar__profile])
+  }, [])
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()
@@ -77,7 +77,7 @@ export default function Navbar() {
                       onClick={() => setMenuOpen(!menuOpen)}
                     >
                       {avatarUrl
-                        ? <img src={avatarUrl} alt="Profil" className={styles.navbar__avatar_img} />
+                        ? <Image src={avatarUrl} alt="Profil" width={40} height={40} className={styles.navbar__avatar_img} />
                         : <span>{user.email?.charAt(0).toUpperCase()}</span>
                       }
                     </button>
@@ -100,9 +100,9 @@ export default function Navbar() {
                         <Link href="/messages" className={styles.navbar__dropdown_item} onClick={() => setMenuOpen(false)}>
                           💬 Meddelanden
                         </Link>
-                        <Link 
-                          href="/notifications" 
-                          className={`${styles.navbar__dropdown_item} ${styles.navbar__dropdown_mobile_only}`} 
+                        <Link
+                          href="/notifications"
+                          className={`${styles.navbar__dropdown_item} ${styles.navbar__dropdown_mobile_only}`}
                           onClick={() => setMenuOpen(false)}
                         >
                           🔔 Notifikationer
