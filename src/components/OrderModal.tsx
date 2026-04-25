@@ -6,6 +6,7 @@ import useAuth from '@/hooks/useAuth'
 import { orderQuestions } from '@/data/orderQuestions'
 import type { ServiceType } from '@/data/categories'
 import styles from './OrderModal.module.scss'
+import { Wallet, Lightbulb } from 'lucide-react'
 
 type CustomQuestion = {
   id: string
@@ -265,13 +266,13 @@ export default function OrderModal({
                 <p className={styles.hint}>Dina uppgifter är hämtade från din profil.</p>
                 {offersRut && (
                   <div className={styles.payment_info}>
-                    <span>💰</span>
+                    <Wallet size={16} />
                     <p>Denna tjänst erbjuder <strong>RUT-avdrag</strong> – du betalar ca 50% av priset ({Math.round(price * 0.5)} kr) efter skattereduktion. Max 75 000 kr/år.</p>
                   </div>
                 )}
                 {offersRot && (
                   <div className={styles.payment_info}>
-                    <span>💰</span>
+                    <Wallet size={16} />
                     <p>Denna tjänst erbjuder <strong>ROT-avdrag</strong> – du betalar ca 70% av priset ({Math.round(price * 0.7)} kr) efter skattereduktion. Max 50 000 kr/år.</p>
                   </div>
                 )}
@@ -459,7 +460,7 @@ export default function OrderModal({
                 </div>
 
                 <div className={styles.payment_info}>
-                  <span>💡</span>
+                  <Lightbulb size={16} />
                   <p>Betalning sker direkt mellan dig och utföraren. Ni bestämmer upplägget själva – Svippo är inte part i transaktionen.</p>
                 </div>
               </div>

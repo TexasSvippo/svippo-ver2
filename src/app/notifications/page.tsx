@@ -7,20 +7,22 @@ import useAuth from '@/hooks/useAuth'
 import { useNotifications } from '@/hooks/useNotifications'
 import type { Notification } from '@/hooks/useNotifications'
 import styles from './notifications.module.scss'
+import { Package, CheckCircle, XCircle, BarChart2, Wallet, Eye, Star, Bell } from 'lucide-react'
+import type { ReactNode } from 'react'
 
-const getIcon = (type: string) => {
-  const icons: Record<string, string> = {
-    new_order: '📦',
-    order_accepted: '✅',
-    order_rejected: '❌',
+const getIcon = (type: string): ReactNode => {
+  const icons: Record<string, ReactNode> = {
+    new_order: <Package size={18} />,
+    order_accepted: <CheckCircle size={18} />,
+    order_rejected: <XCircle size={18} />,
     project_completed: '🎉',
-    project_update: '📊',
-    request_review: '💰',
-    new_interest: '👀',
-    new_review: '⭐',
-    new_request_in_category: '🔔',
+    project_update: <BarChart2 size={18} />,
+    request_review: <Wallet size={18} />,
+    new_interest: <Eye size={18} />,
+    new_review: <Star size={18} />,
+    new_request_in_category: <Bell size={18} />,
   }
-  return icons[type] ?? '🔔'
+  return icons[type] ?? <Bell size={18} />
 }
 
 const getActionBtn = (notif: Notification, onRead: (id: string) => void) => {

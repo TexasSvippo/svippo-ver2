@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { categories } from '@/data/categories'
 import styles from './forfragningar.module.scss'
+import { Search, MapPin } from 'lucide-react'
 
 type Request = {
   id: string
@@ -91,7 +92,7 @@ export default function ForfragningarClient({ requests }: Props) {
         {/* Sök & filter */}
         <div className={styles.requests__filters}>
           <div className={styles.requests__search}>
-            <span>🔍</span>
+            <Search size={16} />
             <input
               type="text"
               placeholder="Sök förfrågningar..."
@@ -136,9 +137,9 @@ export default function ForfragningarClient({ requests }: Props) {
         {/* Aktiva filter-taggar */}
         {hasFilters && (
           <div className={styles.requests__active_filters}>
-            {search && <span className={styles.requests__filter_tag}>🔍 &quot;{search}&quot;<button onClick={() => setSearch('')}>✕</button></span>}
+            {search && <span className={styles.requests__filter_tag}><Search size={12} /> &quot;{search}&quot;<button onClick={() => setSearch('')}>✕</button></span>}
             {selectedCategory && <span className={styles.requests__filter_tag}>{categories.find(c => c.id === selectedCategory)?.label}<button onClick={() => setSelectedCategory('')}>✕</button></span>}
-            {selectedLocation && <span className={styles.requests__filter_tag}>📍 {selectedLocation}<button onClick={() => setSelectedLocation('')}>✕</button></span>}
+            {selectedLocation && <span className={styles.requests__filter_tag}><MapPin size={12} /> {selectedLocation}<button onClick={() => setSelectedLocation('')}>✕</button></span>}
           </div>
         )}
 
@@ -160,7 +161,7 @@ export default function ForfragningarClient({ requests }: Props) {
                 <div className={styles.request_card__content}>
                   <div className={styles.request_card__meta}>
                     <span className={styles.request_card__category}>{r.subcategory}</span>
-                    <span className={styles.request_card__location}>📍 {r.location}</span>
+                    <span className={styles.request_card__location}><MapPin size={14} /> {r.location}</span>
                   </div>
                   <h2 className={styles.request_card__title}>{r.title}</h2>
                   <p className={styles.request_card__description}>{r.description}</p>

@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import useAuth from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
 import styles from './servicedetail.module.scss'
+import { CheckCircle, Star, User, Wallet, Pencil, Trash2, Lock, MessageCircle, Shield } from 'lucide-react'
 
 type CustomQuestion = {
   id: string
@@ -182,10 +183,10 @@ const filteredReviews = reviews
             <div className={styles.detail__badges}>
               <span className={styles.detail__badge}>{service.subcategory}</span>
               {service.offers_rut && (
-                <span className={`${styles.detail__badge} ${styles['detail__badge--rut']}`}>✅ RUT-avdrag</span>
+                <span className={`${styles.detail__badge} ${styles['detail__badge--rut']}`}><CheckCircle size={14} /> RUT-avdrag</span>
               )}
               {service.offers_rot && (
-                <span className={`${styles.detail__badge} ${styles['detail__badge--rot']}`}>✅ ROT-avdrag</span>
+                <span className={`${styles.detail__badge} ${styles['detail__badge--rot']}`}><CheckCircle size={14} /> ROT-avdrag</span>
               )}
             </div>
 
@@ -203,7 +204,7 @@ const filteredReviews = reviews
                   Recensioner
                   {reviews.length > 0 && (
                     <span className={styles.detail__reviews_count}>
-                      {avgRating !== null && `⭐ ${avgRating}`} · {reviews.length} recensioner
+                      {avgRating !== null && <><Star size={14} /> {avgRating}</>} · {reviews.length} recensioner
                     </span>
                   )}
                 </h2>
@@ -220,7 +221,7 @@ const filteredReviews = reviews
                     <div key={r.id} className={`${styles.detail__review} card`}>
                       <div className={styles.detail__review_header}>
                         <strong className={styles.detail__review_name}>{r.reviewer_name}</strong>
-                        <span className={styles.detail__review_stars}>{'⭐'.repeat(r.rating)}</span>
+                        <span className={styles.detail__review_stars}>{Array.from({ length: r.rating }, (_, i) => <Star key={i} size={14} fill="currentColor" />)}</span>
                       </div>
                       {r.comment && (
                         <p className={styles.detail__review_comment}>{r.comment}</p>
@@ -252,10 +253,10 @@ const filteredReviews = reviews
                     {service.user_name}
                   </Link>
                   <span className={styles.detail__seller_rating}>
-                    ⭐ {avgRating ?? service.rating ?? '–'} ({reviews.length} recensioner)
+                    <Star size={14} /> {avgRating ?? service.rating ?? '–'} ({reviews.length} recensioner)
                   </span>
                   <Link href={`/provider/${service.user_id}`} className={styles.detail__seller_profile_btn}>
-                    👤 Se profil →
+                    <User size={14} /> Se profil →
                   </Link>
                 </div>
               </div>
@@ -279,7 +280,7 @@ const filteredReviews = reviews
                 </div>
                 {service.offers_rut && (
                   <div className={styles.detail__rut_info}>
-                    <span>💰</span>
+                    <Wallet size={16} />
                     <div>
                       <strong>RUT-avdrag tillämpas</strong>
                       <p>Du betalar ca 50% av priset efter skattereduktion. Max 75 000 kr/år.</p>
@@ -288,7 +289,7 @@ const filteredReviews = reviews
                 )}
                 {service.offers_rot && (
                   <div className={styles.detail__rut_info}>
-                    <span>💰</span>
+                    <Wallet size={16} />
                     <div>
                       <strong>ROT-avdrag tillämpas</strong>
                       <p>Du betalar ca 70% av priset efter skattereduktion. Max 50 000 kr/år.</p>
@@ -300,7 +301,7 @@ const filteredReviews = reviews
               {isOwner ? (
                 <div className={styles.detail__own_service}>
                   <div className={styles.detail__own_service_info}>
-                    <span>✏️</span>
+                    <Pencil size={16} />
                     <div>
                       <strong>Detta är din tjänst</strong>
                       <p>Du kan inte beställa din egen tjänst.</p>
@@ -311,7 +312,7 @@ const filteredReviews = reviews
                       className={`btn btn-outline ${styles.detail__edit_btn}`}
                       onClick={() => router.push(`/create-service?edit=${service.id}`)}
                     >
-                      ✏️ Redigera
+                      <Pencil size={15} /> Redigera
                     </button>
                     <button
                       className={`btn btn-outline ${styles.detail__delete_btn}`}
@@ -319,7 +320,7 @@ const filteredReviews = reviews
                       disabled={deleting || inProgressCount > 0}
                       title={inProgressCount > 0 ? 'Projektet pågår – kan inte tas bort' : ''}
                     >
-                      {deleting ? 'Tar bort...' : inProgressCount > 0 ? '🔒 Pågår' : '🗑️ Ta bort'}
+                      {deleting ? 'Tar bort...' : inProgressCount > 0 ? <><Lock size={15} /> Pågår</> : <><Trash2 size={15} /> Ta bort</>}
                     </button>
                   </div>
                 </div>
@@ -337,14 +338,14 @@ const filteredReviews = reviews
                   className={`btn btn-outline ${styles.detail__question_btn}`}
                   onClick={handleContact}
                 >
-                  💬 Kontakta Svipparen
+                  <MessageCircle size={16} /> Kontakta Svipparen
                 </button>
               )}
             </div>
 
             {/* SvippoSafe */}
             <div className={`${styles.detail__safe} card`}>
-              <span className={styles.detail__safe_icon}>🛡️</span>
+              <Shield size={20} />
               <div>
                 <strong>Känn dig trygg med SvippoSafe</strong>
                 <p>Vi hjälper till att hantera trassel som kan dyka upp.</p>

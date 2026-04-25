@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import useAuth from '@/hooks/useAuth'
 import styles from './intresseanmalningar.module.scss'
+import { Star, User, CheckCircle, XCircle, Clock, Mail } from 'lucide-react'
 
 type Interest = {
   id: string
@@ -388,7 +389,7 @@ export default function IntresseanmalningarPage() {
                         {/* Betyg */}
                         <div className={styles.table_cell}>
                           {interest.rating !== null && interest.rating !== undefined ? (
-                            <span className={styles.rating_cell}>⭐ {interest.rating} <span className={styles.rating_count}>({interest.reviews})</span></span>
+                            <span className={styles.rating_cell}><Star size={14} /> {interest.rating} <span className={styles.rating_count}>({interest.reviews})</span></span>
                           ) : (
                             <span className={styles.rating_new}>Ny</span>
                           )}
@@ -408,7 +409,7 @@ export default function IntresseanmalningarPage() {
                             interest.status === 'rejected' ? styles['status_badge--rejected'] :
                             styles['status_badge--pending']
                             }`}>
-                            {interest.status === 'accepted' ? '✅ Godkänd' : interest.status === 'rejected' ? '❌ Nekad' : '⏳ Väntande'}
+                            {interest.status === 'accepted' ? <><CheckCircle size={14} /> Godkänd</> : interest.status === 'rejected' ? <><XCircle size={14} /> Nekad</> : <><Clock size={14} /> Väntande</>}
                             </span>
                         </div>
 
@@ -416,10 +417,10 @@ export default function IntresseanmalningarPage() {
                         <div className={styles.table_cell} onClick={e => e.stopPropagation()}>
                           <div className={styles.action_cell}>
                             <Link href={`/provider/${interest.svippar_id}`} className={styles.action_btn}>
-                              👤
+                              <User size={16} />
                             </Link>
                             <a href={`mailto:${interest.svippar_email}`} className={styles.action_btn}>
-                              ✉️
+                              <Mail size={16} />
                             </a>
                             {interest.status === 'pending' && (
                             <>
@@ -428,13 +429,13 @@ export default function IntresseanmalningarPage() {
                                 onClick={() => handleAccept(interest)}
                                 disabled={acceptingId === interest.id}
                                 >
-                                {acceptingId === interest.id ? '...' : '✅'}
+                                {acceptingId === interest.id ? '...' : <CheckCircle size={16} />}
                                 </button>
                                 <button
                                 className={`${styles.action_btn} ${styles['action_btn--reject']}`}
                                 onClick={() => handleReject(interest)}
                                 >
-                                ❌
+                                <XCircle size={16} />
                                 </button>
                             </>
                             )}
@@ -451,10 +452,10 @@ export default function IntresseanmalningarPage() {
                           </div>
                           <div className={styles.expanded_actions}>
                             <Link href={`/provider/${interest.svippar_id}`} className="btn btn-outline">
-                              👤 Se profil
+                              <User size={16} /> Se profil
                             </Link>
                             <a href={`mailto:${interest.svippar_email}`} className="btn btn-outline">
-                              ✉️ Kontakta
+                              <Mail size={16} /> Kontakta
                             </a>
                             {interest.status === 'pending' && (
                             <>
@@ -463,14 +464,14 @@ export default function IntresseanmalningarPage() {
                                 onClick={() => handleAccept(interest)}
                                 disabled={acceptingId === interest.id}
                                 >
-                                {acceptingId === interest.id ? 'Godkänner...' : '✅ Godkänn utförare'}
+                                {acceptingId === interest.id ? 'Godkänner...' : <><CheckCircle size={16} /> Godkänn utförare</>}
                                 </button>
                                 <button
                                 className="btn btn-outline"
                                 onClick={() => handleReject(interest)}
                                 style={{ color: 'var(--color-orange)', borderColor: 'var(--color-orange)' }}
                                 >
-                                ❌ Neka
+                                <XCircle size={16} /> Neka
                                 </button>
                             </>
                             )}

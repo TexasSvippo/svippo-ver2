@@ -8,6 +8,8 @@ import useAuth from '@/hooks/useAuth'
 import { useNotifications } from '@/hooks/useNotifications'
 import { categories } from '@/data/categories'
 import styles from './profile.module.scss'
+import { Home, Wrench, Bell, Inbox, Users, Eye, Send, Star, Trophy, Settings, Zap, Pencil, Trash2, CheckCircle, Clock, XCircle, MessageCircle, ClipboardList, Wallet, Package } from 'lucide-react'
+import type { ReactNode } from 'react'
 
 type Section =
   | 'oversikt'
@@ -31,17 +33,17 @@ type Notification = { id: string; type: string; order_id: string; service_title:
 type Subscription = { id: string; category_id: string }
 type SocialLink = { id: string; url: string }
 
-const NAV_ITEMS = [
-  { id: 'oversikt', label: 'Översikt', icon: '🏠', group: null },
-  { id: 'mina-tjanster', label: 'Mina tjänster', icon: '🛠️', group: 'Tjänster', svippareOnly: true },
-  { id: 'mina-bevakningar', label: 'Mina bevakningar', icon: '🔔', group: 'Tjänster', svippareOnly: true },
-  { id: 'inkomna-bestallningar', label: 'Inkomna beställningar', icon: '📥', group: 'Tjänster', svippareOnly: true },
-  { id: 'mina-forfragningar', label: 'Mina förfrågningar', icon: '🙋', group: 'Förfrågningar' },
-  { id: 'intresseanmalningar', label: 'Intresseanmälningar', icon: '👀', group: 'Förfrågningar' },
-  { id: 'placerade-bestallningar', label: 'Placerade beställningar', icon: '📤', group: 'Förfrågningar' },
-  { id: 'recensioner', label: 'Recensioner & betyg', icon: '⭐', group: 'Min profil' },
-  { id: 'karriar', label: 'Min karriär', icon: '🏆', group: 'Min profil', svippareOnly: true },
-  { id: 'installningar', label: 'Profilinfo & inställningar', icon: '⚙️', group: 'Min profil' },
+const NAV_ITEMS: { id: string; label: string; icon: ReactNode; group: string | null; svippareOnly?: boolean }[] = [
+  { id: 'oversikt', label: 'Översikt', icon: <Home size={16} />, group: null },
+  { id: 'mina-tjanster', label: 'Mina tjänster', icon: <Wrench size={16} />, group: 'Tjänster', svippareOnly: true },
+  { id: 'mina-bevakningar', label: 'Mina bevakningar', icon: <Bell size={16} />, group: 'Tjänster', svippareOnly: true },
+  { id: 'inkomna-bestallningar', label: 'Inkomna beställningar', icon: <Inbox size={16} />, group: 'Tjänster', svippareOnly: true },
+  { id: 'mina-forfragningar', label: 'Mina förfrågningar', icon: <Users size={16} />, group: 'Förfrågningar' },
+  { id: 'intresseanmalningar', label: 'Intresseanmälningar', icon: <Eye size={16} />, group: 'Förfrågningar' },
+  { id: 'placerade-bestallningar', label: 'Placerade beställningar', icon: <Send size={16} />, group: 'Förfrågningar' },
+  { id: 'recensioner', label: 'Recensioner & betyg', icon: <Star size={16} />, group: 'Min profil' },
+  { id: 'karriar', label: 'Min karriär', icon: <Trophy size={16} />, group: 'Min profil', svippareOnly: true },
+  { id: 'installningar', label: 'Profilinfo & inställningar', icon: <Settings size={16} />, group: 'Min profil' },
 ]
 
 function Avatar({ url, name, size = 'md' }: { url?: string | null, name: string, size?: 'sm' | 'md' | 'lg' }) {
@@ -257,11 +259,11 @@ export default function ProfilePage() {
 
   const pendingOrders = incomingOrders.filter(o => o.status === 'pending')
 
-  const statusLabel = (order: { status: string; project_status: string }) => {
-    if (order.project_status === 'completed') return '✅ Avslutat'
-    if (order.status === 'pending') return '⏳ Väntar'
+  const statusLabel = (order: { status: string; project_status: string }): ReactNode => {
+    if (order.project_status === 'completed') return <><CheckCircle size={14} /> Avslutat</>
+    if (order.status === 'pending') return <><Clock size={14} /> Väntar</>
     if (order.status === 'accepted') return '🔄 Pågår'
-    return '❌ Nekad'
+    return <><XCircle size={14} /> Nekad</>
   }
 
   const statusTag = (order: { status: string; project_status: string }) => {
@@ -283,7 +285,7 @@ export default function ProfilePage() {
             <p className={styles.profile__sidebar_email}>{user.email}</p>
             {!isBestellare && (
               <Link href={`/provider/${user.id}`} className={styles.profile__sidebar_publink}>
-                👁️ Se publik profil →
+                <Eye size={14} /> Se publik profil →
               </Link>
             )}
           </div>
@@ -294,7 +296,7 @@ export default function ProfilePage() {
             className={`${styles.profile__nav_item} ${activeSection === 'oversikt' ? styles['profile__nav_item--active'] : ''}`}
             onClick={() => setActiveSection('oversikt')}
           >
-            <span className={styles.profile__nav_icon}>🏠</span>
+            <span className={styles.profile__nav_icon}><Home size={16} /></span>
             <span>Översikt</span>
           </button>
 
@@ -332,7 +334,7 @@ export default function ProfilePage() {
         {/* Pending-banner */}
         {activeSection === 'oversikt' && accountType === 'svippare' && svippareStatus === 'pending' && (
           <div className={styles.profile__pending_banner}>
-            <span className={styles.profile__pending_banner_icon}>⏳</span>
+            <span className={styles.profile__pending_banner_icon}><Clock size={20} /></span>
             <div className={styles.profile__pending_banner_content}>
               <strong>Din Svippare-ansökan granskas</strong>
               <p>Vi håller på att granska din ansökan. Du får ett meddelande så snart den är godkänd. Tills dess kan du beställa tjänster som vanligt.</p>
@@ -364,11 +366,11 @@ export default function ProfilePage() {
               <div className={styles.welcome_banner__actions}>
                 {canCreateService && (
                   <button className="btn btn-primary" onClick={() => router.push('/create-service')}>
-                    🛠️ Skapa tjänst
+                    <Wrench size={16} /> Skapa tjänst
                   </button>
                 )}
                 <button className="btn btn-orange" onClick={() => router.push('/create-request')}>
-                  🙋 Skapa förfrågan
+                  <Users size={16} /> Skapa förfrågan
                 </button>
               </div>
             </div>
@@ -378,7 +380,7 @@ export default function ProfilePage() {
                 {notifications.map(notif => (
                   <div key={notif.id} className={`${styles.profile__notification} ${styles[`profile__notification--${notif.type}`]}`}>
                     <span className={styles.profile__notification_icon}>
-                      {notif.type === 'project_completed' ? '🎉' : notif.type === 'new_order' ? '📦' : notif.type === 'order_accepted' ? '✅' : '💰'}
+                      {notif.type === 'project_completed' ? '🎉' : notif.type === 'new_order' ? <Package size={18} /> : notif.type === 'order_accepted' ? <CheckCircle size={18} /> : <Wallet size={18} />}
                     </span>
                     <div className={styles.profile__notification_content}>
                       <p>{notif.message}</p>
@@ -398,22 +400,22 @@ export default function ProfilePage() {
             <div className={styles.profile__stats}>
               {canCreateService && (
                 <div className={`${styles.profile__stat_card} ${styles['profile__stat_card--blue']}`} onClick={() => setActiveSection('mina-tjanster')}>
-                  <div className={styles.stat_icon_wrap}>🛠️</div>
+                  <div className={styles.stat_icon_wrap}><Wrench size={20} /></div>
                   <div className={styles.stat_info}><strong>{services.length}</strong><span>Aktiva tjänster</span></div>
                 </div>
               )}
               {canCreateService && (
                 <div className={`${styles.profile__stat_card} ${styles['profile__stat_card--orange']}`} onClick={() => setActiveSection('inkomna-bestallningar')}>
-                  <div className={styles.stat_icon_wrap}>📥</div>
+                  <div className={styles.stat_icon_wrap}><Inbox size={20} /></div>
                   <div className={styles.stat_info}><strong>{pendingOrders.length}</strong><span>Nya beställningar</span></div>
                 </div>
               )}
               <div className={`${styles.profile__stat_card} ${styles['profile__stat_card--green']}`} onClick={() => setActiveSection('mina-forfragningar')}>
-                <div className={styles.stat_icon_wrap}>🙋</div>
+                <div className={styles.stat_icon_wrap}><Users size={20} /></div>
                 <div className={styles.stat_info}><strong>{myRequests.length}</strong><span>Förfrågningar</span></div>
               </div>
               <div className={`${styles.profile__stat_card} ${styles['profile__stat_card--purple']}`} onClick={() => setActiveSection('intresseanmalningar')}>
-                <div className={styles.stat_icon_wrap}>👀</div>
+                <div className={styles.stat_icon_wrap}><Eye size={20} /></div>
                 <div className={styles.stat_info}><strong>{interests.length}</strong><span>Intresseanmälningar</span></div>
               </div>
             </div>
@@ -421,13 +423,13 @@ export default function ProfilePage() {
             {/* Bli Svippare-banner för beställare */}
             {isBestellare && (
               <div className={`${styles.profile__block} card`} style={{ marginBottom: '24px', padding: '28px', display: 'flex', alignItems: 'center', gap: '20px' }}>
-                <span style={{ fontSize: '40px', flexShrink: 0 }}>⚡</span>
+                <span style={{ flexShrink: 0 }}><Zap size={40} /></span>
                 <div style={{ flex: 1 }}>
                   <h2 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '6px' }}>Vill du sälja dina kunskaper?</h2>
                   <p style={{ color: 'var(--color-gray)', fontSize: '14px', margin: 0 }}>Bli en Svippare och börja tjäna pengar på dina färdigheter – helt gratis att komma igång.</p>
                 </div>
                 <Link href="/become-svippare" className="btn btn-primary" style={{ flexShrink: 0 }}>
-                  ⚡ Ansök nu
+                  <Zap size={16} /> Ansök nu
                 </Link>
               </div>
             )}
@@ -438,7 +440,7 @@ export default function ProfilePage() {
                 {canCreateService && (
                   <div className={`${styles.profile__block} card`}>
                     <div className={styles.profile__block_header}>
-                      <div className={styles.profile__block_title}><span>🛠️</span><h2>Mina tjänster</h2></div>
+                      <div className={styles.profile__block_title}><Wrench size={18} /><h2>Mina tjänster</h2></div>
                       <button className={styles.profile__block_link} onClick={() => setActiveSection('mina-tjanster')}>Se alla →</button>
                     </div>
                     {services.length === 0 ? (
@@ -469,7 +471,7 @@ export default function ProfilePage() {
                   <div className={`${styles.profile__block} card`}>
                     <div className={styles.profile__block_header}>
                       <div className={styles.profile__block_title}>
-                        <span>📥</span><h2>Inkomna beställningar</h2>
+                        <Inbox size={18} /><h2>Inkomna beställningar</h2>
                         {pendingOrders.length > 0 && <span className={styles.profile__nav_badge}>{pendingOrders.length}</span>}
                       </div>
                       <button className={styles.profile__block_link} onClick={() => setActiveSection('inkomna-bestallningar')}>Se alla →</button>
@@ -497,7 +499,7 @@ export default function ProfilePage() {
               <div className={styles.profile__dashboard_right}>
                 <div className={`${styles.profile__block} card`}>
                   <div className={styles.profile__block_header}>
-                    <div className={styles.profile__block_title}><span>🙋</span><h2>Mina förfrågningar</h2></div>
+                    <div className={styles.profile__block_title}><Users size={18} /><h2>Mina förfrågningar</h2></div>
                     <button className={styles.profile__block_link} onClick={() => setActiveSection('mina-forfragningar')}>Se alla →</button>
                   </div>
                   {myRequests.length === 0 ? (
@@ -525,7 +527,7 @@ export default function ProfilePage() {
 
                 <div className={`${styles.profile__block} card`}>
                   <div className={styles.profile__block_header}>
-                    <div className={styles.profile__block_title}><span>👀</span><h2>Intresseanmälningar</h2></div>
+                    <div className={styles.profile__block_title}><Eye size={18} /><h2>Intresseanmälningar</h2></div>
                     <button className={styles.profile__block_link} onClick={() => setActiveSection('intresseanmalningar')}>Se alla →</button>
                   </div>
                   {interests.length === 0 ? (
@@ -557,12 +559,12 @@ export default function ProfilePage() {
               <button className="btn btn-primary" onClick={() => router.push('/create-service')}>+ Ny tjänst</button>
             </div>
             {services.length === 0 ? (
-              <div className={styles.profile__empty}><span>🛠️</span><p>Du har inga aktiva tjänster ännu.</p><button className="btn btn-primary" onClick={() => router.push('/create-service')}>Skapa din första tjänst</button></div>
+              <div className={styles.profile__empty}><Wrench size={32} /><p>Du har inga aktiva tjänster ännu.</p><button className="btn btn-primary" onClick={() => router.push('/create-service')}>Skapa din första tjänst</button></div>
             ) : (
               <div className={styles.profile__list}>
                 {services.map(s => (
                   <div key={s.id} className={`${styles.profile__item} card`}>
-                    <div className={styles.profile__item_icon}>🛠️</div>
+                    <div className={styles.profile__item_icon}><Wrench size={18} /></div>
                     <Link href={`/service/${s.id}`} className={styles.profile__item_info}>
                       <strong>{s.title}</strong>
                       <span>{s.subcategory} · {s.location}</span>
@@ -571,12 +573,12 @@ export default function ProfilePage() {
                       <strong>{s.price_type === 'offert' ? 'Offert' : `${s.price} kr`}</strong>
                       <span className={`${styles.profile__item_tag} ${styles['item_tag--blue']}`}>{s.price_type}</span>
                       <div className={styles.profile__item_actions}>
-                        <button className={`btn btn-outline ${styles.profile__edit_btn}`} onClick={() => router.push(`/create-service?edit=${s.id}`)}>✏️</button>
+                        <button className={`btn btn-outline ${styles.profile__edit_btn}`} onClick={() => router.push(`/create-service?edit=${s.id}`)}><Pencil size={15} /></button>
                         <button className={`btn btn-outline ${styles.profile__delete_btn}`} onClick={async () => {
                           if (!confirm('Är du säker på att du vill ta bort denna tjänst?')) return
                           await supabase.from('services').delete().eq('id', s.id)
                           setServices(prev => prev.filter(x => x.id !== s.id))
-                        }}>🗑️</button>
+                        }}><Trash2 size={15} /></button>
                       </div>
                     </div>
                   </div>
@@ -591,12 +593,12 @@ export default function ProfilePage() {
           <div className={styles.profile__section}>
             <h1 className={styles.profile__section_title}>Inkomna beställningar</h1>
             {incomingOrders.length === 0 ? (
-              <div className={styles.profile__empty}><span>📥</span><p>Inga beställningar ännu.</p></div>
+              <div className={styles.profile__empty}><Inbox size={32} /><p>Inga beställningar ännu.</p></div>
             ) : (
               <div className={styles.profile__list}>
                 {incomingOrders.map(order => (
                   <Link href={`/order/${order.id}`} key={order.id} className={`${styles.profile__item} card`}>
-                    <div className={styles.profile__item_icon}>{order.project_status === 'completed' ? '✅' : order.status === 'pending' ? '⏳' : order.status === 'accepted' ? '🔄' : '❌'}</div>
+                    <div className={styles.profile__item_icon}>{order.project_status === 'completed' ? <CheckCircle size={18} /> : order.status === 'pending' ? <Clock size={18} /> : order.status === 'accepted' ? '🔄' : <XCircle size={18} />}</div>
                     <div className={styles.profile__item_info}>
                       <strong>{order.service_title}</strong>
                       <span>Från: {order.buyer_name} · {order.buyer_email}</span>
@@ -615,12 +617,12 @@ export default function ProfilePage() {
           <div className={styles.profile__section}>
             <h1 className={styles.profile__section_title}>Placerade beställningar</h1>
             {placedOrders.length === 0 ? (
-              <div className={styles.profile__empty}><span>📤</span><p>Du har inte beställt några tjänster ännu.</p><button className="btn btn-primary" onClick={() => router.push('/services')}>Utforska tjänster</button></div>
+              <div className={styles.profile__empty}><Send size={32} /><p>Du har inte beställt några tjänster ännu.</p><button className="btn btn-primary" onClick={() => router.push('/services')}>Utforska tjänster</button></div>
             ) : (
               <div className={styles.profile__list}>
                 {placedOrders.map(order => (
                   <Link href={`/my-order/${order.id}`} key={order.id} className={`${styles.profile__item} card`}>
-                    <div className={styles.profile__item_icon}>{order.project_status === 'completed' ? '✅' : order.status === 'pending' ? '⏳' : order.status === 'accepted' ? '🔄' : '❌'}</div>
+                    <div className={styles.profile__item_icon}>{order.project_status === 'completed' ? <CheckCircle size={18} /> : order.status === 'pending' ? <Clock size={18} /> : order.status === 'accepted' ? '🔄' : <XCircle size={18} />}</div>
                     <div className={styles.profile__item_info}>
                       <strong>{order.service_title}</strong>
                       <span>Utförare: {order.seller_name}</span>
@@ -642,12 +644,12 @@ export default function ProfilePage() {
               <button className="btn btn-orange" onClick={() => router.push('/create-request')}>+ Ny förfrågan</button>
             </div>
             {myRequests.length === 0 ? (
-              <div className={styles.profile__empty}><span>🙋</span><p>Du har inga förfrågningar ännu.</p><button className="btn btn-orange" onClick={() => router.push('/create-request')}>Skapa en förfrågan</button></div>
+              <div className={styles.profile__empty}><Users size={32} /><p>Du har inga förfrågningar ännu.</p><button className="btn btn-orange" onClick={() => router.push('/create-request')}>Skapa en förfrågan</button></div>
             ) : (
               <div className={styles.profile__list}>
                 {myRequests.map(r => (
                   <div key={r.id} className={`${styles.profile__item} card`}>
-                    <div className={styles.profile__item_icon}>🙋</div>
+                    <div className={styles.profile__item_icon}><Users size={18} /></div>
                     <Link href={`/request/${r.id}`} className={styles.profile__item_info}>
                       <strong>{r.title}</strong>
                       <span>{r.subcategory} · {r.location}</span>
@@ -656,12 +658,12 @@ export default function ProfilePage() {
                       <strong className={styles.profile__item_budget}>{r.budget_type === 'prisforslag' ? 'Prisförslag' : `${r.budget} kr`}</strong>
                       <span className={`${styles.profile__item_tag} ${styles['item_tag--orange']}`}>Öppen</span>
                       <div className={styles.profile__item_actions}>
-                        <button className={`btn btn-outline ${styles.profile__edit_btn}`} onClick={() => router.push(`/create-request?edit=${r.id}`)}>✏️</button>
+                        <button className={`btn btn-outline ${styles.profile__edit_btn}`} onClick={() => router.push(`/create-request?edit=${r.id}`)}><Pencil size={15} /></button>
                         <button className={`btn btn-outline ${styles.profile__delete_btn}`} onClick={async () => {
                           if (!confirm('Är du säker på att du vill ta bort denna förfrågan?')) return
                           await supabase.from('requests').delete().eq('id', r.id)
                           setMyRequests(prev => prev.filter(x => x.id !== r.id))
-                        }}>🗑️</button>
+                        }}><Trash2 size={15} /></button>
                       </div>
                     </div>
                   </div>
@@ -682,7 +684,7 @@ export default function ProfilePage() {
             <h1 className={styles.profile__section_title}>Mina bevakningar</h1>
             <div className={`${styles.profile__block} card`}>
               <div className={styles.profile__block_header}>
-                <div className={styles.profile__block_title}><span>🔔</span><h2>Bevakade kategorier</h2></div>
+                <div className={styles.profile__block_title}><Bell size={18} /><h2>Bevakade kategorier</h2></div>
               </div>
               {subscriptions.length === 0 ? (
                 <div className={styles.profile__block_empty}>
@@ -731,7 +733,7 @@ export default function ProfilePage() {
                   return r.category_id === catId && (!subcat || r.subcategory === subcat)
                 }).map(r => (
                   <Link href={`/request/${r.id}`} key={r.id} className={`${styles.profile__item} card`}>
-                    <div className={styles.profile__item_icon}>🙋</div>
+                    <div className={styles.profile__item_icon}><Users size={18} /></div>
                     <div className={styles.profile__item_info}>
                       <strong>{r.title}</strong>
                       <span>{r.subcategory} · {r.location}</span>
@@ -750,12 +752,12 @@ export default function ProfilePage() {
         {/* KARRIÄR */}
         {activeSection === 'karriar' && (
           <div className={styles.profile__section}>
-            <h1 className={styles.profile__section_title}>🏆 Min karriär</h1>
+            <h1 className={styles.profile__section_title}><Trophy size={22} /> Min karriär</h1>
 
             {/* Stats */}
             <div className={styles.profile__stats} style={{ marginBottom: '24px' }}>
               <div className={`${styles.profile__stat_card} ${styles['profile__stat_card--blue']}`}>
-                <div className={styles.stat_icon_wrap}>✅</div>
+                <div className={styles.stat_icon_wrap}><CheckCircle size={20} /></div>
                 <div className={styles.stat_info}>
                   <strong>{karriarOrders.length}</strong>
                   <span>Utförda uppdrag</span>
@@ -769,7 +771,7 @@ export default function ProfilePage() {
                 </div>
               </div>
               <div className={`${styles.profile__stat_card} ${styles['profile__stat_card--green']}`}>
-                <div className={styles.stat_icon_wrap}>⭐</div>
+                <div className={styles.stat_icon_wrap}><Star size={20} /></div>
                 <div className={styles.stat_info}>
                   <strong>
                     {karriarReviews.length > 0
@@ -780,7 +782,7 @@ export default function ProfilePage() {
                 </div>
               </div>
               <div className={`${styles.profile__stat_card} ${styles['profile__stat_card--purple']}`}>
-                <div className={styles.stat_icon_wrap}>💬</div>
+                <div className={styles.stat_icon_wrap}><MessageCircle size={20} /></div>
                 <div className={styles.stat_info}>
                   <strong>{karriarReviews.length}</strong>
                   <span>Recensioner</span>
@@ -799,8 +801,8 @@ export default function ProfilePage() {
                   { icon: '🥈', label: 'På gång!', desc: 'Slutfört 5 uppdrag', target: 5 },
                   { icon: '🥇', label: 'Proffs', desc: 'Slutfört 10 uppdrag', target: 10 },
                   { icon: '💎', label: 'Veteran', desc: 'Slutfört 25 uppdrag', target: 25 },
-                  { icon: '🏆', label: 'Legend', desc: 'Slutfört 50 uppdrag', target: 50 },
-                  { icon: '⭐', label: 'Första stjärnan', desc: 'Fått 1 recension', target: 1, type: 'reviews' },
+                  { icon: <Trophy size={32} />, label: 'Legend', desc: 'Slutfört 50 uppdrag', target: 50 },
+                  { icon: <Star size={32} />, label: 'Första stjärnan', desc: 'Fått 1 recension', target: 1, type: 'reviews' },
                   { icon: '🌟', label: 'Högt betyg', desc: 'Snittbetyg över 4.5', target: 4.5, type: 'rating' },
                 ].map(milestone => {
                   const avgRating = karriarReviews.length > 0
@@ -844,7 +846,7 @@ export default function ProfilePage() {
             {/* Senaste uppdrag */}
             <div className={`${styles.profile__block} card`}>
               <div className={styles.profile__block_header}>
-                <div className={styles.profile__block_title}><span>📋</span><h2>Utförda uppdrag</h2></div>
+                <div className={styles.profile__block_title}><ClipboardList size={18} /><h2>Utförda uppdrag</h2></div>
               </div>
               {karriarOrders.length === 0 ? (
                 <div className={styles.profile__block_empty}>
@@ -858,7 +860,7 @@ export default function ProfilePage() {
                         <strong>{order.service_title}</strong>
                         <span>{order.buyer_name} · {new Date(order.created_at).toLocaleDateString('sv-SE')}</span>
                       </div>
-                      <span className={`${styles.profile__item_tag} ${styles['item_tag--completed']}`}>✅ Utfört</span>
+                      <span className={`${styles.profile__item_tag} ${styles['item_tag--completed']}`}><CheckCircle size={14} /> Utfört</span>
                     </Link>
                   ))}
                 </div>
@@ -889,7 +891,7 @@ export default function ProfilePage() {
                     : <div className={styles.profile__avatar_large}>{(displayName || user.email || '?').charAt(0).toUpperCase()}</div>
                   }
                   <button className={styles.profile__avatar_upload_btn} onClick={() => avatarInputRef.current?.click()} disabled={avatarUploading}>
-                    {avatarUploading ? '⏳' : '📷'}
+                    {avatarUploading ? <Clock size={16} /> : '📷'}
                   </button>
                   <input ref={avatarInputRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={handleAvatarUpload} style={{ display: 'none' }} />
                 </div>
@@ -916,7 +918,7 @@ export default function ProfilePage() {
                   <span className={styles.profile__hint}>Visas på din publika profilsida</span>
                 </div>
               </div>
-              {success && <div className={styles.profile__success}>✅ Profilen uppdaterades!</div>}
+              {success && <div className={styles.profile__success}><CheckCircle size={16} /> Profilen uppdaterades!</div>}
               <div className={styles.profile__settings_actions}>
                 {editing ? (
                   <>
@@ -924,7 +926,7 @@ export default function ProfilePage() {
                     <button className="btn btn-outline" onClick={() => setEditing(false)}>Avbryt</button>
                   </>
                 ) : (
-                  <button className="btn btn-outline" onClick={() => setEditing(true)}>✏️ Redigera profil</button>
+                  <button className="btn btn-outline" onClick={() => setEditing(true)}><Pencil size={16} /> Redigera profil</button>
                 )}
               </div>
             </div>
@@ -976,7 +978,7 @@ export default function ProfilePage() {
                     {companyEditing && <button type="button" className={styles.profile__social_add} onClick={addSocialLink}>+ Lägg till konto</button>}
                   </div>
                 </div>
-                {companySuccess && <div className={styles.profile__success}>✅ Företagsprofilen uppdaterades!</div>}
+                {companySuccess && <div className={styles.profile__success}><CheckCircle size={16} /> Företagsprofilen uppdaterades!</div>}
                 <div className={styles.profile__settings_actions}>
                   {companyEditing ? (
                     <>
@@ -984,7 +986,7 @@ export default function ProfilePage() {
                       <button className="btn btn-outline" onClick={() => setCompanyEditing(false)}>Avbryt</button>
                     </>
                   ) : (
-                    <button className="btn btn-outline" onClick={() => setCompanyEditing(true)}>✏️ Redigera företagsprofil</button>
+                    <button className="btn btn-outline" onClick={() => setCompanyEditing(true)}><Pencil size={16} /> Redigera företagsprofil</button>
                   )}
                 </div>
               </div>

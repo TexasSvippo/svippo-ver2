@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import styles from './ServiceList.module.scss'
+import { Star } from 'lucide-react'
 
 type Service = {
   id: string
@@ -23,7 +24,7 @@ type Service = {
 function StarRating({ rating }: { rating: number }) {
   return (
     <span className={styles.star_rating}>
-      ⭐ <strong>{rating || '–'}</strong>
+      <Star size={14} /><strong>{rating || '–'}</strong>
     </span>
   )
 }

@@ -8,6 +8,7 @@ import { categories, RUT_SUBCATEGORIES, ROT_SUBCATEGORIES } from '@/data/categor
 import type { ServiceType } from '@/data/categories'
 import { municipalities } from '@/data/municipalities'
 import styles from './createservice.module.scss'
+import { Clock, Lock, Wallet, ClipboardList, MapPin, Lightbulb, CheckCircle, Pencil, FileText } from 'lucide-react'
 
 type PriceType = 'timpris' | 'fastpris' | 'offert'
 
@@ -115,7 +116,7 @@ export default function CreateServicePage() {
         <div className={`container ${styles.create__inner}`}>
           <div className={`${styles.create__card} card`}>
             <div className={styles.create__content}>
-              <div className={styles.create__blocked_emoji}>⏳</div>
+              <div className={styles.create__blocked_emoji}><Clock size={40} /></div>
               <h1 className={styles.create__title}>Din ansökan granskas</h1>
               <p className={styles.create__subtitle}>
                 Vi håller på att granska din Svippare-ansökan. Du får ett meddelande så snart den är godkänd.
@@ -135,7 +136,7 @@ export default function CreateServicePage() {
       <div className={`container ${styles.create__inner}`}>
         <div className={`${styles.create__card} card`}>
           <div className={styles.create__content}>
-            <div className={styles.create__blocked_emoji}>🔒</div>
+            <div className={styles.create__blocked_emoji}><Lock size={40} /></div>
             <h1 className={styles.create__title}>Du kan inte skapa tjänster</h1>
             <p className={styles.create__subtitle}>
               För att skapa tjänster på Svippo behöver du vara godkänd Svippare, företag eller UF-företag.
@@ -303,7 +304,7 @@ export default function CreateServicePage() {
                         onClick={() => update('price_type', pt)}
                         type="button"
                       >
-                        {pt === 'timpris' ? '⏱️ Timpris' : pt === 'fastpris' ? '💰 Fast pris' : '📋 Ge prisförslag'}
+                        {pt === 'timpris' ? '⏱️ Timpris' : pt === 'fastpris' ? <><Wallet size={14} /> Fast pris</> : <><ClipboardList size={14} /> Ge prisförslag</>}
                       </button>
                     ))}
                   </div>
@@ -336,7 +337,7 @@ export default function CreateServicePage() {
                         }}
                         type="button"
                       >
-                        {type === 'plats' ? '📍 Plats' : '💻 Online'}
+                        {type === 'plats' ? <><MapPin size={14} /> Plats</> : '💻 Online'}
                       </button>
                     ))}
                   </div>
@@ -368,7 +369,7 @@ export default function CreateServicePage() {
                                 setShowSuggestions(false)
                               }}
                             >
-                              📍 {m}
+                              <MapPin size={14} /> {m}
                             </button>
                           ))}
                         </div>
@@ -393,7 +394,7 @@ export default function CreateServicePage() {
                       Vi erbjuder RUT-avdrag – kunden betalar ca 50% av priset
                     </label>
                     <p className={styles.create__online_hint}>
-                      💡 RUT-avdrag gäller hushållsnära tjänster. Ni fakturerar kunden på det reducerade beloppet och söker resten från Skatteverket.
+                      <Lightbulb size={14} /> RUT-avdrag gäller hushållsnära tjänster. Ni fakturerar kunden på det reducerade beloppet och söker resten från Skatteverket.
                     </p>
                   </div>
                 )}
@@ -410,7 +411,7 @@ export default function CreateServicePage() {
                       Vi erbjuder ROT-avdrag – kunden betalar ca 70% av priset
                     </label>
                     <p className={styles.create__online_hint}>
-                      💡 ROT-avdrag gäller bygg- och hantverksarbeten. Ni fakturerar kunden på det reducerade beloppet och söker resten från Skatteverket.
+                      <Lightbulb size={14} /> ROT-avdrag gäller bygg- och hantverksarbeten. Ni fakturerar kunden på det reducerade beloppet och söker resten från Skatteverket.
                     </p>
                   </div>
                 )}
@@ -457,7 +458,7 @@ export default function CreateServicePage() {
                       <div className={styles.create__price_types}>
                         {(['text', 'textarea', 'select'] as const).map(type => (
                           <button key={type} type="button" className={`${styles.create__price_type_btn} ${newQuestion.type === type ? styles['create__price_type_btn--active'] : ''}`} onClick={() => setNewQuestion(prev => ({ ...prev, type }))}>
-                            {type === 'text' ? '✏️ Kort svar' : type === 'textarea' ? '📝 Långt svar' : '📋 Flerval'}
+                            {type === 'text' ? <><Pencil size={14} /> Kort svar</> : type === 'textarea' ? <><FileText size={14} /> Långt svar</> : <><ClipboardList size={14} /> Flerval</>}
                           </button>
                         ))}
                       </div>
@@ -497,7 +498,7 @@ export default function CreateServicePage() {
               )}
 
               {form.custom_questions.length === 0 && (
-                <p className={styles.create__skip_hint}>💡 Du kan hoppa över detta steg om du inte vill lägga till egna frågor.</p>
+                <p className={styles.create__skip_hint}><Lightbulb size={14} /> Du kan hoppa över detta steg om du inte vill lägga till egna frågor.</p>
               )}
             </div>
           )}
@@ -515,8 +516,8 @@ export default function CreateServicePage() {
                   { label: 'Pris', value: form.price_type === 'offert' ? 'Offert' : `${form.price} kr (${form.price_type})` },
                   { label: 'Plats', value: form.location },
                   { label: 'Egna frågor', value: form.custom_questions.length > 0 ? `${form.custom_questions.length} frågor` : 'Inga' },
-                  ...(form.offers_rut ? [{ label: 'RUT-avdrag', value: '✅ Erbjuds' }] : []),
-                  ...(form.offers_rot ? [{ label: 'ROT-avdrag', value: '✅ Erbjuds' }] : []),
+                  ...(form.offers_rut ? [{ label: 'RUT-avdrag', value: 'Erbjuds' }] : []),
+                  ...(form.offers_rot ? [{ label: 'ROT-avdrag', value: 'Erbjuds' }] : []),
                   
                 ].map(row => (
                   <div key={row.label} className={styles.create__review_row}>

@@ -7,6 +7,8 @@ import { categories as allCategories } from '@/data/categories'
 import { supabase } from '@/lib/supabase'
 import useAuth from '@/hooks/useAuth'
 import styles from './publicprofile.module.scss'
+import { Link as LinkIcon, MapPin, Star, MessageCircle, CheckCircle, Zap, ClipboardList, Lightbulb, Briefcase, Globe, Smartphone, Mail, User } from 'lucide-react'
+import type { ReactNode } from 'react'
 
 type UserProfile = {
   id: string
@@ -76,15 +78,15 @@ const NAV = [
 ]
 
 // Hjälpfunktion för att detektera och länka sociala medier
-function getSocialIcon(url: string): string {
+function getSocialIcon(url: string): ReactNode {
   if (url.includes('instagram')) return '📸'
   if (url.includes('tiktok')) return '🎵'
-  if (url.includes('facebook')) return '👤'
+  if (url.includes('facebook')) return <User size={16} />
   if (url.includes('youtube')) return '▶️'
   if (url.includes('twitter') || url.includes('x.com')) return '𝕏'
   if (url.includes('snapchat')) return '👻'
-  if (url.includes('linkedin')) return '💼'
-  return '🔗'
+  if (url.includes('linkedin')) return <Briefcase size={16} />
+  return <LinkIcon size={16} />
 }
 
 function getSocialLabel(url: string): string {
@@ -126,11 +128,12 @@ export default function PublicProfileClient({
     : styles['pubprofile--svippare']
 
   // Profiltyp-badge
-  const profileBadge = isUF
+  const profileBadge: ReactNode = isUF
     ? '🎓 UF-företag'
     : isCompany
     ? '🏢 Företag'
-    : '⚡ Svippare'
+    : <><Zap size={14} /> Svippare</>
+
 
   // Bio att visa – svippare har bio i svippareProfile, företag i companyProfile, annars users.bio
   const displayBio = isSvippare
@@ -264,7 +267,7 @@ export default function PublicProfileClient({
               alert('Länk kopierad!')
             }}
           >
-            🔗 Dela profil
+            <LinkIcon size={16} /> Dela profil
           </button>
         </div>
       </div>
@@ -282,7 +285,7 @@ export default function PublicProfileClient({
             <div className={styles.pubprofile__hero_top}>
               <span className={styles.pubprofile__badge}>{profileBadge}</span>
               {displayCity && (
-                <span className={styles.pubprofile__location}>📍 {displayCity}</span>
+                <span className={styles.pubprofile__location}><MapPin size={14} /> {displayCity}</span>
               )}
             </div>
             {profile.created_at && (
@@ -318,13 +321,13 @@ export default function PublicProfileClient({
                 <span>Recensioner</span>
               </div>
               <div className={styles.pubprofile__stat}>
-                <strong>{avgRating !== null ? `⭐ ${avgRating}` : '–'}</strong>
+                <strong>{avgRating !== null ? <><Star size={14} /> {avgRating}</> : '–'}</strong>
                 <span>Snittbetyg</span>
               </div>
             </div>
           </div>
           <button className={`btn btn-primary ${styles.pubprofile__contact_btn}`} onClick={() => scrollTo('kontakt')}>
-            💬 Kontakta {isCompany || isUF ? 'oss' : 'mig'}
+            <MessageCircle size={16} /> Kontakta {isCompany || isUF ? 'oss' : 'mig'}
           </button>
         </div>
       </div>
@@ -334,23 +337,23 @@ export default function PublicProfileClient({
         <div className={`container ${styles.pubprofile__usp_inner}`}>
           {isSvippare && (
             <>
-              <div className={styles.pubprofile__usp_item}><span>✅</span><span>Verifierad Svippare</span></div>
-              <div className={styles.pubprofile__usp_item}><span>⚡</span><span>Snabbt svar</span></div>
-              <div className={styles.pubprofile__usp_item}><span>⭐</span><span>{avgRating !== null ? `${avgRating} i snittbetyg` : 'Ny på Svippo'}</span></div>
+              <div className={styles.pubprofile__usp_item}><CheckCircle size={16} /><span>Verifierad Svippare</span></div>
+              <div className={styles.pubprofile__usp_item}><Zap size={16} /><span>Snabbt svar</span></div>
+              <div className={styles.pubprofile__usp_item}><Star size={16} /><span>{avgRating !== null ? `${avgRating} i snittbetyg` : 'Ny på Svippo'}</span></div>
             </>
           )}
           {isCompany && (
             <>
               <div className={styles.pubprofile__usp_item}><span>🏢</span><span>Verifierat företag</span></div>
-              <div className={styles.pubprofile__usp_item}><span>📋</span><span>Professionella tjänster</span></div>
-              <div className={styles.pubprofile__usp_item}><span>⭐</span><span>{avgRating !== null ? `${avgRating} i snittbetyg` : 'Nytt på Svippo'}</span></div>
+              <div className={styles.pubprofile__usp_item}><ClipboardList size={16} /><span>Professionella tjänster</span></div>
+              <div className={styles.pubprofile__usp_item}><Star size={16} /><span>{avgRating !== null ? `${avgRating} i snittbetyg` : 'Nytt på Svippo'}</span></div>
             </>
           )}
           {isUF && (
             <>
               <div className={styles.pubprofile__usp_item}><span>🎓</span><span>UF-företag</span></div>
-              <div className={styles.pubprofile__usp_item}><span>💡</span><span>Ungt entreprenörskap</span></div>
-              <div className={styles.pubprofile__usp_item}><span>⭐</span><span>{avgRating !== null ? `${avgRating} i snittbetyg` : 'Nytt på Svippo'}</span></div>
+              <div className={styles.pubprofile__usp_item}><Lightbulb size={16} /><span>Ungt entreprenörskap</span></div>
+              <div className={styles.pubprofile__usp_item}><Star size={16} /><span>{avgRating !== null ? `${avgRating} i snittbetyg` : 'Nytt på Svippo'}</span></div>
             </>
           )}
         </div>
@@ -375,7 +378,7 @@ export default function PublicProfileClient({
                   <div className={styles.pubprofile__service_info}>
                     <span className={styles.pubprofile__service_category}>{s.subcategory}</span>
                     <h3 className={styles.pubprofile__service_title}>{s.title}</h3>
-                    <span className={styles.pubprofile__service_location}>📍 {s.location}</span>
+                    <span className={styles.pubprofile__service_location}><MapPin size={14} /> {s.location}</span>
                   </div>
                   <div className={styles.pubprofile__service_price}>
                     <span>{s.price_type === 'offert' ? '' : 'från'}</span>
@@ -402,7 +405,7 @@ export default function PublicProfileClient({
             {/* Erfarenhet – endast svippare */}
             {isSvippare && svippareProfile?.experience && (
               <div className={styles.pubprofile__about_block}>
-                <h3 className={styles.pubprofile__about_heading}>💼 Erfarenhet</h3>
+                <h3 className={styles.pubprofile__about_heading}><Briefcase size={16} /> Erfarenhet</h3>
                 <p className={styles.pubprofile__about_text}>{svippareProfile.experience}</p>
               </div>
             )}
@@ -418,7 +421,7 @@ export default function PublicProfileClient({
             {/* Webbplats */}
             {website && (
               <div className={styles.pubprofile__about_block}>
-                <h3 className={styles.pubprofile__about_heading}>🌐 Webbplats</h3>
+                <h3 className={styles.pubprofile__about_heading}><Globe size={16} /> Webbplats</h3>
                 <a
                   href={website}
                   target="_blank"
@@ -433,7 +436,7 @@ export default function PublicProfileClient({
             {/* Sociala medier */}
             {socialLinks.length > 0 && (
               <div className={styles.pubprofile__about_block}>
-                <h3 className={styles.pubprofile__about_heading}>📱 Sociala medier</h3>
+                <h3 className={styles.pubprofile__about_heading}><Smartphone size={16} /> Sociala medier</h3>
                 <div className={styles.pubprofile__social_links}>
                   {socialLinks.map((url, i) => (
                     <a
@@ -460,7 +463,7 @@ export default function PublicProfileClient({
               Recensioner
               {reviews.length > 0 && (
                 <span className={styles.pubprofile__reviews_meta}>
-                  {avgRating !== null && `⭐ ${avgRating}`} · {reviews.length} recensioner
+                  {avgRating !== null && <><Star size={14} /> {avgRating}</>} · {reviews.length} recensioner
                 </span>
               )}
             </h2>
@@ -480,7 +483,7 @@ export default function PublicProfileClient({
                     className={`${styles.pubprofile__rating_filter} ${ratingFilter === star ? styles['pubprofile__rating_filter--active'] : ''}`}
                     onClick={() => setRatingFilter(ratingFilter === star ? null : star)}
                   >
-                    {'⭐'.repeat(star)}
+                    {Array.from({ length: star }, (_, i) => <Star key={i} size={14} fill="currentColor" />)}
                   </button>
                 ))}
               </div>
@@ -499,7 +502,7 @@ export default function PublicProfileClient({
                   <div key={r.id} className={`${styles.pubprofile__review} card`}>
                     <div className={styles.pubprofile__review_header}>
                       <strong>{r.reviewer_name}</strong>
-                      <span>{'⭐'.repeat(r.rating)}</span>
+                      <span>{Array.from({ length: r.rating }, (_, i) => <Star key={i} size={14} fill="currentColor" />)}</span>
                     </div>
                     <p>{r.comment}</p>
                     <span className={styles.pubprofile__review_date}>
@@ -531,18 +534,18 @@ export default function PublicProfileClient({
             </p>
             <div className={styles.pubprofile__contact_info}>
               <div className={styles.pubprofile__contact_item}>
-                <span>📧</span>
+                <Mail size={16} />
                 <span>{profile.email}</span>
               </div>
               {profile.phone && (
                 <div className={styles.pubprofile__contact_item}>
-                  <span>📱</span>
+                  <Smartphone size={16} />
                   <span>{profile.phone}</span>
                 </div>
               )}
               {displayCity && (
                 <div className={styles.pubprofile__contact_item}>
-                  <span>📍</span>
+                  <MapPin size={16} />
                   <span>{displayCity}</span>
                 </div>
               )}
@@ -559,7 +562,7 @@ export default function PublicProfileClient({
                 style={{ width: '100%', justifyContent: 'center' }}
                 onClick={handleContact}
               >
-                💬 Skicka meddelande via Svippo
+                <MessageCircle size={16} /> Skicka meddelande via Svippo
               </button>
               <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--color-border)' }}>
                 <a
@@ -567,7 +570,7 @@ export default function PublicProfileClient({
                   className="btn btn-outline"
                   style={{ width: '100%', justifyContent: 'center' }}
                 >
-                  📧 Skicka e-post direkt
+                  <Mail size={16} /> Skicka e-post direkt
                 </a>
               </div>
             </div>
@@ -578,7 +581,7 @@ export default function PublicProfileClient({
       {/* Mobil sticky CTA */}
       <div className={styles.pubprofile__mobile_cta}>
         <button className="btn btn-primary" onClick={handleContact}>
-          💬 Skicka meddelande
+          <MessageCircle size={16} /> Skicka meddelande
         </button>
       </div>
     </div>

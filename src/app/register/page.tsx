@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabase'
 import styles from '@/styles/auth.module.scss'
 import modalStyles from './register.module.scss'
 import useAuth from '@/hooks/useAuth'
+import { User, CheckCircle, Lightbulb } from 'lucide-react'
 
 type AccountType = 'privatperson' | 'foretag' | 'uf-foretag'
 type Step = 'register' | 'svippare-popup'
@@ -122,7 +123,7 @@ const [accountType, setAccountType] = useState<AccountType>('privatperson')
 
           <div className={styles.auth__account_types}>
             {[
-              { type: 'privatperson', icon: '👤', label: 'Privatperson' },
+              { type: 'privatperson', icon: <User size={20} />, label: 'Privatperson' },
               { type: 'foretag', icon: '🏢', label: 'Företag' },
               { type: 'uf-foretag', icon: '🎓', label: 'UF-företag' },
             ].map(({ type, icon, label }) => (
@@ -140,7 +141,7 @@ const [accountType, setAccountType] = useState<AccountType>('privatperson')
 
           {accountType === 'privatperson' && (
             <div className={modalStyles.info_box}>
-              👤 Som privatperson kan du beställa tjänster direkt. Vill du även utföra tjänster kan du ansöka om att bli Svippare efter registreringen.
+              <User size={14} /> Som privatperson kan du beställa tjänster direkt. Vill du även utföra tjänster kan du ansöka om att bli Svippare efter registreringen.
             </div>
           )}
           {accountType === 'foretag' && (
@@ -226,12 +227,12 @@ const [accountType, setAccountType] = useState<AccountType>('privatperson')
           <div className={modalStyles.popup__info}>
             <strong>Som Svippare kan du:</strong>
             <ul>
-              <li>✅ Ta emot beställningar från kunder</li>
-              <li>✅ Synas i vår tjänstekatalog</li>
-              <li>✅ Tjäna pengar på dina kunskaper</li>
+              <li><CheckCircle size={14} /> Ta emot beställningar från kunder</li>
+              <li><CheckCircle size={14} /> Synas i vår tjänstekatalog</li>
+              <li><CheckCircle size={14} /> Tjäna pengar på dina kunskaper</li>
             </ul>
             <p className={modalStyles.popup__disclaimer}>
-              💡 Svippo är en marknadsplats – betalning sker direkt mellan dig och kunden utanför plattformen.
+              <Lightbulb size={14} /> Svippo är en marknadsplats – betalning sker direkt mellan dig och kunden utanför plattformen.
             </p>
           </div>
 

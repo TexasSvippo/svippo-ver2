@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import useAuth from '@/hooks/useAuth'
 import styles from './CtaSection.module.scss'
+import { Wrench } from 'lucide-react'
 
 export default function CtaSection() {
   const { user, accountType } = useAuth()
@@ -40,7 +41,7 @@ export default function CtaSection() {
             </p>
             <Link href="/services" className="btn btn-orange">Utforska tjänster →</Link>
           </div>
-          <div className={styles.cta__illustration}>🛠️</div>
+          <div className={styles.cta__illustration}><Wrench size={48} /></div>
         </div>
 
       </div>

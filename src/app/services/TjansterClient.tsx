@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { categories } from '@/data/categories'
 import styles from './tjanster.module.scss'
+import { Search, MapPin, Star } from 'lucide-react'
 
 type Service = {
   id: string
@@ -130,7 +131,7 @@ export default function TjansterClient({ services }: Props) {
 
           {/* Sökfält */}
           <div className={styles.tjanster__search}>
-            <span>🔍</span>
+            <Search size={16} />
             <input
               type="text"
               placeholder="Sök tjänster..."
@@ -161,9 +162,9 @@ export default function TjansterClient({ services }: Props) {
         {/* Aktiva filter-taggar */}
         {hasFilters && (
           <div className={styles.tjanster__active_filters}>
-            {search && <span className={styles.tjanster__filter_tag}>🔍 &quot;{search}&quot;<button onClick={() => setSearch('')}>✕</button></span>}
+            {search && <span className={styles.tjanster__filter_tag}><Search size={12} /> &quot;{search}&quot;<button onClick={() => setSearch('')}>✕</button></span>}
             {selectedCategory && <span className={styles.tjanster__filter_tag}>{categories.find(c => c.id === selectedCategory)?.label}<button onClick={() => setSelectedCategory('')}>✕</button></span>}
-            {selectedLocation && <span className={styles.tjanster__filter_tag}>📍 {selectedLocation}<button onClick={() => setSelectedLocation('')}>✕</button></span>}
+            {selectedLocation && <span className={styles.tjanster__filter_tag}><MapPin size={12} /> {selectedLocation}<button onClick={() => setSelectedLocation('')}>✕</button></span>}
             {maxPrice && <span className={styles.tjanster__filter_tag}>Pris: {maxPrice}kr<button onClick={() => setMaxPrice('')}>✕</button></span>}
             <button className={styles.tjanster__clear_btn} onClick={clearFilters}>Rensa alla</button>
           </div>
@@ -202,7 +203,7 @@ export default function TjansterClient({ services }: Props) {
                           <div className={styles.service_card__meta_row}>
                             <span className={styles.service_card__name}>{s.user_name}</span>
                             <span className={styles.service_card__dot}>·</span>
-                            <span className={styles.star_rating}>⭐ <strong>{s.rating || '–'}</strong></span>
+                            <span className={styles.star_rating}><Star size={14} /> <strong>{s.rating || '–'}</strong></span>
                             <span className={styles.service_card__reviews}>({s.reviews})</span>
                             <span className={styles.service_card__dot}>·</span>
                             <span className={styles.service_card__location}>{s.location}</span>

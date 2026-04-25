@@ -10,6 +10,7 @@ import SearchBar from './SearchBar'
 import { useNotifications } from '@/hooks/useNotifications'
 import styles from './Navbar.module.scss'
 import Image from 'next/image'
+import { Bell, User, Wrench, Users, Package, MessageCircle, Pencil, LogOut } from 'lucide-react'
 
 export default function Navbar() {
   const { user, loading, avatarUrl } = useAuth()
@@ -58,7 +59,7 @@ export default function Navbar() {
               {user ? (
                 <>
                   <Link href="/notifications" className={styles.navbar__notif_btn}>
-                    🔔
+                    <Bell size={20} />
                     {unreadCount > 0 && (
                       <span className={styles.navbar__notif_badge}>{unreadCount}</span>
                     )}
@@ -86,26 +87,26 @@ export default function Navbar() {
                       <div className={styles.navbar__dropdown}>
                         <div className={styles.navbar__dropdown_email}>{user.email}</div>
                         <Link href="/profile" className={styles.navbar__dropdown_item} onClick={() => setMenuOpen(false)}>
-                          👤 Min profil
+                          <User size={16} /> Min profil
                         </Link>
                         <Link href="/services" className={styles.navbar__dropdown_item} onClick={() => setMenuOpen(false)}>
-                          🛠️ Tjänster
+                          <Wrench size={16} /> Tjänster
                         </Link>
                         <Link href="/requests" className={styles.navbar__dropdown_item} onClick={() => setMenuOpen(false)}>
-                          🙋 Förfrågningar
+                          <Users size={16} /> Förfrågningar
                         </Link>
                         <Link href="/bestallningar" className={styles.navbar__dropdown_item} onClick={() => setMenuOpen(false)}>
-                          📦 Beställningar
+                          <Package size={16} /> Beställningar
                         </Link>
                         <Link href="/messages" className={styles.navbar__dropdown_item} onClick={() => setMenuOpen(false)}>
-                          💬 Meddelanden
+                          <MessageCircle size={16} /> Meddelanden
                         </Link>
                         <Link
                           href="/notifications"
                           className={`${styles.navbar__dropdown_item} ${styles.navbar__dropdown_mobile_only}`}
                           onClick={() => setMenuOpen(false)}
                         >
-                          🔔 Notifikationer
+                          <Bell size={16} /> Notifikationer
                           {unreadCount > 0 && (
                             <span className={styles.navbar__nav_badge}>{unreadCount}</span>
                           )}
@@ -114,13 +115,13 @@ export default function Navbar() {
                           className={`${styles.navbar__dropdown_item} ${styles.navbar__dropdown_create}`}
                           onClick={() => { setMenuOpen(false); setShowCreate(true) }}
                         >
-                          ✏️ Skapa inlägg
+                          <Pencil size={16} /> Skapa inlägg
                         </button>
                         <button
                           className={`${styles.navbar__dropdown_item} ${styles.navbar__dropdown_signout}`}
                           onClick={handleSignOut}
                         >
-                          🚪 Logga ut
+                          <LogOut size={16} /> Logga ut
                         </button>
                       </div>
                     )}

@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import useAuth from '@/hooks/useAuth'
 import styles from './konversation.module.scss'
+import { ChevronRight, Package, CheckCircle, Clock, XCircle, ClipboardList, Users, Link as LinkIcon, Wrench, MessageCircle } from 'lucide-react'
 
 type Message = {
   id: string
@@ -310,10 +311,10 @@ export default function KonversationPage({ params }: { params: Promise<{ id: str
   }, [])
 
   const projectStatusLabel: Record<string, string> = {
-    not_started: '⏳ Ej påbörjat',
+    not_started: 'Ej påbörjat',
     in_progress: '🔵 Pågår',
     almost_done: '🟡 Nästan klart',
-    completed: '✅ Slutfört',
+    completed: 'Slutfört',
   }
 
   if (loading) return <div className={styles.loading}>Laddar konversation...</div>
@@ -426,7 +427,7 @@ export default function KonversationPage({ params }: { params: Promise<{ id: str
               onClick={handleSend}
               disabled={!input.trim() || sending}
             >
-              {sending ? '...' : '➤'}
+              {sending ? '...' : <ChevronRight size={18} />}
             </button>
           </div>
         </div>
@@ -439,12 +440,12 @@ export default function KonversationPage({ params }: { params: Promise<{ id: str
               {/* Typ B – uppdragskort */}
               {order && (
                 <>
-                  <h2 className={styles.context_title}>📦 Uppdrag</h2>
+                  <h2 className={styles.context_title}><Package size={16} /> Uppdrag</h2>
                   <strong className={styles.context_service}>{order.service_title}</strong>
                   <div className={styles.context_rows}>
                     <div className={styles.context_row}>
                       <span>Status</span>
-                      <strong>{order.status === 'accepted' ? '✅ Godkänd' : order.status === 'pending' ? '⏳ Väntar' : '❌ Nekad'}</strong>
+                      <strong>{order.status === 'accepted' ? <><CheckCircle size={14} /> Godkänd</> : order.status === 'pending' ? <><Clock size={14} /> Väntar</> : <><XCircle size={14} /> Nekad</>}</strong>
                     </div>
                     <div className={styles.context_row}>
                       <span>Projektstatus</span>
@@ -477,7 +478,7 @@ export default function KonversationPage({ params }: { params: Promise<{ id: str
                   </div>
                   {orderLink && (
                     <Link href={orderLink} className="btn btn-outline" style={{ width: '100%', justifyContent: 'center', marginTop: '8px' }}>
-                      📋 Visa beställningen
+                      <ClipboardList size={16} /> Visa beställningen
                     </Link>
                   )}
                 </>
@@ -486,7 +487,7 @@ export default function KonversationPage({ params }: { params: Promise<{ id: str
               {/* Typ A – förfrågningskort */}
               {request && !order && (
                 <>
-                  <h2 className={styles.context_title}>🙋 Förfrågan</h2>
+                  <h2 className={styles.context_title}><Users size={16} /> Förfrågan</h2>
                   <strong className={styles.context_service}>{request.title}</strong>
                   <div className={styles.context_rows}>
                     <div className={styles.context_row}>
@@ -509,7 +510,7 @@ export default function KonversationPage({ params }: { params: Promise<{ id: str
                     )}
                   </div>
                   <Link href={`/request/${request.id}`} className="btn btn-outline" style={{ width: '100%', justifyContent: 'center', marginTop: '8px' }}>
-                    🔗 Visa förfrågan
+                    <LinkIcon size={16} /> Visa förfrågan
                   </Link>
                 </>
               )}
@@ -517,7 +518,7 @@ export default function KonversationPage({ params }: { params: Promise<{ id: str
               {/* Typ A – tjänstekort */}
               {service && !order && (
                 <>
-                  <h2 className={styles.context_title}>🛠️ Tjänst</h2>
+                  <h2 className={styles.context_title}><Wrench size={16} /> Tjänst</h2>
                   <strong className={styles.context_service}>{service.title}</strong>
                   <div className={styles.context_rows}>
                     <div className={styles.context_row}>
@@ -534,7 +535,7 @@ export default function KonversationPage({ params }: { params: Promise<{ id: str
                     </div>
                   </div>
                   <Link href={`/service/${service.id}`} className="btn btn-outline" style={{ width: '100%', justifyContent: 'center', marginTop: '8px' }}>
-                    🔗 Visa tjänsten
+                    <LinkIcon size={16} /> Visa tjänsten
                   </Link>
                   {user?.id !== service.user_id && (
                     <Link href={`/service/${service.id}?order=true`} className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', marginTop: '8px' }}>

@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import useAuth from '@/hooks/useAuth'
 import styles from '@/styles/orderdetail.module.scss'
+import { Package, Clock, CheckCircle, XCircle, Link as LinkIcon, ClipboardList, Star, User, Mail, Smartphone, MessageCircle, Zap, BarChart2, Wallet, Lock, ArrowLeft } from 'lucide-react'
 
 type ProjectStatus = 'not_started' | 'in_progress' | 'almost_done' | 'completed'
 type ServiceType = 'typ1' | 'typ2' | 'typ3'
@@ -244,7 +245,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
     { status: 'not_started' as ProjectStatus, label: 'Ej påbörjat', desc: 'Uppdraget väntar på att starta', num: 1 },
     { status: 'in_progress' as ProjectStatus, label: 'Pågår', desc: 'Uppdraget är igång', num: 2 },
     { status: 'almost_done' as ProjectStatus, label: 'Nästan klart', desc: 'Sista finishen återstår', num: 3 },
-    { status: 'completed' as ProjectStatus, label: 'Markera som levererat', desc: order.delivered_at ? '✅ Väntar på bekräftelse från beställaren' : 'Klicka när du levererat uppdraget', num: 4 },
+    { status: 'completed' as ProjectStatus, label: 'Markera som levererat', desc: order.delivered_at ? 'Väntar på bekräftelse från beställaren' : 'Klicka när du levererat uppdraget', num: 4 },
   ] : [
     { status: 'not_started' as ProjectStatus, label: 'Ej påbörjat', desc: 'Projektet väntar på att starta', num: 1 },
     { status: 'in_progress' as ProjectStatus, label: 'Pågår', desc: 'Projektet är igång', num: 2 },
@@ -262,7 +263,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
       <div className={`container ${styles.orderdetail__inner}`}>
 
         <button className={styles.orderdetail__back} onClick={() => router.push('/profile')}>
-          ← Tillbaka till profil
+          <ArrowLeft size={16} /> Tillbaka till profil
         </button>
 
         {projectStatus === 'completed' && !isTyp3 && (
@@ -271,7 +272,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
 
         {isTyp3 && order.delivered_at && projectStatus !== 'completed' && (
           <div className={styles.completed_banner} style={{ background: '#fff3e0', color: '#e65100' }}>
-            📦 Väntar på bekräftelse från {order.buyer_name}
+            <Package size={16} /> Väntar på bekräftelse från {order.buyer_name}
           </div>
         )}
 
@@ -294,11 +295,11 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                   </span>
                 </div>
                 <span className={`${styles.status_badge} ${styles[`status--${order.status}`]}`}>
-                  {order.status === 'pending' ? '⏳ Väntar' : order.status === 'accepted' ? '✅ Godkänd' : '❌ Nekad'}
+                  {order.status === 'pending' ? <><Clock size={14} /> Väntar</> : order.status === 'accepted' ? <><CheckCircle size={14} /> Godkänd</> : <><XCircle size={14} /> Nekad</>}
                 </span>
               </div>
               <Link href={`/service/${order.service_id}`} className={styles.service_link}>
-                🔗 Visa tjänsten →
+                <LinkIcon size={16} /> Visa tjänsten →
               </Link>
             </div>
 
@@ -326,7 +327,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
 
             {serviceType === 'typ3' && (pickupAddress || deliveryAddress) && (
               <div className={`${styles.orderdetail__type_info} card`}>
-                <h2 className={styles.section_title}>📦 Upphämtning & leverans</h2>
+                <h2 className={styles.section_title}><Package size={18} /> Upphämtning & leverans</h2>
                 <div className={styles.type_info_grid}>
                   {pickupAddress && <div className={styles.type_info_item}><span className={styles.type_info_label}>Upphämtning</span><strong>{pickupAddress}</strong></div>}
                   {deliveryAddress && <div className={styles.type_info_item}><span className={styles.type_info_label}>Leverans</span><strong>{deliveryAddress}</strong></div>}
@@ -337,7 +338,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
             )}
 
             <div className={`${styles.orderdetail__form} card`}>
-              <h2 className={styles.section_title}>📋 Ifyllt formulär</h2>
+              <h2 className={styles.section_title}><ClipboardList size={18} /> Ifyllt formulär</h2>
               <div className={styles.field}>
                 <span className={styles.field_label}>Meddelande</span>
                 <div className={`${styles.field_value} ${styles.field_message}`}>{order.message}</div>
@@ -371,7 +372,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
             </div>
 
             <div className={`${styles.orderdetail__buyer_reviews} card`}>
-              <h2 className={styles.section_title}>⭐ {order.buyer_name}s recensioner</h2>
+              <h2 className={styles.section_title}><Star size={18} /> {order.buyer_name}s recensioner</h2>
               {buyerReviews.length === 0 ? (
                 <p className={styles.no_reviews}>{order.buyer_name} har inga tidigare recensioner på Svippo än.</p>
               ) : (
@@ -380,7 +381,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                     <div key={r.id} className={styles.buyer_review}>
                       <div className={styles.buyer_review__header}>
                         <span className={styles.buyer_review__service}>{r.service_title}</span>
-                        <span className={styles.buyer_review__stars}>{'⭐'.repeat(r.rating)}</span>
+                        <span className={styles.buyer_review__stars}>{Array.from({ length: r.rating }, (_, i) => <Star key={i} size={14} fill="currentColor" />)}</span>
                       </div>
                       {r.comment && <p className={styles.buyer_review__comment}>{r.comment}</p>}
                       <span className={styles.buyer_review__date}>{new Date(r.created_at).toLocaleDateString('sv-SE')}</span>
@@ -396,7 +397,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
           <div className={styles.orderdetail__sidebar}>
 
             <div className={`${styles.customer_card} card`}>
-              <h2 className={styles.section_title}>👤 Kundinformation</h2>
+              <h2 className={styles.section_title}><User size={18} /> Kundinformation</h2>
               <div className={styles.customer_avatar}>
                 {buyerAvatarUrl
                   // eslint-disable-next-line @next/next/no-img-element
@@ -406,35 +407,35 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
               </div>
               <strong className={styles.customer_name}>{order.buyer_name}</strong>
               <div className={styles.customer_details}>
-                <div className={styles.detail_row}><span>📧</span><a href={`mailto:${order.buyer_email}`}>{order.buyer_email}</a></div>
-                {order.buyer_phone && <div className={styles.detail_row}><span>📱</span><a href={`tel:${order.buyer_phone}`}>{order.buyer_phone}</a></div>}
+                <div className={styles.detail_row}><Mail size={16} /><a href={`mailto:${order.buyer_email}`}>{order.buyer_email}</a></div>
+                {order.buyer_phone && <div className={styles.detail_row}><Smartphone size={16} /><a href={`tel:${order.buyer_phone}`}>{order.buyer_phone}</a></div>}
               </div>
               <div className={styles.contact_actions}>
                 <a href={`mailto:${order.buyer_email}`} className="btn btn-primary">✉️ Skicka e-post</a>
-                {order.buyer_phone && <a href={`tel:${order.buyer_phone}`} className="btn btn-outline">📱 Ring kunden</a>}
+                {order.buyer_phone && <a href={`tel:${order.buyer_phone}`} className="btn btn-outline"><Smartphone size={16} /> Ring kunden</a>}
               </div>
             </div>
 
             {order.status === 'accepted' && isSeller && (
               <div className={`${styles.chat_card} card`}>
-                <h2 className={styles.section_title}>💬 Meddelanden</h2>
+                <h2 className={styles.section_title}><MessageCircle size={18} /> Meddelanden</h2>
                 <p className={styles.progress_hint}>Kommunicera med {order.buyer_name} om uppdraget.</p>
                 <Link href={`/messages?orderId=${order.id}`} className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
-                  💬 Öppna chatten
+                  <MessageCircle size={16} /> Öppna chatten
                 </Link>
               </div>
             )}
 
             {isSeller && (
               <div className={`${styles.actions_card} card`}>
-                <h2 className={styles.section_title}>⚡ Hantera beställning</h2>
+                <h2 className={styles.section_title}><Zap size={18} /> Hantera beställning</h2>
                 <div className={`${styles.current_status} ${styles[`status--${order.status}`]}`}>
-                  {order.status === 'pending' ? '⏳ Väntar på ditt svar' : order.status === 'accepted' ? '✅ Du har godkänt denna beställning' : '❌ Du har nekat denna beställning'}
+                  {order.status === 'pending' ? <><Clock size={14} /> Väntar på ditt svar</> : order.status === 'accepted' ? <><CheckCircle size={14} /> Du har godkänt denna beställning</> : <><XCircle size={14} /> Du har nekat denna beställning</>}
                 </div>
                 {order.status === 'pending' && (
                   <div className={styles.action_btns}>
-                    <button className="btn btn-primary" onClick={() => handleStatus('accepted')} disabled={updating}>✅ Godkänn beställning</button>
-                    <button className={`btn btn-outline ${styles.reject_btn}`} onClick={() => handleStatus('rejected')} disabled={updating}>❌ Neka beställning</button>
+                    <button className="btn btn-primary" onClick={() => handleStatus('accepted')} disabled={updating}><CheckCircle size={16} /> Godkänn beställning</button>
+                    <button className={`btn btn-outline ${styles.reject_btn}`} onClick={() => handleStatus('rejected')} disabled={updating}><XCircle size={16} /> Neka beställning</button>
                   </div>
                 )}
                 {order.status === 'rejected' && (
@@ -445,7 +446,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
 
             {order.status === 'accepted' && isSeller && (
               <div className={`${styles.progress_card} card`}>
-                <h2 className={styles.section_title}>📊 Projektstatus</h2>
+                <h2 className={styles.section_title}><BarChart2 size={18} /> Projektstatus</h2>
                 <p className={styles.progress_hint}>
                   {isTyp3 ? 'Uppdatera hur uppdraget fortskrider.' : 'Uppdatera hur långt projektet kommit.'}
                 </p>
@@ -485,14 +486,14 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
 
             {projectStatus === 'completed' && isSeller && (
               <div className={`${styles.payment_card} card`}>
-                <h2 className={styles.section_title}>💰 Betalning</h2>
+                <h2 className={styles.section_title}><Wallet size={18} /> Betalning</h2>
                 <p className={styles.progress_hint}>Har du tagit betalt av {order.buyer_name}?</p>
                 {order.payment_status === 'paid' ? (
-                  <div className={styles.payment_done}>✅ Du har markerat betalningen som mottagen!</div>
+                  <div className={styles.payment_done}><CheckCircle size={16} /> Du har markerat betalningen som mottagen!</div>
                 ) : (
                   <div className={styles.action_btns}>
-                    <button className="btn btn-primary" onClick={() => handlePayment('paid')} disabled={updating}>✅ Ja, jag har fått betalt</button>
-                    <button className="btn btn-outline" onClick={() => handlePayment('unpaid')} disabled={updating}>⏳ Inte än</button>
+                    <button className="btn btn-primary" onClick={() => handlePayment('paid')} disabled={updating}><CheckCircle size={16} /> Ja, jag har fått betalt</button>
+                    <button className="btn btn-outline" onClick={() => handlePayment('unpaid')} disabled={updating}><Clock size={16} /> Inte än</button>
                   </div>
                 )}
               </div>
@@ -500,13 +501,13 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
 
             {projectStatus === 'completed' && isSeller && !hasReviewed && !reviewSuccess && (
               <div className={`${styles.review_card} card`}>
-                <h2 className={styles.section_title}>⭐ Lämna en recension</h2>
+                <h2 className={styles.section_title}><Star size={18} /> Lämna en recension</h2>
                 {showReviewForm ? (
                   <div className={styles.review_form}>
                     <div style={{ display: 'flex', gap: '8px', fontSize: '24px' }}>
                       {[1,2,3,4,5].map(n => (
                         <button key={n} onClick={() => setReviewRating(n)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '24px' }}>
-                          {n <= reviewRating ? '⭐' : '☆'}
+                          {n <= reviewRating ? <Star size={22} fill="currentColor" /> : <Star size={22} />}
                         </button>
                       ))}
                     </div>
@@ -515,7 +516,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                   </div>
                 ) : (
                   <button className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }} onClick={() => setShowReviewForm(true)}>
-                    ⭐ Recensera {order.buyer_name}
+                    <Star size={16} /> Recensera {order.buyer_name}
                   </button>
                 )}
               </div>
@@ -523,7 +524,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
 
             {(hasReviewed || reviewSuccess) && projectStatus === 'completed' && isSeller && (
               <div className={`${styles.review_card} card`}>
-                <div className={styles.payment_done}>⭐ Du har lämnat en recension för denna beställning!</div>
+                <div className={styles.payment_done}><Star size={16} /> Du har lämnat en recension för denna beställning!</div>
               </div>
             )}
 
@@ -544,20 +545,20 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                 : 'Detta går inte att ångra. Projektet markeras som slutfört och beställaren meddelas.'}
             </p>
             <div className={styles.confirm_checklist}>
-              {isTyp3 ? [
-                '📦 Beställaren meddelas att leveransen är gjord',
-                '✅ Beställaren bekräftar eller rapporterar problem',
-                '⏱️ Auto-bekräftelse sker efter 24 timmar om inget svar',
-              ].map(item => (
-                <div key={item} className={styles.confirm_item}>{item}</div>
-              )) : [
-                '✅ Beställaren meddelas att projektet är klart',
-                '⭐ Båda parter får möjlighet att lämna recensioner',
-                '💰 Du påminns om att ta betalt',
-                '🔒 Projektstatus låses och kan inte ändras',
-              ].map(item => (
-                <div key={item} className={styles.confirm_item}>{item}</div>
-              ))}
+              {isTyp3 ? (
+                <>
+                  <div className={styles.confirm_item}><Package size={14} /> Beställaren meddelas att leveransen är gjord</div>
+                  <div className={styles.confirm_item}><CheckCircle size={14} /> Beställaren bekräftar eller rapporterar problem</div>
+                  <div className={styles.confirm_item}>⏱️ Auto-bekräftelse sker efter 24 timmar om inget svar</div>
+                </>
+              ) : (
+                <>
+                  <div className={styles.confirm_item}><CheckCircle size={14} /> Beställaren meddelas att projektet är klart</div>
+                  <div className={styles.confirm_item}><Star size={14} /> Båda parter får möjlighet att lämna recensioner</div>
+                  <div className={styles.confirm_item}><Wallet size={14} /> Du påminns om att ta betalt</div>
+                  <div className={styles.confirm_item}><Lock size={14} /> Projektstatus låses och kan inte ändras</div>
+                </>
+              )}
             </div>
             <div style={{ display: 'flex', gap: '12px', marginTop: '20px', justifyContent: 'flex-end' }}>
               <button className="btn btn-outline" onClick={() => setShowCompleteConfirm(false)}>Avbryt</button>
@@ -576,7 +577,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                 }}
                 disabled={updating}
               >
-                {updating ? 'Sparar...' : isTyp3 ? '📦 Ja, leveransen är gjord!' : '🎉 Ja, projektet är klart!'}
+                {updating ? 'Sparar...' : isTyp3 ? <><Package size={16} /> Ja, leveransen är gjord!</> : '🎉 Ja, projektet är klart!'}
               </button>
             </div>
           </div>

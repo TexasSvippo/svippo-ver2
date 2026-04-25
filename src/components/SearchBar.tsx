@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import styles from './SearchBar.module.scss'
+import { Wrench, Users, Search } from 'lucide-react'
 
 type Service = {
   id: string
@@ -146,14 +147,14 @@ export default function SearchBar({ hideTypePicker = false, defaultType = 'tjans
               }}
               type="button"
             >
-              {searchType === 'tjanster' ? '🛠️ Tjänster' : '🙋 Förfrågningar'}
+              {searchType === 'tjanster' ? <><Wrench size={14} /> Tjänster</> : <><Users size={14} /> Förfrågningar</>}
               <span className={styles.searchbar__type_arrow}>▾</span>
             </button>
             <div className={styles.searchbar__divider} />
           </>
         )}
 
-        <span className={styles.searchbar__icon}>🔍</span>
+        <span className={styles.searchbar__icon}><Search size={16} /></span>
         <input
           type="text"
           className={styles.searchbar__input}
@@ -187,7 +188,7 @@ export default function SearchBar({ hideTypePicker = false, defaultType = 'tjans
             onClick={() => handleTypeSelect('tjanster')}
             type="button"
           >
-            <span>🛠️</span>
+            <Wrench size={16} />
             <div>
               <strong>Tjänster</strong>
               <span>Hitta någon som kan hjälpa dig</span>
@@ -198,7 +199,7 @@ export default function SearchBar({ hideTypePicker = false, defaultType = 'tjans
             onClick={() => handleTypeSelect('forfragningar')}
             type="button"
           >
-            <span>🙋</span>
+            <Users size={16} />
             <div>
               <strong>Förfrågningar</strong>
               <span>Hitta uppdrag att utföra</span>
@@ -219,7 +220,7 @@ export default function SearchBar({ hideTypePicker = false, defaultType = 'tjans
           ) : (
             <>
               <p className={styles.searchbar__dropdown_hint}>
-                {searchType === 'tjanster' ? '🛠️ Tjänster' : '🙋 Förfrågningar'}
+                {searchType === 'tjanster' ? <><Wrench size={14} /> Tjänster</> : <><Users size={14} /> Förfrågningar</>}
               </p>
               {searchType === 'tjanster'
                 ? services.map(s => (

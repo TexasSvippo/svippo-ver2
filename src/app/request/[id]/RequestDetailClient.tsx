@@ -7,6 +7,7 @@ import useAuth from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
 import styles from './requestdetail.module.scss'
 import serviceStyles from '../../service/[id]/servicedetail.module.scss'
+import { MapPin, CheckCircle, Users, MessageCircle, Shield, ClipboardList, Pencil, Trash2, Lock } from 'lucide-react'
 
 type Request = {
   id: string
@@ -205,7 +206,7 @@ export default function RequestDetailClient({ request }: Props) {
           <div className={serviceStyles.detail__main}>
             <div className={serviceStyles.detail__badges}>
               <span className={`${serviceStyles.detail__badge} ${styles.badge__orange}`}>{request.subcategory}</span>
-              <span className={`${serviceStyles.detail__badge} ${styles.badge__location}`}>📍 {request.location}</span>
+              <span className={`${serviceStyles.detail__badge} ${styles.badge__location}`}><MapPin size={14} /> {request.location}</span>
             </div>
 
             <h1 className={serviceStyles.detail__title}>{request.title}</h1>
@@ -268,7 +269,7 @@ export default function RequestDetailClient({ request }: Props) {
                 <>
                   {success ? (
                     <div className={styles.success_box}>
-                      ✅ Din intresseanmälan är skickad!
+                      <CheckCircle size={16} /> Din intresseanmälan är skickad!
                     </div>
                   ) : (
                     <button
@@ -279,7 +280,7 @@ export default function RequestDetailClient({ request }: Props) {
                         setShowInterestForm(true)
                       }}
                     >
-                      🙋 Jag kan hjälpa!
+                      <Users size={16} /> Jag kan hjälpa!
                     </button>
                   )}
                   {user && accountType !== 'bestellare' && (
@@ -287,7 +288,7 @@ export default function RequestDetailClient({ request }: Props) {
                       className={`btn btn-outline ${serviceStyles.detail__question_btn}`}
                       onClick={handleContact}
                     >
-                      💬 Kontakta beställaren
+                      <MessageCircle size={16} /> Kontakta beställaren
                     </button>
                   )}
                 </>
@@ -296,7 +297,7 @@ export default function RequestDetailClient({ request }: Props) {
 
             {/* SvippoSafe */}
             <div className={`${serviceStyles.detail__safe} card`}>
-              <span className={serviceStyles.detail__safe_icon}>🛡️</span>
+              <Shield size={20} />
               <div>
                 <strong>Känn dig trygg med SvippoSafe</strong>
                 <p>Vi hjälper till att hantera trassel som kan dyka upp.</p>
@@ -306,7 +307,7 @@ export default function RequestDetailClient({ request }: Props) {
             {/* Ägar-box */}
             {isOwner && (
               <div className={styles.owner_box}>
-                <span>📋</span>
+                <ClipboardList size={18} />
                 <div>
                   <strong>Detta är din förfrågan</strong>
                   <p>Se vilka Svippare som visat intresse.</p>
@@ -319,14 +320,14 @@ export default function RequestDetailClient({ request }: Props) {
                     className={`btn btn-outline ${styles.edit_btn}`}
                     onClick={() => router.push(`/create-request?edit=${request.id}`)}
                   >
-                    ✏️ Redigera
+                    <Pencil size={15} /> Redigera
                   </button>
                   <button
                     className={`btn btn-outline ${styles.delete_btn}`}
                     onClick={handleDelete}
                     disabled={deleting}
                   >
-                    {deleting ? 'Tar bort...' : '🗑️ Ta bort'}
+                    {deleting ? 'Tar bort...' : <><Trash2 size={15} /> Ta bort</>}
                   </button>
                 </div>
               </div>
@@ -401,7 +402,7 @@ export default function RequestDetailClient({ request }: Props) {
       {showUpgradePrompt && (
         <div className="modal-backdrop" onClick={() => setShowUpgradePrompt(false)}>
           <div className="modal-box" onClick={e => e.stopPropagation()}>
-            <div style={{ textAlign: 'center', marginBottom: '16px', fontSize: '40px' }}>🔒</div>
+            <div style={{ textAlign: 'center', marginBottom: '16px' }}><Lock size={40} /></div>
             <h2 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '8px', textAlign: 'center' }}>
               Du kan inte anmäla intresse
             </h2>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { ChevronRight } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import useAuth from '@/hooks/useAuth'
 import styles from './ChatBox.module.scss'
@@ -282,7 +283,7 @@ export default function ChatBox({
             onClick={handleSend}
             disabled={!input.trim() || sending}
           >
-            {sending ? '...' : '➤'}
+            {sending ? '...' : <ChevronRight size={18} />}
           </button>
         </div>
       ) : (

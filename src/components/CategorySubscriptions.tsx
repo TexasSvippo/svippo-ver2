@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { Bell } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import useAuth from '@/hooks/useAuth'
 import { categories } from '@/data/categories'
@@ -64,7 +65,7 @@ export default function CategorySubscriptions() {
         className={`${styles.trigger_btn} ${subscribedCount > 0 ? styles['trigger_btn--active'] : ''}`}
         onClick={() => setShowModal(true)}
       >
-        <span>🔔</span>
+        <Bell size={16} />
         <span>Bevaka kategorier</span>
         {subscribedCount > 0 && (
           <span className={styles.trigger_badge}>{subscribedCount}</span>

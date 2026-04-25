@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import styles from './CreateModal.module.scss'
+import { Wrench, Users } from 'lucide-react'
 
 type Props = {
   onClose: () => void
@@ -30,7 +31,7 @@ export default function CreateModal({ onClose }: Props) {
             className={`${styles.modal__option} ${styles['modal__option--service']}`}
             onClick={() => handleChoice('/create-service')}
           >
-            <div className={styles.modal__option_icon}>🛠️</div>
+            <div className={styles.modal__option_icon}><Wrench size={24} /></div>
             <div className={styles.modal__option_content}>
               <strong>Erbjud en tjänst</strong>
               <p>Publicera din tjänst och börja ta emot beställningar</p>
@@ -42,7 +43,7 @@ export default function CreateModal({ onClose }: Props) {
             className={`${styles.modal__option} ${styles['modal__option--request']}`}
             onClick={() => handleChoice('/create-request')}
           >
-            <div className={styles.modal__option_icon}>🙋</div>
+            <div className={styles.modal__option_icon}><Users size={24} /></div>
             <div className={styles.modal__option_content}>
               <strong>Skapa en förfrågan</strong>
               <p>Beskriv vad du behöver hjälp med och få svar från Svippare</p>

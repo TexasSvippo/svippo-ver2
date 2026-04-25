@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { MessageCircle, Package } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import useAuth from '@/hooks/useAuth'
 import styles from './meddelanden.module.scss'
@@ -169,12 +170,12 @@ export default function MeddelandenPage() {
     <div className={styles.inbox}>
       <div className={`container ${styles.inbox__inner}`}>
         <div className={styles.inbox__header}>
-          <h1 className={styles.inbox__title}>💬 Meddelanden</h1>
+          <h1 className={styles.inbox__title}><MessageCircle size={22} /> Meddelanden</h1>
         </div>
 
         {conversations.length === 0 ? (
           <div className={styles.inbox__empty}>
-            <span className={styles.empty__icon}>💬</span>
+            <span className={styles.empty__icon}><MessageCircle size={48} /></span>
             <h2>Inga meddelanden än</h2>
             <p>Dina konversationer med Svippare och beställare visas här.</p>
             <Link href="/services" className="btn btn-primary">
@@ -207,7 +208,7 @@ export default function MeddelandenPage() {
                     <span className={styles.conv_time}>{formatTime(conv.last_message_at)}</span>
                   </div>
                   {conv.orderTitle && (
-                    <span className={styles.conv_context}>📦 {conv.orderTitle}</span>
+                    <span className={styles.conv_context}><Package size={14} /> {conv.orderTitle}</span>
                   )}
                   <p className={styles.conv_preview}>
                     {conv.last_message_preview ?? 'Ingen aktivitet än'}

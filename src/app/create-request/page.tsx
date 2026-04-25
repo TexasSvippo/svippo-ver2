@@ -7,6 +7,7 @@ import useAuth from '@/hooks/useAuth'
 import { categories } from '@/data/categories'
 import { municipalities } from '@/data/municipalities'
 import styles from './createrequest.module.scss'
+import { Wallet, ClipboardList, MapPin } from 'lucide-react'
 
 type FormData = {
   title: string
@@ -327,10 +328,10 @@ function CreateRequestPage() {
                   <label className={styles.create__label}>Hur vill du hantera priset?</label>
                   <div className={styles.create__price_types}>
                     <button type="button" className={`${styles.create__price_type_btn} ${form.budget_type === 'fast' ? styles['create__price_type_btn--active'] : ''}`} onClick={() => update('budget_type', 'fast')}>
-                      💰 Sätt egen budget
+                      <Wallet size={14} /> Sätt egen budget
                     </button>
                     <button type="button" className={`${styles.create__price_type_btn} ${form.budget_type === 'prisforslag' ? styles['create__price_type_btn--active'] : ''}`} onClick={() => update('budget_type', 'prisforslag')}>
-                      📋 Be om prisförslag
+                      <ClipboardList size={14} /> Be om prisförslag
                     </button>
                   </div>
                 </div>
@@ -375,7 +376,7 @@ function CreateRequestPage() {
                         }}
                         type="button"
                       >
-                        {type === 'plats' ? '📍 Plats' : '💻 Online'}
+                        {type === 'plats' ? <><MapPin size={14} /> Plats</> : '💻 Online'}
                       </button>
                     ))}
                   </div>
@@ -407,7 +408,7 @@ function CreateRequestPage() {
                                 setShowSuggestions(false)
                               }}
                             >
-                              📍 {m}
+                              <MapPin size={14} /> {m}
                             </button>
                           ))}
                         </div>

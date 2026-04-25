@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase'
 import useAuth from '@/hooks/useAuth'
 import { categories } from '@/data/categories'
 import styles from './blisvippare.module.scss'
+import { Lock, Lightbulb } from 'lucide-react'
 
 type SocialLink = {
   id: string
@@ -234,7 +235,7 @@ export default function BliSvipparePage() {
                   </div>
                 </div>
                 <div className={styles.privacy_note}>
-                  🔒 Dina personuppgifter lagras säkert och används enbart för att verifiera din identitet.
+                  <Lock size={14} /> Dina personuppgifter lagras säkert och används enbart för att verifiera din identitet.
                 </div>
               </div>
             </div>
@@ -365,7 +366,7 @@ export default function BliSvipparePage() {
               </div>
 
               <div className={styles.payment_info}>
-                <span>💡</span>
+                <Lightbulb size={16} />
                 <p>
                   Svippo är en marknadsplats – betalning sker direkt mellan dig och kunden utanför plattformen.
                   Som privatperson rekommenderar vi att du använder en <strong>faktureringstjänst utan eget företag</strong> för att ta betalt och redovisa dina inkomster korrekt.
