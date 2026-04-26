@@ -161,7 +161,7 @@ export default function ForfragningarClient({ requests }: Props) {
                 <div className={styles.request_card__content}>
                   <div className={styles.request_card__meta}>
                     <span className={styles.request_card__category}>{r.subcategory}</span>
-                    <span className={styles.request_card__location}><MapPin size={14} /> {r.location}</span>
+                    <span className={styles.request_card__location} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}><MapPin size={14} /> {r.location}</span>
                   </div>
                   <h2 className={styles.request_card__title}>{r.title}</h2>
                   <p className={styles.request_card__description}>{r.description}</p>

@@ -141,6 +141,7 @@ export default function SearchBar({ hideTypePicker = false, defaultType = 'tjans
           <>
             <button
               className={styles.searchbar__type_btn}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
               onClick={() => {
                 setShowTypePicker(!showTypePicker)
                 setShowDropdown(false)
@@ -185,6 +186,7 @@ export default function SearchBar({ hideTypePicker = false, defaultType = 'tjans
           <p className={styles.searchbar__dropdown_hint}>Vad letar du efter?</p>
           <button
             className={`${styles.searchbar__type_option} ${searchType === 'tjanster' ? styles['searchbar__type_option--active'] : ''}`}
+            style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
             onClick={() => handleTypeSelect('tjanster')}
             type="button"
           >
@@ -196,6 +198,7 @@ export default function SearchBar({ hideTypePicker = false, defaultType = 'tjans
           </button>
           <button
             className={`${styles.searchbar__type_option} ${searchType === 'forfragningar' ? styles['searchbar__type_option--active'] : ''}`}
+            style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
             onClick={() => handleTypeSelect('forfragningar')}
             type="button"
           >
@@ -219,7 +222,7 @@ export default function SearchBar({ hideTypePicker = false, defaultType = 'tjans
             </div>
           ) : (
             <>
-              <p className={styles.searchbar__dropdown_hint}>
+              <p className={styles.searchbar__dropdown_hint} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 {searchType === 'tjanster' ? <><Wrench size={14} /> Tjänster</> : <><Users size={14} /> Förfrågningar</>}
               </p>
               {searchType === 'tjanster'

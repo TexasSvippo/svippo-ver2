@@ -170,7 +170,7 @@ export default function MeddelandenPage() {
     <div className={styles.inbox}>
       <div className={`container ${styles.inbox__inner}`}>
         <div className={styles.inbox__header}>
-          <h1 className={styles.inbox__title}><MessageCircle size={22} /> Meddelanden</h1>
+          <h1 className={styles.inbox__title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><MessageCircle size={22} /> Meddelanden</h1>
         </div>
 
         {conversations.length === 0 ? (
@@ -208,7 +208,7 @@ export default function MeddelandenPage() {
                     <span className={styles.conv_time}>{formatTime(conv.last_message_at)}</span>
                   </div>
                   {conv.orderTitle && (
-                    <span className={styles.conv_context}><Package size={14} /> {conv.orderTitle}</span>
+                    <span className={styles.conv_context} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}><Package size={14} /> {conv.orderTitle}</span>
                   )}
                   <p className={styles.conv_preview}>
                     {conv.last_message_preview ?? 'Ingen aktivitet än'}

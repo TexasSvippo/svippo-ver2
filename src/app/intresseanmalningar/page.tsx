@@ -389,7 +389,7 @@ export default function IntresseanmalningarPage() {
                         {/* Betyg */}
                         <div className={styles.table_cell}>
                           {interest.rating !== null && interest.rating !== undefined ? (
-                            <span className={styles.rating_cell}><Star size={14} /> {interest.rating} <span className={styles.rating_count}>({interest.reviews})</span></span>
+                            <span className={styles.rating_cell} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}><Star size={14} /> {interest.rating} <span className={styles.rating_count}>({interest.reviews})</span></span>
                           ) : (
                             <span className={styles.rating_new}>Ny</span>
                           )}
@@ -408,7 +408,7 @@ export default function IntresseanmalningarPage() {
                             interest.status === 'accepted' ? styles['status_badge--accepted'] :
                             interest.status === 'rejected' ? styles['status_badge--rejected'] :
                             styles['status_badge--pending']
-                            }`}>
+                            }`} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                             {interest.status === 'accepted' ? <><CheckCircle size={14} /> Godkänd</> : interest.status === 'rejected' ? <><XCircle size={14} /> Nekad</> : <><Clock size={14} /> Väntande</>}
                             </span>
                         </div>

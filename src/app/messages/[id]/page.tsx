@@ -440,12 +440,12 @@ export default function KonversationPage({ params }: { params: Promise<{ id: str
               {/* Typ B – uppdragskort */}
               {order && (
                 <>
-                  <h2 className={styles.context_title}><Package size={16} /> Uppdrag</h2>
+                  <h2 className={styles.context_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Package size={16} /> Uppdrag</h2>
                   <strong className={styles.context_service}>{order.service_title}</strong>
                   <div className={styles.context_rows}>
                     <div className={styles.context_row}>
                       <span>Status</span>
-                      <strong>{order.status === 'accepted' ? <><CheckCircle size={14} /> Godkänd</> : order.status === 'pending' ? <><Clock size={14} /> Väntar</> : <><XCircle size={14} /> Nekad</>}</strong>
+                      <strong style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>{order.status === 'accepted' ? <><CheckCircle size={14} /> Godkänd</> : order.status === 'pending' ? <><Clock size={14} /> Väntar</> : <><XCircle size={14} /> Nekad</>}</strong>
                     </div>
                     <div className={styles.context_row}>
                       <span>Projektstatus</span>
@@ -487,7 +487,7 @@ export default function KonversationPage({ params }: { params: Promise<{ id: str
               {/* Typ A – förfrågningskort */}
               {request && !order && (
                 <>
-                  <h2 className={styles.context_title}><Users size={16} /> Förfrågan</h2>
+                  <h2 className={styles.context_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Users size={16} /> Förfrågan</h2>
                   <strong className={styles.context_service}>{request.title}</strong>
                   <div className={styles.context_rows}>
                     <div className={styles.context_row}>
@@ -518,7 +518,7 @@ export default function KonversationPage({ params }: { params: Promise<{ id: str
               {/* Typ A – tjänstekort */}
               {service && !order && (
                 <>
-                  <h2 className={styles.context_title}><Wrench size={16} /> Tjänst</h2>
+                  <h2 className={styles.context_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Wrench size={16} /> Tjänst</h2>
                   <strong className={styles.context_service}>{service.title}</strong>
                   <div className={styles.context_rows}>
                     <div className={styles.context_row}>

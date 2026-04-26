@@ -23,7 +23,7 @@ type Service = {
 
 function StarRating({ rating }: { rating: number }) {
   return (
-    <span className={styles.star_rating}>
+    <span className={styles.star_rating} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
       <Star size={14} /><strong>{rating || '–'}</strong>
     </span>
   )

@@ -271,7 +271,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
         )}
 
         {isTyp3 && order.delivered_at && projectStatus !== 'completed' && (
-          <div className={styles.completed_banner} style={{ background: '#fff3e0', color: '#e65100' }}>
+          <div className={styles.completed_banner} style={{ background: '#fff3e0', color: '#e65100', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Package size={16} /> Väntar på bekräftelse från {order.buyer_name}
           </div>
         )}
@@ -294,11 +294,11 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                     {new Date(order.created_at).toLocaleDateString('sv-SE', { year: 'numeric', month: 'long', day: 'numeric' })}
                   </span>
                 </div>
-                <span className={`${styles.status_badge} ${styles[`status--${order.status}`]}`}>
+                <span className={`${styles.status_badge} ${styles[`status--${order.status}`]}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                   {order.status === 'pending' ? <><Clock size={14} /> Väntar</> : order.status === 'accepted' ? <><CheckCircle size={14} /> Godkänd</> : <><XCircle size={14} /> Nekad</>}
                 </span>
               </div>
-              <Link href={`/service/${order.service_id}`} className={styles.service_link}>
+              <Link href={`/service/${order.service_id}`} className={styles.service_link} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
                 <LinkIcon size={16} /> Visa tjänsten →
               </Link>
             </div>
@@ -306,7 +306,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
             {/* Typ-specifik info */}
             {serviceType === 'typ1' && (preferredDate || address) && (
               <div className={`${styles.orderdetail__type_info} card`}>
-                <h2 className={styles.section_title}>📅 Datum & plats</h2>
+                <h2 className={styles.section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>📅 Datum & plats</h2>
                 <div className={styles.type_info_grid}>
                   {preferredDate && <div className={styles.type_info_item}><span className={styles.type_info_label}>Önskat datum</span><strong>{preferredDate}</strong></div>}
                   {preferredTime && <div className={styles.type_info_item}><span className={styles.type_info_label}>Önskad tid</span><strong>{preferredTime}</strong></div>}
@@ -317,7 +317,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
 
             {serviceType === 'typ2' && (desiredDeadline || milestones) && (
               <div className={`${styles.orderdetail__type_info} card`}>
-                <h2 className={styles.section_title}>🗓️ Tidslinje</h2>
+                <h2 className={styles.section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>🗓️ Tidslinje</h2>
                 <div className={styles.type_info_grid}>
                   {desiredDeadline && <div className={styles.type_info_item}><span className={styles.type_info_label}>Önskat slutdatum</span><strong>{desiredDeadline}</strong></div>}
                   {milestones && <div className={`${styles.type_info_item} ${styles['type_info_item--full']}`}><span className={styles.type_info_label}>Föreslagna milstolpar</span><p className={styles.type_info_text}>{milestones}</p></div>}
@@ -327,7 +327,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
 
             {serviceType === 'typ3' && (pickupAddress || deliveryAddress) && (
               <div className={`${styles.orderdetail__type_info} card`}>
-                <h2 className={styles.section_title}><Package size={18} /> Upphämtning & leverans</h2>
+                <h2 className={styles.section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Package size={18} /> Upphämtning & leverans</h2>
                 <div className={styles.type_info_grid}>
                   {pickupAddress && <div className={styles.type_info_item}><span className={styles.type_info_label}>Upphämtning</span><strong>{pickupAddress}</strong></div>}
                   {deliveryAddress && <div className={styles.type_info_item}><span className={styles.type_info_label}>Leverans</span><strong>{deliveryAddress}</strong></div>}
@@ -338,7 +338,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
             )}
 
             <div className={`${styles.orderdetail__form} card`}>
-              <h2 className={styles.section_title}><ClipboardList size={18} /> Ifyllt formulär</h2>
+              <h2 className={styles.section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><ClipboardList size={18} /> Ifyllt formulär</h2>
               <div className={styles.field}>
                 <span className={styles.field_label}>Meddelande</span>
                 <div className={`${styles.field_value} ${styles.field_message}`}>{order.message}</div>
@@ -372,7 +372,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
             </div>
 
             <div className={`${styles.orderdetail__buyer_reviews} card`}>
-              <h2 className={styles.section_title}><Star size={18} /> {order.buyer_name}s recensioner</h2>
+              <h2 className={styles.section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Star size={18} /> {order.buyer_name}s recensioner</h2>
               {buyerReviews.length === 0 ? (
                 <p className={styles.no_reviews}>{order.buyer_name} har inga tidigare recensioner på Svippo än.</p>
               ) : (
@@ -397,7 +397,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
           <div className={styles.orderdetail__sidebar}>
 
             <div className={`${styles.customer_card} card`}>
-              <h2 className={styles.section_title}><User size={18} /> Kundinformation</h2>
+              <h2 className={styles.section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><User size={18} /> Kundinformation</h2>
               <div className={styles.customer_avatar}>
                 {buyerAvatarUrl
                   // eslint-disable-next-line @next/next/no-img-element
@@ -418,7 +418,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
 
             {order.status === 'accepted' && isSeller && (
               <div className={`${styles.chat_card} card`}>
-                <h2 className={styles.section_title}><MessageCircle size={18} /> Meddelanden</h2>
+                <h2 className={styles.section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><MessageCircle size={18} /> Meddelanden</h2>
                 <p className={styles.progress_hint}>Kommunicera med {order.buyer_name} om uppdraget.</p>
                 <Link href={`/messages?orderId=${order.id}`} className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
                   <MessageCircle size={16} /> Öppna chatten
@@ -428,8 +428,8 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
 
             {isSeller && (
               <div className={`${styles.actions_card} card`}>
-                <h2 className={styles.section_title}><Zap size={18} /> Hantera beställning</h2>
-                <div className={`${styles.current_status} ${styles[`status--${order.status}`]}`}>
+                <h2 className={styles.section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Zap size={18} /> Hantera beställning</h2>
+                <div className={`${styles.current_status} ${styles[`status--${order.status}`]}`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
                   {order.status === 'pending' ? <><Clock size={14} /> Väntar på ditt svar</> : order.status === 'accepted' ? <><CheckCircle size={14} /> Du har godkänt denna beställning</> : <><XCircle size={14} /> Du har nekat denna beställning</>}
                 </div>
                 {order.status === 'pending' && (
@@ -446,7 +446,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
 
             {order.status === 'accepted' && isSeller && (
               <div className={`${styles.progress_card} card`}>
-                <h2 className={styles.section_title}><BarChart2 size={18} /> Projektstatus</h2>
+                <h2 className={styles.section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><BarChart2 size={18} /> Projektstatus</h2>
                 <p className={styles.progress_hint}>
                   {isTyp3 ? 'Uppdatera hur uppdraget fortskrider.' : 'Uppdatera hur långt projektet kommit.'}
                 </p>
@@ -486,10 +486,10 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
 
             {projectStatus === 'completed' && isSeller && (
               <div className={`${styles.payment_card} card`}>
-                <h2 className={styles.section_title}><Wallet size={18} /> Betalning</h2>
+                <h2 className={styles.section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Wallet size={18} /> Betalning</h2>
                 <p className={styles.progress_hint}>Har du tagit betalt av {order.buyer_name}?</p>
                 {order.payment_status === 'paid' ? (
-                  <div className={styles.payment_done}><CheckCircle size={16} /> Du har markerat betalningen som mottagen!</div>
+                  <div className={styles.payment_done} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}><CheckCircle size={16} /> Du har markerat betalningen som mottagen!</div>
                 ) : (
                   <div className={styles.action_btns}>
                     <button className="btn btn-primary" onClick={() => handlePayment('paid')} disabled={updating}><CheckCircle size={16} /> Ja, jag har fått betalt</button>
@@ -501,7 +501,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
 
             {projectStatus === 'completed' && isSeller && !hasReviewed && !reviewSuccess && (
               <div className={`${styles.review_card} card`}>
-                <h2 className={styles.section_title}><Star size={18} /> Lämna en recension</h2>
+                <h2 className={styles.section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Star size={18} /> Lämna en recension</h2>
                 {showReviewForm ? (
                   <div className={styles.review_form}>
                     <div style={{ display: 'flex', gap: '8px', fontSize: '24px' }}>
@@ -524,7 +524,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
 
             {(hasReviewed || reviewSuccess) && projectStatus === 'completed' && isSeller && (
               <div className={`${styles.review_card} card`}>
-                <div className={styles.payment_done}><Star size={16} /> Du har lämnat en recension för denna beställning!</div>
+                <div className={styles.payment_done} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}><Star size={16} /> Du har lämnat en recension för denna beställning!</div>
               </div>
             )}
 
@@ -547,16 +547,16 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
             <div className={styles.confirm_checklist}>
               {isTyp3 ? (
                 <>
-                  <div className={styles.confirm_item}><Package size={14} /> Beställaren meddelas att leveransen är gjord</div>
-                  <div className={styles.confirm_item}><CheckCircle size={14} /> Beställaren bekräftar eller rapporterar problem</div>
-                  <div className={styles.confirm_item}>⏱️ Auto-bekräftelse sker efter 24 timmar om inget svar</div>
+                  <div className={styles.confirm_item} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Package size={14} /> Beställaren meddelas att leveransen är gjord</div>
+                  <div className={styles.confirm_item} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><CheckCircle size={14} /> Beställaren bekräftar eller rapporterar problem</div>
+                  <div className={styles.confirm_item} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>⏱️ Auto-bekräftelse sker efter 24 timmar om inget svar</div>
                 </>
               ) : (
                 <>
-                  <div className={styles.confirm_item}><CheckCircle size={14} /> Beställaren meddelas att projektet är klart</div>
-                  <div className={styles.confirm_item}><Star size={14} /> Båda parter får möjlighet att lämna recensioner</div>
-                  <div className={styles.confirm_item}><Wallet size={14} /> Du påminns om att ta betalt</div>
-                  <div className={styles.confirm_item}><Lock size={14} /> Projektstatus låses och kan inte ändras</div>
+                  <div className={styles.confirm_item} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><CheckCircle size={14} /> Beställaren meddelas att projektet är klart</div>
+                  <div className={styles.confirm_item} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Star size={14} /> Båda parter får möjlighet att lämna recensioner</div>
+                  <div className={styles.confirm_item} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Wallet size={14} /> Du påminns om att ta betalt</div>
+                  <div className={styles.confirm_item} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Lock size={14} /> Projektstatus låses och kan inte ändras</div>
                 </>
               )}
             </div>

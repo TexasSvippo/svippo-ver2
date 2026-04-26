@@ -140,7 +140,7 @@ const [accountType, setAccountType] = useState<AccountType>('privatperson')
           </div>
 
           {accountType === 'privatperson' && (
-            <div className={modalStyles.info_box}>
+            <div className={modalStyles.info_box} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <User size={14} /> Som privatperson kan du beställa tjänster direkt. Vill du även utföra tjänster kan du ansöka om att bli Svippare efter registreringen.
             </div>
           )}
@@ -227,11 +227,11 @@ const [accountType, setAccountType] = useState<AccountType>('privatperson')
           <div className={modalStyles.popup__info}>
             <strong>Som Svippare kan du:</strong>
             <ul>
-              <li><CheckCircle size={14} /> Ta emot beställningar från kunder</li>
-              <li><CheckCircle size={14} /> Synas i vår tjänstekatalog</li>
-              <li><CheckCircle size={14} /> Tjäna pengar på dina kunskaper</li>
+              <li style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><CheckCircle size={14} /> Ta emot beställningar från kunder</li>
+              <li style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><CheckCircle size={14} /> Synas i vår tjänstekatalog</li>
+              <li style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><CheckCircle size={14} /> Tjäna pengar på dina kunskaper</li>
             </ul>
-            <p className={modalStyles.popup__disclaimer}>
+            <p className={modalStyles.popup__disclaimer} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Lightbulb size={14} /> Svippo är en marknadsplats – betalning sker direkt mellan dig och kunden utanför plattformen.
             </p>
           </div>

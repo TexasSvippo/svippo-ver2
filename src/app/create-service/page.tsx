@@ -301,6 +301,7 @@ export default function CreateServicePage() {
                       <button
                         key={pt}
                         className={`${styles.create__price_type_btn} ${form.price_type === pt ? styles['create__price_type_btn--active'] : ''}`}
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
                         onClick={() => update('price_type', pt)}
                         type="button"
                       >
@@ -326,6 +327,7 @@ export default function CreateServicePage() {
                       <button
                         key={type}
                         className={`${styles.create__price_type_btn} ${form.location_type === type ? styles['create__price_type_btn--active'] : ''}`}
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
                         onClick={() => {
                           update('location_type', type)
                           if (type === 'online') {
@@ -363,6 +365,7 @@ export default function CreateServicePage() {
                               key={m}
                               type="button"
                               className={styles.create__suggestion}
+                              style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
                               onClick={() => {
                                 update('location', m)
                                 setLocationSearch(m)
@@ -393,7 +396,7 @@ export default function CreateServicePage() {
                       />
                       Vi erbjuder RUT-avdrag – kunden betalar ca 50% av priset
                     </label>
-                    <p className={styles.create__online_hint}>
+                    <p className={styles.create__online_hint} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <Lightbulb size={14} /> RUT-avdrag gäller hushållsnära tjänster. Ni fakturerar kunden på det reducerade beloppet och söker resten från Skatteverket.
                     </p>
                   </div>
@@ -410,7 +413,7 @@ export default function CreateServicePage() {
                       />
                       Vi erbjuder ROT-avdrag – kunden betalar ca 70% av priset
                     </label>
-                    <p className={styles.create__online_hint}>
+                    <p className={styles.create__online_hint} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <Lightbulb size={14} /> ROT-avdrag gäller bygg- och hantverksarbeten. Ni fakturerar kunden på det reducerade beloppet och söker resten från Skatteverket.
                     </p>
                   </div>
@@ -457,7 +460,7 @@ export default function CreateServicePage() {
                       <label className={styles.create__label}>Svarstyp</label>
                       <div className={styles.create__price_types}>
                         {(['text', 'textarea', 'select'] as const).map(type => (
-                          <button key={type} type="button" className={`${styles.create__price_type_btn} ${newQuestion.type === type ? styles['create__price_type_btn--active'] : ''}`} onClick={() => setNewQuestion(prev => ({ ...prev, type }))}>
+                          <button key={type} type="button" className={`${styles.create__price_type_btn} ${newQuestion.type === type ? styles['create__price_type_btn--active'] : ''}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }} onClick={() => setNewQuestion(prev => ({ ...prev, type }))}>
                             {type === 'text' ? <><Pencil size={14} /> Kort svar</> : type === 'textarea' ? <><FileText size={14} /> Långt svar</> : <><ClipboardList size={14} /> Flerval</>}
                           </button>
                         ))}
@@ -498,7 +501,7 @@ export default function CreateServicePage() {
               )}
 
               {form.custom_questions.length === 0 && (
-                <p className={styles.create__skip_hint}><Lightbulb size={14} /> Du kan hoppa över detta steg om du inte vill lägga till egna frågor.</p>
+                <p className={styles.create__skip_hint} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Lightbulb size={14} /> Du kan hoppa över detta steg om du inte vill lägga till egna frågor.</p>
               )}
             </div>
           )}

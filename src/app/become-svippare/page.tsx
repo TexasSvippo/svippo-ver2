@@ -365,7 +365,7 @@ export default function BliSvipparePage() {
                 </div>
               </div>
 
-              <div className={styles.payment_info}>
+              <div className={styles.payment_info} style={{ alignItems: 'center' }}>
                 <Lightbulb size={16} />
                 <p>
                   Svippo är en marknadsplats – betalning sker direkt mellan dig och kunden utanför plattformen.

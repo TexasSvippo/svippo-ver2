@@ -284,7 +284,7 @@ export default function ProfilePage() {
             <strong className={styles.profile__sidebar_name}>{displayName || 'Inget namn'}</strong>
             <p className={styles.profile__sidebar_email}>{user.email}</p>
             {!isBestellare && (
-              <Link href={`/provider/${user.id}`} className={styles.profile__sidebar_publink}>
+              <Link href={`/provider/${user.id}`} className={styles.profile__sidebar_publink} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                 <Eye size={14} /> Se publik profil →
               </Link>
             )}
@@ -486,7 +486,7 @@ export default function ProfilePage() {
                               <strong>{order.buyer_name}</strong>
                               <span>{order.service_title}</span>
                             </div>
-                            <span className={`${styles.profile__item_tag} ${statusTag(order)}`}>{statusLabel(order)}</span>
+                            <span className={`${styles.profile__item_tag} ${statusTag(order)}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>{statusLabel(order)}</span>
                           </Link>
                         ))}
                       </div>
@@ -752,7 +752,7 @@ export default function ProfilePage() {
         {/* KARRIÄR */}
         {activeSection === 'karriar' && (
           <div className={styles.profile__section}>
-            <h1 className={styles.profile__section_title}><Trophy size={22} /> Min karriär</h1>
+            <h1 className={styles.profile__section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Trophy size={22} /> Min karriär</h1>
 
             {/* Stats */}
             <div className={styles.profile__stats} style={{ marginBottom: '24px' }}>
@@ -860,7 +860,7 @@ export default function ProfilePage() {
                         <strong>{order.service_title}</strong>
                         <span>{order.buyer_name} · {new Date(order.created_at).toLocaleDateString('sv-SE')}</span>
                       </div>
-                      <span className={`${styles.profile__item_tag} ${styles['item_tag--completed']}`}><CheckCircle size={14} /> Utfört</span>
+                      <span className={`${styles.profile__item_tag} ${styles['item_tag--completed']}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}><CheckCircle size={14} /> Utfört</span>
                     </Link>
                   ))}
                 </div>
@@ -918,7 +918,7 @@ export default function ProfilePage() {
                   <span className={styles.profile__hint}>Visas på din publika profilsida</span>
                 </div>
               </div>
-              {success && <div className={styles.profile__success}><CheckCircle size={16} /> Profilen uppdaterades!</div>}
+              {success && <div className={styles.profile__success} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><CheckCircle size={16} /> Profilen uppdaterades!</div>}
               <div className={styles.profile__settings_actions}>
                 {editing ? (
                   <>
@@ -978,7 +978,7 @@ export default function ProfilePage() {
                     {companyEditing && <button type="button" className={styles.profile__social_add} onClick={addSocialLink}>+ Lägg till konto</button>}
                   </div>
                 </div>
-                {companySuccess && <div className={styles.profile__success}><CheckCircle size={16} /> Företagsprofilen uppdaterades!</div>}
+                {companySuccess && <div className={styles.profile__success} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><CheckCircle size={16} /> Företagsprofilen uppdaterades!</div>}
                 <div className={styles.profile__settings_actions}>
                   {companyEditing ? (
                     <>

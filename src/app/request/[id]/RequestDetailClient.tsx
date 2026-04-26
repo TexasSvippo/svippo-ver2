@@ -206,7 +206,7 @@ export default function RequestDetailClient({ request }: Props) {
           <div className={serviceStyles.detail__main}>
             <div className={serviceStyles.detail__badges}>
               <span className={`${serviceStyles.detail__badge} ${styles.badge__orange}`}>{request.subcategory}</span>
-              <span className={`${serviceStyles.detail__badge} ${styles.badge__location}`}><MapPin size={14} /> {request.location}</span>
+              <span className={`${serviceStyles.detail__badge} ${styles.badge__location}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}><MapPin size={14} /> {request.location}</span>
             </div>
 
             <h1 className={serviceStyles.detail__title}>{request.title}</h1>
@@ -268,7 +268,7 @@ export default function RequestDetailClient({ request }: Props) {
               {!isOwner && (
                 <>
                   {success ? (
-                    <div className={styles.success_box}>
+                    <div className={styles.success_box} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
                       <CheckCircle size={16} /> Din intresseanmälan är skickad!
                     </div>
                   ) : (

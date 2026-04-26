@@ -285,7 +285,7 @@ export default function PublicProfileClient({
             <div className={styles.pubprofile__hero_top}>
               <span className={styles.pubprofile__badge}>{profileBadge}</span>
               {displayCity && (
-                <span className={styles.pubprofile__location}><MapPin size={14} /> {displayCity}</span>
+                <span className={styles.pubprofile__location} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}><MapPin size={14} /> {displayCity}</span>
               )}
             </div>
             {profile.created_at && (
@@ -321,7 +321,7 @@ export default function PublicProfileClient({
                 <span>Recensioner</span>
               </div>
               <div className={styles.pubprofile__stat}>
-                <strong>{avgRating !== null ? <><Star size={14} /> {avgRating}</> : '–'}</strong>
+                <strong style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>{avgRating !== null ? <><Star size={14} /> {avgRating}</> : '–'}</strong>
                 <span>Snittbetyg</span>
               </div>
             </div>
@@ -378,7 +378,7 @@ export default function PublicProfileClient({
                   <div className={styles.pubprofile__service_info}>
                     <span className={styles.pubprofile__service_category}>{s.subcategory}</span>
                     <h3 className={styles.pubprofile__service_title}>{s.title}</h3>
-                    <span className={styles.pubprofile__service_location}><MapPin size={14} /> {s.location}</span>
+                    <span className={styles.pubprofile__service_location} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}><MapPin size={14} /> {s.location}</span>
                   </div>
                   <div className={styles.pubprofile__service_price}>
                     <span>{s.price_type === 'offert' ? '' : 'från'}</span>
@@ -405,7 +405,7 @@ export default function PublicProfileClient({
             {/* Erfarenhet – endast svippare */}
             {isSvippare && svippareProfile?.experience && (
               <div className={styles.pubprofile__about_block}>
-                <h3 className={styles.pubprofile__about_heading}><Briefcase size={16} /> Erfarenhet</h3>
+                <h3 className={styles.pubprofile__about_heading} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Briefcase size={16} /> Erfarenhet</h3>
                 <p className={styles.pubprofile__about_text}>{svippareProfile.experience}</p>
               </div>
             )}
@@ -413,7 +413,7 @@ export default function PublicProfileClient({
             {/* Org-nummer – endast företag/UF */}
             {(isCompany || isUF) && companyProfile?.org_number && (
               <div className={styles.pubprofile__about_block}>
-                <h3 className={styles.pubprofile__about_heading}>🏛️ Organisationsnummer</h3>
+                <h3 className={styles.pubprofile__about_heading} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>🏛️ Organisationsnummer</h3>
                 <p className={styles.pubprofile__about_text}>{companyProfile.org_number}</p>
               </div>
             )}
@@ -421,7 +421,7 @@ export default function PublicProfileClient({
             {/* Webbplats */}
             {website && (
               <div className={styles.pubprofile__about_block}>
-                <h3 className={styles.pubprofile__about_heading}><Globe size={16} /> Webbplats</h3>
+                <h3 className={styles.pubprofile__about_heading} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> Webbplats</h3>
                 <a
                   href={website}
                   target="_blank"
@@ -436,7 +436,7 @@ export default function PublicProfileClient({
             {/* Sociala medier */}
             {socialLinks.length > 0 && (
               <div className={styles.pubprofile__about_block}>
-                <h3 className={styles.pubprofile__about_heading}><Smartphone size={16} /> Sociala medier</h3>
+                <h3 className={styles.pubprofile__about_heading} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Smartphone size={16} /> Sociala medier</h3>
                 <div className={styles.pubprofile__social_links}>
                   {socialLinks.map((url, i) => (
                     <a
@@ -463,7 +463,7 @@ export default function PublicProfileClient({
               Recensioner
               {reviews.length > 0 && (
                 <span className={styles.pubprofile__reviews_meta}>
-                  {avgRating !== null && <><Star size={14} /> {avgRating}</>} · {reviews.length} recensioner
+                  {avgRating !== null && <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}><Star size={14} /> {avgRating}</span>} · {reviews.length} recensioner
                 </span>
               )}
             </h2>

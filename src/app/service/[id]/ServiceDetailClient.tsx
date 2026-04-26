@@ -183,10 +183,10 @@ const filteredReviews = reviews
             <div className={styles.detail__badges}>
               <span className={styles.detail__badge}>{service.subcategory}</span>
               {service.offers_rut && (
-                <span className={`${styles.detail__badge} ${styles['detail__badge--rut']}`}><CheckCircle size={14} /> RUT-avdrag</span>
+                <span className={`${styles.detail__badge} ${styles['detail__badge--rut']}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}><CheckCircle size={14} /> RUT-avdrag</span>
               )}
               {service.offers_rot && (
-                <span className={`${styles.detail__badge} ${styles['detail__badge--rot']}`}><CheckCircle size={14} /> ROT-avdrag</span>
+                <span className={`${styles.detail__badge} ${styles['detail__badge--rot']}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}><CheckCircle size={14} /> ROT-avdrag</span>
               )}
             </div>
 
@@ -203,7 +203,7 @@ const filteredReviews = reviews
                 <h2 className={styles.detail__section_title}>
                   Recensioner
                   {reviews.length > 0 && (
-                    <span className={styles.detail__reviews_count}>
+                    <span className={styles.detail__reviews_count} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                       {avgRating !== null && <><Star size={14} /> {avgRating}</>} · {reviews.length} recensioner
                     </span>
                   )}
@@ -252,10 +252,10 @@ const filteredReviews = reviews
                   <Link href={`/provider/${service.user_id}`} className={styles.detail__seller_name}>
                     {service.user_name}
                   </Link>
-                  <span className={styles.detail__seller_rating}>
+                  <span className={styles.detail__seller_rating} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                     <Star size={14} /> {avgRating ?? service.rating ?? '–'} ({reviews.length} recensioner)
                   </span>
-                  <Link href={`/provider/${service.user_id}`} className={styles.detail__seller_profile_btn}>
+                  <Link href={`/provider/${service.user_id}`} className={styles.detail__seller_profile_btn} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                     <User size={14} /> Se profil →
                   </Link>
                 </div>

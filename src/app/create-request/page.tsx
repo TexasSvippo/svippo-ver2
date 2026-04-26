@@ -327,10 +327,10 @@ function CreateRequestPage() {
                 <div className={styles.create__field}>
                   <label className={styles.create__label}>Hur vill du hantera priset?</label>
                   <div className={styles.create__price_types}>
-                    <button type="button" className={`${styles.create__price_type_btn} ${form.budget_type === 'fast' ? styles['create__price_type_btn--active'] : ''}`} onClick={() => update('budget_type', 'fast')}>
+                    <button type="button" className={`${styles.create__price_type_btn} ${form.budget_type === 'fast' ? styles['create__price_type_btn--active'] : ''}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }} onClick={() => update('budget_type', 'fast')}>
                       <Wallet size={14} /> Sätt egen budget
                     </button>
-                    <button type="button" className={`${styles.create__price_type_btn} ${form.budget_type === 'prisforslag' ? styles['create__price_type_btn--active'] : ''}`} onClick={() => update('budget_type', 'prisforslag')}>
+                    <button type="button" className={`${styles.create__price_type_btn} ${form.budget_type === 'prisforslag' ? styles['create__price_type_btn--active'] : ''}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }} onClick={() => update('budget_type', 'prisforslag')}>
                       <ClipboardList size={14} /> Be om prisförslag
                     </button>
                   </div>
@@ -346,10 +346,10 @@ function CreateRequestPage() {
                 <div className={styles.create__field}>
                   <label className={styles.create__label}>Deadline</label>
                   <div className={styles.create__price_types}>
-                    <button type="button" className={`${styles.create__price_type_btn} ${form.deadline === 'ingen' ? styles['create__price_type_btn--active'] : ''}`} onClick={() => update('deadline', 'ingen')}>
+                    <button type="button" className={`${styles.create__price_type_btn} ${form.deadline === 'ingen' ? styles['create__price_type_btn--active'] : ''}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }} onClick={() => update('deadline', 'ingen')}>
                       🕐 Ingen deadline
                     </button>
-                    <button type="button" className={`${styles.create__price_type_btn} ${form.deadline !== 'ingen' && form.deadline !== '' ? styles['create__price_type_btn--active'] : ''}`} onClick={() => update('deadline', new Date().toISOString().split('T')[0])}>
+                    <button type="button" className={`${styles.create__price_type_btn} ${form.deadline !== 'ingen' && form.deadline !== '' ? styles['create__price_type_btn--active'] : ''}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }} onClick={() => update('deadline', new Date().toISOString().split('T')[0])}>
                       📅 Sätt deadline
                     </button>
                   </div>
