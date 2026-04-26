@@ -3,7 +3,9 @@
     "allow": [
       "Bash(npm uninstall *)",
       "Bash(timeout 30 npm run dev)",
-      "Bash(timeout 25 npm run dev)"
+      "Bash(timeout 25 npm run dev)",
+      "Bash(sed -n '502,520p' \"/c/Users/TexasForslund/OneDrive - GT Konsult i Sverige AB/Dokument/svippo/src/app/provider/[id]/publicprofile.module.scss\")",
+      "Bash(sed -n '134,145p' \"/c/Users/TexasForslund/OneDrive - GT Konsult i Sverige AB/Dokument/svippo/src/app/service/[id]/servicedetail.module.scss\")"
     ]
   }
 }

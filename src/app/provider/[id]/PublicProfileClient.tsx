@@ -481,6 +481,7 @@ export default function PublicProfileClient({
                   <button
                     key={star}
                     className={`${styles.pubprofile__rating_filter} ${ratingFilter === star ? styles['pubprofile__rating_filter--active'] : ''}`}
+                    style={{ display: 'flex', alignItems: 'center', gap: '2px' }}
                     onClick={() => setRatingFilter(ratingFilter === star ? null : star)}
                   >
                     {Array.from({ length: star }, (_, i) => <Star key={i} size={14} fill="currentColor" />)}
@@ -502,7 +503,7 @@ export default function PublicProfileClient({
                   <div key={r.id} className={`${styles.pubprofile__review} card`}>
                     <div className={styles.pubprofile__review_header}>
                       <strong>{r.reviewer_name}</strong>
-                      <span>{Array.from({ length: r.rating }, (_, i) => <Star key={i} size={14} fill="currentColor" />)}</span>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>{Array.from({ length: r.rating }, (_, i) => <Star key={i} size={14} fill="currentColor" />)}</span>
                     </div>
                     <p>{r.comment}</p>
                     <span className={styles.pubprofile__review_date}>

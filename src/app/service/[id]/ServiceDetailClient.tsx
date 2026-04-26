@@ -221,7 +221,7 @@ const filteredReviews = reviews
                     <div key={r.id} className={`${styles.detail__review} card`}>
                       <div className={styles.detail__review_header}>
                         <strong className={styles.detail__review_name}>{r.reviewer_name}</strong>
-                        <span className={styles.detail__review_stars}>{Array.from({ length: r.rating }, (_, i) => <Star key={i} size={14} fill="currentColor" />)}</span>
+                        <span className={styles.detail__review_stars} style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>{Array.from({ length: r.rating }, (_, i) => <Star key={i} size={14} fill="currentColor" />)}</span>
                       </div>
                       {r.comment && (
                         <p className={styles.detail__review_comment}>{r.comment}</p>
