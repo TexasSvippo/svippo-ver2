@@ -9,11 +9,34 @@
   margin-bottom: 20px;
 }
 
-.servicelist__title {
-  font-family: var(--font-heading);
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--color-dark);
+.servicelist__tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--color-gray-light);
+  padding: 4px;
+  border-radius: var(--radius-full);
+}
+
+.servicelist__tab {
+  padding: 8px 20px;
+  border-radius: var(--radius-full);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-gray);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &--active {
+    background: white;
+    color: var(--color-primary);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  }
+
+  &:hover:not(&--active) {
+    color: var(--color-dark);
+  }
 }
 
 .servicelist__see_all {
@@ -80,6 +103,10 @@
   font-size: 20px;
   font-weight: 700;
   border-radius: 50%;
+
+  &--orange {
+    background: var(--color-orange);
+  }
 }
 
 // Info
