@@ -31,6 +31,7 @@ export const categories = [
       'Sociala medier',
       'IT-support',
       'Programmering',
+      'AI-tjänster',
     ],
   },
   {
@@ -45,6 +46,7 @@ export const categories = [
       'Redigering',
       'Illustration',
       'UX & UI design',
+      'UGC & innehåll',
     ],
   },
   {
