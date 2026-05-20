@@ -10,7 +10,7 @@ import useAuth from '@/hooks/useAuth'
 import { User, CheckCircle, Lightbulb } from 'lucide-react'
 
 type AccountType = 'privatperson' | 'foretag' | 'uf-foretag'
-type Step = 'register' | 'svippare-popup'
+type Step = 'register' | 'verify-email' | 'svippare-popup'
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -94,12 +94,7 @@ const [accountType, setAccountType] = useState<AccountType>('privatperson')
         })
       }
 
-      if (accountType === 'privatperson') {
-        setStep('svippare-popup')
-      } else {
-        router.push('/profile')
-        router.refresh()
-      }
+      setStep('verify-email')
     }
 
     setLoading(false)
@@ -213,7 +208,33 @@ const [accountType, setAccountType] = useState<AccountType>('privatperson')
     )
   }
 
-  // STEG 2 – Popup: Vill du bli Svippare?
+  // STEG 2 – Verifiera e-post
+  if (step === 'verify-email') {
+    return (
+      <div className={styles.auth}>
+        <div className={styles.auth__card}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', textAlign: 'center', padding: '16px 0' }}>
+            <CheckCircle size={56} style={{ color: '#1a7a4a' }} />
+            <h1 className={styles.auth__title}>Verifiera din e-post</h1>
+            <p style={{ fontSize: '15px', color: 'var(--color-dark)', lineHeight: '1.6' }}>
+              Vi har skickat ett verifieringsmail till <strong>{email}</strong>. Klicka på länken i mailet för att aktivera ditt konto.
+            </p>
+            <p style={{ fontSize: '14px', color: 'var(--color-gray)' }}>
+              Kom tillbaka och logga in när du verifierat din e-post.
+            </p>
+            <Link href="/login" className="btn btn-primary" style={{ marginTop: '8px' }}>
+              Gå till inloggning
+            </Link>
+            <p style={{ fontSize: '13px', color: 'var(--color-gray)', marginTop: '4px' }}>
+              Fick du inget mail? Kontrollera skräpposten.
+            </p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // STEG 3 – Popup: Vill du bli Svippare?
   if (step === 'svippare-popup') {
     return (
       <div className={modalStyles.overlay}>

@@ -27,9 +27,11 @@ export default function LoginPage() {
 
     const { error } = await supabase.auth.signInWithPassword({ email, password })
 
-    if (error) {
+if (error) {
       if (error.message.includes('Invalid login credentials')) {
         setError('Fel e-post eller lösenord.')
+      } else if (error.message.includes('Email not confirmed')) {
+        setError('Du måste verifiera din e-postadress innan du kan logga in. Kolla din inkorg (och skräpposten).')
       } else {
         setError('Något gick fel. Försök igen.')
       }

@@ -106,6 +106,7 @@ export default function ProfilePage() {
   const [karriarReviews, setKarriarReviews] = useState<{ rating: number }[]>([])
   const [showAchievementPopup, setShowAchievementPopup] = useState(false)
   const [achievementTitle, setAchievementTitle] = useState('')
+  const [isAdmin, setIsAdmin] = useState(false)
 
   const [certificates, setCertificates] = useState<Certificate[]>([])
   const [certName, setCertName] = useState('')
@@ -165,6 +166,9 @@ export default function ProfilePage() {
           .eq('role', 'buyer')
         setKarriarReviews(receivedReviews ?? [])
       }
+
+      const { data: roleData } = await supabase.from('users').select('role').eq('id', user.id).single()
+      setIsAdmin(roleData?.role === 'admin')
     }
     fetchAll()
   }, [user])
@@ -372,6 +376,19 @@ export default function ProfilePage() {
               </div>
             )
           })}
+
+          {isAdmin && (
+            <div className={styles.profile__nav_group}>
+              <span className={styles.profile__nav_group_label}>Admin</span>
+              <Link
+                href="/admin"
+                className={styles.profile__nav_item}
+              >
+                <span className={styles.profile__nav_icon}><Settings size={16} /></span>
+                <span>Adminpanel</span>
+              </Link>
+            </div>
+          )}
         </nav>
       </aside>
 

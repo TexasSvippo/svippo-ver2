@@ -1,0 +1,420 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { supabase } from '@/lib/supabase'
+import useAuth from '@/hooks/useAuth'
+import styles from './admin.module.scss'
+import { Users, Wrench, ClipboardList, Package, Clock, CheckCircle, XCircle, BarChart2, LogOut, Trash2 } from 'lucide-react'
+
+type Section = 'overview' | 'applications' | 'services' | 'users' | 'orders'
+
+type Stats = {
+  users: number
+  services: number
+  requests: number
+  orders: number
+  pending: number
+}
+
+type Application = {
+  id: string
+  user_id: string
+  status: string
+  description: string
+  created_at: string
+  user_name: string
+  user_email: string
+}
+
+type UserRow = {
+  id: string
+  name: string
+  email: string
+  account_type: string
+  role: string
+  created_at: string
+}
+
+type OrderRow = {
+  id: string
+  service_title: string
+  buyer_name: string
+  seller_name: string
+  status: string
+  project_status: string
+  created_at: string
+}
+
+type ServiceRow = {
+  id: string
+  title: string
+  user_name: string
+  subcategory: string
+  created_at: string
+}
+
+export default function AdminPage() {
+  const { user, loading: authLoading } = useAuth()
+  const router = useRouter()
+  const [authorized, setAuthorized] = useState(false)
+  const [section, setSection] = useState<Section>('overview')
+  const [stats, setStats] = useState<Stats>({ users: 0, services: 0, requests: 0, orders: 0, pending: 0 })
+  const [applications, setApplications] = useState<Application[]>([])
+  const [users, setUsers] = useState<UserRow[]>([])
+  const [orders, setOrders] = useState<OrderRow[]>([])
+  const [services, setServices] = useState<ServiceRow[]>([])
+  const [feedback, setFeedback] = useState<Record<string, string>>({})
+  const [dataLoading, setDataLoading] = useState(true)
+  const [confirmModal, setConfirmModal] = useState<{ open: boolean; title: string; message: string; onConfirm: () => void } | null>(null)
+
+  // Auth + role check
+  useEffect(() => {
+    if (authLoading) return
+    if (!user) { router.replace('/login'); return }
+    const checkRole = async () => {
+      const { data } = await supabase.from('users').select('role').eq('id', user.id).single()
+      if (data?.role !== 'admin') { router.replace('/profile'); return }
+      setAuthorized(true)
+      loadAll()
+    }
+    checkRole()
+  }, [user, authLoading])
+
+  const loadAll = async () => {
+    setDataLoading(true)
+    const [usersRes, servicesRes, requestsRes, ordersRes, pendingRes, appsRes, recentUsersRes, recentOrdersRes, allServicesRes] = await Promise.all([
+      supabase.from('users').select('id', { count: 'exact', head: true }),
+      supabase.from('services').select('id', { count: 'exact', head: true }),
+      supabase.from('requests').select('id', { count: 'exact', head: true }),
+      supabase.from('orders').select('id', { count: 'exact', head: true }),
+      supabase.from('svippare_profiles').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
+      supabase.from('svippare_profiles').select('id, user_id, status, description, created_at, users(name, email)').eq('status', 'pending').order('created_at', { ascending: false }),
+      supabase.from('users').select('id, name, email, account_type, role, created_at').order('created_at', { ascending: false }).limit(20),
+      supabase.from('orders').select('id, service_title, buyer_name, seller_name, status, project_status, created_at').order('created_at', { ascending: false }).limit(10),
+      supabase.from('services').select('id, title, user_name, subcategory, created_at').order('created_at', { ascending: false }).limit(50),
+    ])
+
+    setStats({
+      users: usersRes.count ?? 0,
+      services: servicesRes.count ?? 0,
+      requests: requestsRes.count ?? 0,
+      orders: ordersRes.count ?? 0,
+      pending: pendingRes.count ?? 0,
+    })
+
+    const apps = (appsRes.data ?? []).map((a: any) => ({
+      id: a.id,
+      user_id: a.user_id,
+      status: a.status,
+      description: a.description ?? '',
+      created_at: a.created_at,
+      user_name: a.users?.name ?? '–',
+      user_email: a.users?.email ?? '–',
+    }))
+    setApplications(apps)
+    setUsers(recentUsersRes.data ?? [])
+    setOrders(recentOrdersRes.data ?? [])
+    setServices(allServicesRes.data ?? [])
+    setDataLoading(false)
+  }
+
+  const handleApprove = async (app: Application) => {
+    const { error } = await supabase.from('svippare_profiles').update({ status: 'approved' }).eq('id', app.id)
+    if (error) { setFeedback(f => ({ ...f, [app.id]: 'Fel vid godkännande.' })); return }
+    await supabase.from('users').update({ account_type: 'svippare' }).eq('id', app.user_id)
+    setApplications(prev => prev.filter(a => a.id !== app.id))
+    setStats(s => ({ ...s, pending: Math.max(0, s.pending - 1) }))
+    setFeedback(f => ({ ...f, [app.id]: '✓ Godkänd' }))
+  }
+
+  const handleReject = async (app: Application) => {
+    const { error } = await supabase.from('svippare_profiles').update({ status: 'rejected' }).eq('id', app.id)
+    if (error) { setFeedback(f => ({ ...f, [app.id]: 'Fel vid nekande.' })); return }
+    setApplications(prev => prev.filter(a => a.id !== app.id))
+    setStats(s => ({ ...s, pending: Math.max(0, s.pending - 1) }))
+    setFeedback(f => ({ ...f, [app.id]: '✓ Nekad' }))
+  }
+
+  // TODO: For delete operations to work, add RLS policies in Supabase:
+  // CREATE POLICY "Admin can delete services" ON services FOR DELETE USING (auth.jwt() ->> 'role' = 'admin' OR EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND role = 'admin'));
+  // CREATE POLICY "Admin can delete users" ON users FOR DELETE USING (EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND role = 'admin'));
+
+  const handleDeleteService = async (id: string) => {
+    const { error } = await supabase.from('services').delete().eq('id', id)
+    if (error) { setConfirmModal(null); alert('Fel vid borttagning: ' + error.message); return }
+    setServices(prev => prev.filter(s => s.id !== id))
+    setStats(s => ({ ...s, services: Math.max(0, s.services - 1) }))
+  }
+
+  const handleDeleteUser = async (id: string) => {
+    const { error } = await supabase.from('users').delete().eq('id', id)
+    if (error) { setConfirmModal(null); alert('Fel vid borttagning: ' + error.message); return }
+    setUsers(prev => prev.filter(u => u.id !== id))
+    setStats(s => ({ ...s, users: Math.max(0, s.users - 1) }))
+  }
+
+  const confirmDeleteService = (id: string) => setConfirmModal({
+    open: true,
+    title: 'Ta bort tjänst?',
+    message: 'Detta går inte att ångra. Tjänsten tas bort permanent.',
+    onConfirm: () => handleDeleteService(id),
+  })
+
+  const confirmDeleteUser = (id: string) => setConfirmModal({
+    open: true,
+    title: 'Ta bort användare?',
+    message: 'Detta raderar profilen ur databasen. Auth-kontot måste tas bort manuellt i Supabase Dashboard. Går inte att ångra.',
+    onConfirm: () => handleDeleteUser(id),
+  })
+
+  const fmt = (iso: string) => new Date(iso).toLocaleDateString('sv-SE', { day: 'numeric', month: 'short', year: 'numeric' })
+
+  if (authLoading || !authorized) {
+    return <div className={styles.loading}>Laddar...</div>
+  }
+
+  return (
+    <div className={styles.admin}>
+      {/* Sidebar */}
+      <aside className={styles.sidebar}>
+        <div className={styles.sidebar__brand}>Admin</div>
+        <nav className={styles.sidebar__nav}>
+          {([
+            { id: 'overview', label: 'Översikt', icon: <BarChart2 size={16} /> },
+            { id: 'applications', label: 'Ansökningar', icon: <Clock size={16} />, badge: stats.pending || undefined },
+            { id: 'services', label: 'Tjänster', icon: <Wrench size={16} /> },
+            { id: 'users', label: 'Användare', icon: <Users size={16} /> },
+            { id: 'orders', label: 'Beställningar', icon: <Package size={16} /> },
+          ] as { id: Section; label: string; icon: React.ReactNode; badge?: number }[]).map(item => (
+            <button
+              key={item.id}
+              className={`${styles.sidebar__item} ${section === item.id ? styles['sidebar__item--active'] : ''}`}
+              onClick={() => setSection(item.id)}
+            >
+              {item.icon}
+              <span>{item.label}</span>
+              {item.badge ? <span className={styles.sidebar__badge}>{item.badge}</span> : null}
+            </button>
+          ))}
+        </nav>
+        <button className={styles.sidebar__signout} onClick={() => { supabase.auth.signOut(); router.push('/') }}>
+          <LogOut size={16} /> Logga ut
+        </button>
+      </aside>
+
+      {/* Main */}
+      <main className={styles.main}>
+
+        {/* OVERVIEW */}
+        {section === 'overview' && (
+          <div className={styles.section}>
+            <h1 className={styles.section__title}>Översikt</h1>
+            <div className={styles.stats}>
+              {[
+                { label: 'Användare', value: stats.users, icon: <Users size={20} />, color: 'blue' },
+                { label: 'Tjänster', value: stats.services, icon: <Wrench size={20} />, color: 'green' },
+                { label: 'Förfrågningar', value: stats.requests, icon: <ClipboardList size={20} />, color: 'orange' },
+                { label: 'Beställningar', value: stats.orders, icon: <Package size={20} />, color: 'purple' },
+                { label: 'Väntande ansökningar', value: stats.pending, icon: <Clock size={20} />, color: 'red' },
+              ].map(stat => (
+                <div key={stat.label} className={`${styles.stat_card} ${styles[`stat_card--${stat.color}`]}`}>
+                  <div className={styles.stat_card__icon}>{stat.icon}</div>
+                  <div className={styles.stat_card__info}>
+                    <strong>{dataLoading ? '–' : stat.value}</strong>
+                    <span>{stat.label}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* APPLICATIONS */}
+        {section === 'applications' && (
+          <div className={styles.section}>
+            <h1 className={styles.section__title}>Svippare-ansökningar</h1>
+            {dataLoading ? <p className={styles.empty}>Laddar...</p> : applications.length === 0 ? (
+              <div className={styles.empty}>
+                <CheckCircle size={32} />
+                <p>Inga väntande ansökningar.</p>
+              </div>
+            ) : (
+              <div className={styles.table_wrap}>
+                <table className={styles.table}>
+                  <thead>
+                    <tr>
+                      <th>Namn</th>
+                      <th>E-post</th>
+                      <th>Beskrivning</th>
+                      <th>Datum</th>
+                      <th>Åtgärd</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {applications.map(app => (
+                      <tr key={app.id}>
+                        <td><strong>{app.user_name}</strong></td>
+                        <td>{app.user_email}</td>
+                        <td className={styles.table__desc}>{app.description || '–'}</td>
+                        <td>{fmt(app.created_at)}</td>
+                        <td>
+                          {feedback[app.id] ? (
+                            <span className={styles.feedback}>{feedback[app.id]}</span>
+                          ) : (
+                            <div className={styles.action_btns}>
+                              <button className="btn btn-primary" style={{ padding: '6px 14px', fontSize: '13px' }} onClick={() => handleApprove(app)}>
+                                <CheckCircle size={14} /> Godkänn
+                              </button>
+                              <button className="btn btn-outline" style={{ padding: '6px 14px', fontSize: '13px', color: 'var(--color-orange)', borderColor: 'var(--color-orange)' }} onClick={() => handleReject(app)}>
+                                <XCircle size={14} /> Neka
+                              </button>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* SERVICES */}
+        {section === 'services' && (
+          <div className={styles.section}>
+            <h1 className={styles.section__title}>Alla tjänster</h1>
+            {dataLoading ? <p className={styles.empty}>Laddar...</p> : services.length === 0 ? (
+              <div className={styles.empty}><p>Inga tjänster hittades.</p></div>
+            ) : (
+              <div className={styles.table_wrap}>
+                <table className={styles.table}>
+                  <thead>
+                    <tr>
+                      <th>Titel</th>
+                      <th>Utförare</th>
+                      <th>Underkategori</th>
+                      <th>Skapad</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {services.map(s => (
+                      <tr key={s.id}>
+                        <td><strong>{s.title}</strong></td>
+                        <td>{s.user_name}</td>
+                        <td><span className={styles.badge}>{s.subcategory}</span></td>
+                        <td>{fmt(s.created_at)}</td>
+                        <td>
+                          <button className={styles.btn_danger} onClick={() => confirmDeleteService(s.id)} title="Ta bort tjänst">
+                            <Trash2 size={15} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* USERS */}
+        {section === 'users' && (
+          <div className={styles.section}>
+            <h1 className={styles.section__title}>Användare</h1>
+            <p className={styles.section__note}>OBS: Att ta bort en användare raderar endast profilen ur databasen. Ta bort auth-kontot manuellt i Supabase Dashboard under Authentication → Users.</p>
+            {dataLoading ? <p className={styles.empty}>Laddar...</p> : (
+              <div className={styles.table_wrap}>
+                <table className={styles.table}>
+                  <thead>
+                    <tr>
+                      <th>Namn</th>
+                      <th>E-post</th>
+                      <th>Kontotyp</th>
+                      <th>Roll</th>
+                      <th>Registrerad</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {users.map(u => (
+                      <tr key={u.id}>
+                        <td><strong>{u.name || '–'}</strong></td>
+                        <td>{u.email}</td>
+                        <td><span className={styles.badge}>{u.account_type}</span></td>
+                        <td><span className={`${styles.badge} ${u.role === 'admin' ? styles['badge--admin'] : ''}`}>{u.role || 'user'}</span></td>
+                        <td>{fmt(u.created_at)}</td>
+                        <td>
+                          <button className={styles.btn_danger} onClick={() => confirmDeleteUser(u.id)} title="Ta bort användare">
+                            <Trash2 size={15} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ORDERS */}
+        {section === 'orders' && (
+          <div className={styles.section}>
+            <h1 className={styles.section__title}>Senaste beställningar</h1>
+            {dataLoading ? <p className={styles.empty}>Laddar...</p> : (
+              <div className={styles.table_wrap}>
+                <table className={styles.table}>
+                  <thead>
+                    <tr>
+                      <th>Tjänst</th>
+                      <th>Köpare</th>
+                      <th>Säljare</th>
+                      <th>Status</th>
+                      <th>Projektstatus</th>
+                      <th>Datum</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {orders.map(o => (
+                      <tr key={o.id}>
+                        <td><strong>{o.service_title}</strong></td>
+                        <td>{o.buyer_name}</td>
+                        <td>{o.seller_name}</td>
+                        <td><span className={`${styles.badge} ${styles[`badge--${o.status}`]}`}>{o.status}</span></td>
+                        <td><span className={styles.badge}>{o.project_status || '–'}</span></td>
+                        <td>{fmt(o.created_at)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+
+      </main>
+
+      {confirmModal?.open && (
+        <div className="modal-backdrop" onClick={() => setConfirmModal(null)}>
+          <div className="modal-box" onClick={e => e.stopPropagation()}>
+            <h2 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '8px' }}>{confirmModal.title}</h2>
+            <p style={{ color: 'var(--color-gray)', marginBottom: '24px' }}>{confirmModal.message}</p>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+              <button className="btn btn-outline" onClick={() => setConfirmModal(null)}>Avbryt</button>
+              <button
+                className="btn btn-primary"
+                style={{ background: '#dc2626', borderColor: '#dc2626' }}
+                onClick={() => { confirmModal.onConfirm(); setConfirmModal(null) }}
+              >
+                Ta bort
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
