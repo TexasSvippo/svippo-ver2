@@ -1,7 +1,7 @@
 'use client'
 
 import CategorySubscriptions from '@/components/CategorySubscriptions'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { categories } from '@/data/categories'
@@ -30,18 +30,39 @@ type Props = {
 export default function ForfragningarClient({ requests }: Props) {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const [search, setSearch] = useState(searchParams.get('search') ?? '')
-  const [selectedCategory, setSelectedCategory] = useState('')
+
+  // Derived directly from URL — external navigation updates these automatically
+  const selectedCategory = searchParams.get('kategori') ?? ''
+  const selectedSubcategory = searchParams.get('underkategori') ?? ''
+  const search = searchParams.get('search') ?? ''
+
+  // Local UI state (not in URL)
   const [selectedLocation, setSelectedLocation] = useState('')
   const [sortBy, setSortBy] = useState('newest')
   const [showFilterModal, setShowFilterModal] = useState(false)
 
-  useEffect(() => {
+  const buildUrl = (cat: string, sub: string, srch: string) => {
     const params = new URLSearchParams()
-    if (search) params.set('search', search)
-    const query = params.toString()
-    router.replace(query ? `/requests?${query}` : '/requests', { scroll: false })
-  }, [search])
+    if (srch) params.set('search', srch)
+    if (cat) params.set('kategori', cat)
+    if (sub) params.set('underkategori', sub)
+    return params.toString() ? `/requests?${params.toString()}` : '/requests'
+  }
+
+  const setSearch = (val: string) =>
+    router.replace(buildUrl(selectedCategory, selectedSubcategory, val), { scroll: false })
+
+  const setSelectedCategory = (val: string) =>
+    router.replace(buildUrl(val, '', search), { scroll: false })
+
+  const setSelectedSubcategory = (val: string) =>
+    router.replace(buildUrl(selectedCategory, val, search), { scroll: false })
+
+  const clearFilters = () => {
+    setSelectedLocation('')
+    setSortBy('newest')
+    router.replace('/requests', { scroll: false })
+  }
 
   const locations = [...new Set(requests.map(r => r.location).filter(Boolean))]
 
@@ -52,8 +73,9 @@ export default function ForfragningarClient({ requests }: Props) {
         r.description?.toLowerCase().includes(search.toLowerCase()) ||
         r.subcategory?.toLowerCase().includes(search.toLowerCase())
       const matchCategory = selectedCategory === '' || r.category_id === selectedCategory
+      const matchSubcategory = selectedSubcategory === '' || r.subcategory === selectedSubcategory
       const matchLocation = selectedLocation === '' || r.location === selectedLocation
-      return matchSearch && matchCategory && matchLocation
+      return matchSearch && matchCategory && matchSubcategory && matchLocation
     })
     .sort((a, b) => {
       if (sortBy === 'budget_asc') return a.budget - b.budget
@@ -61,15 +83,10 @@ export default function ForfragningarClient({ requests }: Props) {
       return 0
     })
 
-  const clearFilters = () => {
-    setSearch('')
-    setSelectedCategory('')
-    setSelectedLocation('')
-    setSortBy('newest')
-  }
+  const activeFilterCount = [selectedCategory, selectedSubcategory, selectedLocation, sortBy !== 'newest' ? sortBy : ''].filter(Boolean).length
+  const hasFilters = search || selectedCategory || selectedSubcategory || selectedLocation || sortBy !== 'newest'
 
-  const activeFilterCount = [selectedCategory, selectedLocation, sortBy !== 'newest' ? sortBy : ''].filter(Boolean).length
-  const hasFilters = search || selectedCategory || selectedLocation || sortBy !== 'newest'
+  const activeCat = categories.find(c => c.id === selectedCategory)
 
   return (
     <div className={styles.requests}>
@@ -78,7 +95,28 @@ export default function ForfragningarClient({ requests }: Props) {
         {/* Header */}
         <div className={styles.requests__header}>
           <div>
-            <h1 className={styles.requests__title}>Förfrågningar</h1>
+            {selectedCategory && (
+              <div className={styles.requests__breadcrumb}>
+                <button onClick={() => setSelectedCategory('')}>Förfrågningar</button>
+                <span>·</span>
+                {selectedSubcategory ? (
+                  <>
+                    <button onClick={() => setSelectedSubcategory('')}>{activeCat?.label}</button>
+                    <span>·</span>
+                    <span>{selectedSubcategory}</span>
+                  </>
+                ) : (
+                  <span>{activeCat?.label}</span>
+                )}
+              </div>
+            )}
+            <h1 className={styles.requests__title}>
+              {selectedSubcategory
+                ? selectedSubcategory
+                : selectedCategory
+                ? activeCat?.label
+                : 'Förfrågningar'}
+            </h1>
             <p className={styles.requests__subtitle}>{filtered.length} förfrågningar hittades</p>
           </div>
           <Link href="/create-request" className="btn btn-orange">
@@ -88,6 +126,43 @@ export default function ForfragningarClient({ requests }: Props) {
 
         {/* Kategori-prenumerationer */}
         <CategorySubscriptions />
+
+        {/* Kategorier */}
+        {!selectedCategory && (
+          <div className={styles.requests__categories}>
+            {categories.map(cat => (
+              <button
+                key={cat.id}
+                className={styles.requests__category_btn}
+                onClick={() => setSelectedCategory(cat.id)}
+              >
+                <span>{cat.icon}</span>
+                <span>{cat.label}</span>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Underkategorier */}
+        {selectedCategory && (
+          <div className={styles.requests__subcategories}>
+            <button
+              className={`${styles.requests__sub_pill} ${selectedSubcategory === '' ? styles['requests__sub_pill--active'] : ''}`}
+              onClick={() => setSelectedSubcategory('')}
+            >
+              Alla
+            </button>
+            {activeCat?.subcategories.map(sub => (
+              <button
+                key={sub}
+                className={`${styles.requests__sub_pill} ${selectedSubcategory === sub ? styles['requests__sub_pill--active'] : ''}`}
+                onClick={() => setSelectedSubcategory(sub)}
+              >
+                {sub}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Sök & filter */}
         <div className={styles.requests__filters}>
@@ -138,7 +213,8 @@ export default function ForfragningarClient({ requests }: Props) {
         {hasFilters && (
           <div className={styles.requests__active_filters}>
             {search && <span className={styles.requests__filter_tag}><Search size={12} /> &quot;{search}&quot;<button onClick={() => setSearch('')}>✕</button></span>}
-            {selectedCategory && <span className={styles.requests__filter_tag}>{categories.find(c => c.id === selectedCategory)?.label}<button onClick={() => setSelectedCategory('')}>✕</button></span>}
+            {selectedCategory && <span className={styles.requests__filter_tag}>{activeCat?.label}<button onClick={() => setSelectedCategory('')}>✕</button></span>}
+            {selectedSubcategory && <span className={styles.requests__filter_tag}>{selectedSubcategory}<button onClick={() => setSelectedSubcategory('')}>✕</button></span>}
             {selectedLocation && <span className={styles.requests__filter_tag}><MapPin size={12} /> {selectedLocation}<button onClick={() => setSelectedLocation('')}>✕</button></span>}
           </div>
         )}
@@ -199,6 +275,17 @@ export default function ForfragningarClient({ requests }: Props) {
                   {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.icon} {cat.label}</option>)}
                 </select>
               </div>
+              {selectedCategory && (
+                <div className={styles.filter_modal__group}>
+                  <label>Underkategori</label>
+                  <select className={styles.requests__select} value={selectedSubcategory} onChange={e => setSelectedSubcategory(e.target.value)}>
+                    <option value="">Alla underkategorier</option>
+                    {activeCat?.subcategories.map(sub => (
+                      <option key={sub} value={sub}>{sub}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
               <div className={styles.filter_modal__group}>
                 <label>Plats</label>
                 <select className={styles.requests__select} value={selectedLocation} onChange={e => setSelectedLocation(e.target.value)}>

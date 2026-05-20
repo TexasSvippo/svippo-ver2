@@ -9,7 +9,7 @@ export const metadata = {
 export default async function TjansterPage() {
   const { data: servicesRaw } = await supabase
     .from('services')
-    .select('*, users(avatar_url)')
+    .select('id, title, description, category_id, subcategory, price_type, price, location, user_id, user_name, account_type, rating, reviews, created_at, users(avatar_url)')
     .order('created_at', { ascending: false })
 
   const services = (servicesRaw ?? []).map(s => {

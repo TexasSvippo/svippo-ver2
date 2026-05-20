@@ -367,3 +367,106 @@
     grid-template-columns: 1fr;
   }
 }
+// ================================
+// BREADCRUMB
+// ================================
+.requests__breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--color-gray);
+  margin-bottom: 6px;
+
+  button {
+    background: none;
+    border: none;
+    color: var(--color-orange);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: var(--font-body);
+    padding: 0;
+    &:hover { text-decoration: underline; }
+  }
+}
+
+// ================================
+// KATEGORIER
+// ================================
+.requests__categories {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 4px;
+  &::-webkit-scrollbar { display: none; }
+}
+
+.requests__category_btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 18px;
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--color-border);
+  background: white;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-dark);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: var(--font-body);
+  flex-shrink: 0;
+
+  span:first-child { font-size: 24px; }
+
+  &:hover {
+    border-color: var(--color-orange);
+    background: #fff5f4;
+    transform: translateY(-2px);
+  }
+}
+
+// ================================
+// UNDERKATEGORI-PILLS
+// ================================
+.requests__subcategories {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.requests__sub_pill {
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  border: 1.5px solid var(--color-border);
+  background: white;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-dark);
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: var(--font-body);
+  white-space: nowrap;
+
+  &:hover {
+    border-color: var(--color-orange);
+    color: var(--color-orange);
+    background: #fff5f4;
+  }
+
+  &--active {
+    background: var(--color-orange);
+    border-color: var(--color-orange);
+    color: white;
+
+    &:hover {
+      background: #d4492f;
+      border-color: #d4492f;
+      color: white;
+    }
+  }
+}

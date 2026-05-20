@@ -114,6 +114,7 @@ export default function PublicProfileClient({
   const [contactMessage, setContactMessage] = useState('')
   const [contactSent, setContactSent] = useState(false)
   const [ratingFilter, setRatingFilter] = useState<number | null>(null)
+  const [certificates, setCertificates] = useState<{ id: string; name: string; category_id: string; subcategory: string; file_url: string }[]>([])
 
   const accountType = profile.account_type
   const isUF = accountType === 'uf-foretag'
@@ -181,6 +182,14 @@ export default function PublicProfileClient({
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
+
+  useEffect(() => {
+    const fetchCerts = async () => {
+      const { data } = await supabase.from('certificates').select('*').eq('user_id', profile.id).order('created_at', { ascending: false })
+      setCertificates(data ?? [])
+    }
+    fetchCerts()
+  }, [profile.id])
 
   const scrollTo = (sectionId: string) => {
     const el = document.getElementById(sectionId)
@@ -455,6 +464,30 @@ export default function PublicProfileClient({
             )}
           </div>
         </section>
+
+        {/* Certifikat */}
+        {certificates.length > 0 && (
+          <section className={styles.pubprofile__section}>
+            <h2 className={styles.pubprofile__section_title}>Certifikat</h2>
+            <div className={styles.pubprofile__certificates}>
+              {certificates.map(cert => {
+                const cat = allCategories.find(c => c.id === cert.category_id)
+                return (
+                  <div key={cert.id} className={styles.pubprofile__cert_item}>
+                    <CheckCircle size={16} className={styles.pubprofile__cert_icon} />
+                    <div className={styles.pubprofile__cert_info}>
+                      <strong>{cert.name}</strong>
+                      <span>{cat?.label}{cert.subcategory ? ` · ${cert.subcategory}` : ''}</span>
+                    </div>
+                    <a href={cert.file_url} target="_blank" rel="noopener noreferrer" className={styles.pubprofile__cert_link}>
+                      Visa PDF
+                    </a>
+                  </div>
+                )
+              })}
+            </div>
+          </section>
+        )}
 
         {/* Recensioner */}
         <section id="recensioner" className={styles.pubprofile__section}>

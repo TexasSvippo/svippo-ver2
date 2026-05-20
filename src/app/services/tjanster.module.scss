@@ -693,3 +693,44 @@
     padding: 0 !important;
   }
 }
+// ================================
+// UNDERKATEGORI-PILLS
+// ================================
+.tjanster__subcategories {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.tjanster__sub_pill {
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  border: 1.5px solid var(--color-border);
+  background: white;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-dark);
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: var(--font-body);
+  white-space: nowrap;
+
+  &:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    background: #f0f8ff;
+  }
+
+  &--active {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: white;
+
+    &:hover {
+      background: #055880;
+      border-color: #055880;
+      color: white;
+    }
+  }
+}

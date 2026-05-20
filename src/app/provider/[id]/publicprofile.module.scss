@@ -715,3 +715,44 @@
     padding: 24px;
   }
 }
+// Certificates
+.pubprofile__certificates {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pubprofile__cert_item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--color-border);
+  background: white;
+}
+
+.pubprofile__cert_icon {
+  flex-shrink: 0;
+  color: #1a7a4a;
+}
+
+.pubprofile__cert_info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  strong { font-size: 14px; color: var(--color-dark); }
+  span { font-size: 12px; color: var(--color-gray); }
+}
+
+.pubprofile__cert_link {
+  font-size: 13px;
+  color: var(--color-primary);
+  font-weight: 600;
+  text-decoration: none;
+  flex-shrink: 0;
+
+  &:hover { text-decoration: underline; }
+}

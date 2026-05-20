@@ -32,6 +32,7 @@ type Interest = { id: string; request_title: string; svippar_name: string; svipp
 type Notification = { id: string; type: string; order_id: string; service_title: string; message: string; read: boolean }
 type Subscription = { id: string; category_id: string }
 type SocialLink = { id: string; url: string }
+type Certificate = { id: string; name: string; category_id: string; subcategory: string; file_url: string }
 
 const NAV_ITEMS: { id: string; label: string; icon: ReactNode; group: string | null; svippareOnly?: boolean }[] = [
   { id: 'oversikt', label: 'Översikt', icon: <Home size={16} />, group: null },
@@ -106,6 +107,14 @@ export default function ProfilePage() {
   const [showAchievementPopup, setShowAchievementPopup] = useState(false)
   const [achievementTitle, setAchievementTitle] = useState('')
 
+  const [certificates, setCertificates] = useState<Certificate[]>([])
+  const [certName, setCertName] = useState('')
+  const [certCategoryId, setCertCategoryId] = useState('')
+  const [certSubcategory, setCertSubcategory] = useState('')
+  const [certFile, setCertFile] = useState<File | null>(null)
+  const [certUploading, setCertUploading] = useState(false)
+  const certFileRef = useRef<HTMLInputElement>(null)
+
   useEffect(() => {
     if (!user) return
     const fetchAll = async () => {
@@ -132,6 +141,12 @@ export default function ProfilePage() {
       setInterests(interestsRes.data ?? [])
       setNotifications(notifsRes.data ?? [])
       setSubscriptions(subsRes.data ?? [])
+
+      // Hämta certifikat
+      if (canCreateService) {
+        const { data: certsData } = await supabase.from('certificates').select('*').eq('user_id', user.id).order('created_at', { ascending: false })
+        setCertificates(certsData ?? [])
+      }
 
       // Hämta karriärdata för utförare
       if (canCreateService) {
@@ -247,6 +262,38 @@ export default function ProfilePage() {
   const addSocialLink = () => setCompanySocialLinks(prev => [...prev, { id: Date.now().toString(), url: '' }])
   const updateSocialLink = (id: string, url: string) => setCompanySocialLinks(prev => prev.map(l => l.id === id ? { ...l, url } : l))
   const removeSocialLink = (id: string) => setCompanySocialLinks(prev => prev.filter(l => l.id !== id))
+
+  const handleCertUpload = async () => {
+    if (!user || !certFile || !certName || !certCategoryId || !certSubcategory) return
+    if (certFile.size > 5 * 1024 * 1024) { alert('PDF:en är för stor! Max 5MB.'); return }
+    setCertUploading(true)
+    try {
+      const fileName = `${user.id}/${Date.now()}.pdf`
+      const { error: uploadError } = await supabase.storage.from('certificates').upload(fileName, certFile)
+      if (uploadError) throw uploadError
+      const { data: urlData } = supabase.storage.from('certificates').getPublicUrl(fileName)
+      const { data: inserted } = await supabase.from('certificates').insert({
+        user_id: user.id, name: certName, category_id: certCategoryId,
+        subcategory: certSubcategory, file_url: urlData.publicUrl,
+      }).select().single()
+      if (inserted) setCertificates(prev => [inserted, ...prev])
+      setCertName(''); setCertCategoryId(''); setCertSubcategory(''); setCertFile(null)
+      if (certFileRef.current) certFileRef.current.value = ''
+    } catch (err) {
+      console.error('Certificate upload error:', err)
+      alert('Något gick fel vid uppladdning. Försök igen.')
+    } finally {
+      setCertUploading(false)
+    }
+  }
+
+  const handleCertDelete = async (id: string, fileUrl: string) => {
+    if (!confirm('Ta bort detta certifikat?')) return
+    const path = fileUrl.split('/certificates/')[1]
+    if (path) await supabase.storage.from('certificates').remove([path])
+    await supabase.from('certificates').delete().eq('id', id)
+    setCertificates(prev => prev.filter(c => c.id !== id))
+  }
 
   const { dismiss } = useNotifications()
   const dismissNotif = async (id: string) => {
@@ -930,6 +977,67 @@ export default function ProfilePage() {
                 )}
               </div>
             </div>
+
+            {canCreateService && (
+              <div className={`${styles.profile__settings} card`}>
+                <div className={styles.profile__settings_fields}>
+                  <h2 className={styles.profile__section_title} style={{ fontSize: '20px' }}>Certifikat</h2>
+                  <p className={styles.profile__hint}>Ladda upp certifikat (PDF) kopplade till dina tjänstekategorier. De visas på din publika profil och på dina tjänstesidor.</p>
+
+                  {certificates.length > 0 && (
+                    <div className={styles.cert__list}>
+                      {certificates.map(cert => {
+                        const cat = categories.find(c => c.id === cert.category_id)
+                        return (
+                          <div key={cert.id} className={styles.cert__item}>
+                            <div className={styles.cert__info}>
+                              <strong>{cert.name}</strong>
+                              <span>{cat?.label} · {cert.subcategory}</span>
+                            </div>
+                            <div className={styles.cert__actions}>
+                              <a href={cert.file_url} target="_blank" rel="noopener noreferrer" className="btn btn-outline" style={{ padding: '6px 12px', fontSize: '13px' }}>Visa PDF</a>
+                              <button className={`btn btn-outline ${styles.profile__delete_btn}`} onClick={() => handleCertDelete(cert.id, cert.file_url)}><Trash2 size={14} /></button>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
+
+                  <div className={styles.cert__form}>
+                    <div className={styles.profile__field}>
+                      <label className={styles.profile__label}>Namn på certifikat</label>
+                      <input className={styles.profile__input} value={certName} onChange={e => setCertName(e.target.value)} placeholder="T.ex. Google Analytics Certified" />
+                    </div>
+                    <div className={styles.profile__field}>
+                      <label className={styles.profile__label}>Kategori</label>
+                      <select className={styles.profile__input} value={certCategoryId} onChange={e => { setCertCategoryId(e.target.value); setCertSubcategory('') }}>
+                        <option value="">Välj kategori</option>
+                        {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.label}</option>)}
+                      </select>
+                    </div>
+                    {certCategoryId && (
+                      <div className={styles.profile__field}>
+                        <label className={styles.profile__label}>Underkategori</label>
+                        <select className={styles.profile__input} value={certSubcategory} onChange={e => setCertSubcategory(e.target.value)}>
+                          <option value="">Välj underkategori</option>
+                          {categories.find(c => c.id === certCategoryId)?.subcategories.map(sub => (
+                            <option key={sub} value={sub}>{sub}</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+                    <div className={styles.profile__field}>
+                      <label className={styles.profile__label}>PDF-fil (max 5MB)</label>
+                      <input ref={certFileRef} type="file" accept="application/pdf" onChange={e => setCertFile(e.target.files?.[0] ?? null)} className={styles.profile__input} />
+                    </div>
+                    <button className="btn btn-primary" onClick={handleCertUpload} disabled={certUploading || !certName || !certCategoryId || !certSubcategory || !certFile}>
+                      {certUploading ? 'Laddar upp...' : 'Ladda upp certifikat'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {isCompanyType && (
               <div className={`${styles.profile__settings} card`}>

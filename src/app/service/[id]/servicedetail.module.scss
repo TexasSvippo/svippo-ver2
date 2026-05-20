@@ -455,3 +455,42 @@
     font-size: 24px;
   }
 }
+// Verified competence / certificates
+.detail__certs {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.detail__certs_header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #1a7a4a;
+
+  strong {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--color-dark);
+  }
+}
+
+.detail__cert_row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--color-dark);
+
+  a {
+    color: var(--color-primary);
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+    flex-shrink: 0;
+
+    &:hover { text-decoration: underline; }
+  }
+}

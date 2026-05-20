@@ -65,19 +65,34 @@ export default function TjansterClient({ services }: Props) {
   const searchParams = useSearchParams()
   const router = useRouter()
   const [search, setSearch] = useState(searchParams.get('search') ?? '')
-  const [selectedCategory, setSelectedCategory] = useState(searchParams.get('kategori') ?? '')
+  // Derived directly from URL — no useState needed; external navigation updates these automatically
+  const selectedCategory = searchParams.get('kategori') ?? ''
+  const selectedSubcategory = searchParams.get('underkategori') ?? ''
   const [selectedLocation, setSelectedLocation] = useState('')
   const [sortBy, setSortBy] = useState('newest')
   const [showFilterModal, setShowFilterModal] = useState(false)
   const [maxPrice, setMaxPrice] = useState('')
 
-  useEffect(() => {
+  const buildUrl = (cat: string, sub: string, srch: string) => {
     const params = new URLSearchParams()
-    if (search) params.set('search', search)
-    if (selectedCategory) params.set('kategori', selectedCategory)
-    const query = params.toString()
-    router.replace(query ? `/services?${query}` : '/services', { scroll: false })
-  }, [search, selectedCategory])
+    if (srch) params.set('search', srch)
+    if (cat) params.set('kategori', cat)
+    if (sub) params.set('underkategori', sub)
+    return params.toString() ? `/services?${params.toString()}` : '/services'
+  }
+
+  const selectCategory = (catId: string) => {
+    router.replace(buildUrl(catId, '', search), { scroll: false })
+  }
+
+  const selectSubcategory = (sub: string) => {
+    router.replace(buildUrl(selectedCategory, sub, search), { scroll: false })
+  }
+
+  // Sync search input changes to the URL (preserves current category/subcategory)
+  useEffect(() => {
+    router.replace(buildUrl(selectedCategory, selectedSubcategory, search), { scroll: false })
+  }, [search, selectedCategory, selectedSubcategory, router])
 
   const locations = [...new Set(services.map(s => s.location).filter(Boolean))]
 
@@ -88,9 +103,10 @@ export default function TjansterClient({ services }: Props) {
         s.description?.toLowerCase().includes(search.toLowerCase()) ||
         s.subcategory?.toLowerCase().includes(search.toLowerCase())
       const matchCategory = selectedCategory === '' || s.category_id === selectedCategory
+      const matchSubcategory = selectedSubcategory === '' || s.subcategory === selectedSubcategory
       const matchLocation = selectedLocation === '' || s.location === selectedLocation
       const matchPrice = maxPrice === '' || s.price_type === 'offert' || s.price <= Number(maxPrice)
-      return matchSearch && matchCategory && matchLocation && matchPrice
+      return matchSearch && matchCategory && matchSubcategory && matchLocation && matchPrice
     })
     .sort((a, b) => {
       if (sortBy === 'price_asc') return a.price - b.price
@@ -101,14 +117,14 @@ export default function TjansterClient({ services }: Props) {
 
   const clearFilters = () => {
     setSearch('')
-    setSelectedCategory('')
+    router.replace('/services', { scroll: false })
     setSelectedLocation('')
     setSortBy('newest')
     setMaxPrice('')
   }
 
-  const hasFilters = search || selectedCategory || selectedLocation || sortBy !== 'newest' || maxPrice
-  const activeFilterCount = [selectedCategory, selectedLocation, sortBy !== 'newest' ? sortBy : '', maxPrice].filter(Boolean).length
+  const hasFilters = search || selectedCategory || selectedSubcategory || selectedLocation || sortBy !== 'newest' || maxPrice
+  const activeFilterCount = [selectedCategory, selectedSubcategory, selectedLocation, sortBy !== 'newest' ? sortBy : '', maxPrice].filter(Boolean).length
 
   return (
     <div className={styles.tjanster}>
@@ -118,13 +134,23 @@ export default function TjansterClient({ services }: Props) {
         <div className={styles.tjanster__header}>
           {selectedCategory && (
             <div className={styles.tjanster__breadcrumb}>
-              <button onClick={() => setSelectedCategory('')}>Tjänster</button>
+              <button onClick={() => selectCategory('')}>Tjänster</button>
               <span>·</span>
-              <span>{categories.find(c => c.id === selectedCategory)?.label}</span>
+              {selectedSubcategory ? (
+                <>
+                  <button onClick={() => selectSubcategory('')}>{categories.find(c => c.id === selectedCategory)?.label}</button>
+                  <span>·</span>
+                  <span>{selectedSubcategory}</span>
+                </>
+              ) : (
+                <span>{categories.find(c => c.id === selectedCategory)?.label}</span>
+              )}
             </div>
           )}
           <h1 className={styles.tjanster__title}>
-            {selectedCategory
+            {selectedSubcategory
+              ? selectedSubcategory
+              : selectedCategory
               ? categories.find(c => c.id === selectedCategory)?.label
               : 'Tjänster'}
           </h1>
@@ -150,10 +176,31 @@ export default function TjansterClient({ services }: Props) {
               <button
                 key={cat.id}
                 className={styles.tjanster__category_btn}
-                onClick={() => setSelectedCategory(cat.id)}
+                onClick={() => selectCategory(cat.id)}
               >
                 <span>{cat.icon}</span>
                 <span>{cat.label}</span>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Underkategorier */}
+        {selectedCategory && (
+          <div className={styles.tjanster__subcategories}>
+            <button
+              className={`${styles.tjanster__sub_pill} ${selectedSubcategory === '' ? styles['tjanster__sub_pill--active'] : ''}`}
+              onClick={() => selectSubcategory('')}
+            >
+              Alla
+            </button>
+            {categories.find(c => c.id === selectedCategory)?.subcategories.map(sub => (
+              <button
+                key={sub}
+                className={`${styles.tjanster__sub_pill} ${selectedSubcategory === sub ? styles['tjanster__sub_pill--active'] : ''}`}
+                onClick={() => selectSubcategory(sub)}
+              >
+                {sub}
               </button>
             ))}
           </div>
@@ -163,7 +210,8 @@ export default function TjansterClient({ services }: Props) {
         {hasFilters && (
           <div className={styles.tjanster__active_filters}>
             {search && <span className={styles.tjanster__filter_tag}><Search size={12} /> &quot;{search}&quot;<button onClick={() => setSearch('')}>✕</button></span>}
-            {selectedCategory && <span className={styles.tjanster__filter_tag}>{categories.find(c => c.id === selectedCategory)?.label}<button onClick={() => setSelectedCategory('')}>✕</button></span>}
+            {selectedCategory && <span className={styles.tjanster__filter_tag}>{categories.find(c => c.id === selectedCategory)?.label}<button onClick={() => selectCategory('')}>✕</button></span>}
+            {selectedSubcategory && <span className={styles.tjanster__filter_tag}>{selectedSubcategory}<button onClick={() => selectSubcategory('')}>✕</button></span>}
             {selectedLocation && <span className={styles.tjanster__filter_tag}><MapPin size={12} /> {selectedLocation}<button onClick={() => setSelectedLocation('')}>✕</button></span>}
             {maxPrice && <span className={styles.tjanster__filter_tag}>Pris: {maxPrice}kr<button onClick={() => setMaxPrice('')}>✕</button></span>}
             <button className={styles.tjanster__clear_btn} onClick={clearFilters}>Rensa alla</button>
@@ -275,13 +323,31 @@ export default function TjansterClient({ services }: Props) {
                       <input
                         type="checkbox"
                         checked={selectedCategory === cat.id}
-                        onChange={() => setSelectedCategory(selectedCategory === cat.id ? '' : cat.id)}
+                        onChange={() => selectCategory(selectedCategory === cat.id ? '' : cat.id)}
                       />
                       <span>{cat.icon} {cat.label}</span>
                     </label>
                   ))}
                 </div>
               </div>
+
+              {selectedCategory && (
+                <div className={styles.filter_panel__group}>
+                  <label className={styles.filter_panel__label}>Underkategori</label>
+                  <div className={styles.filter_panel__checkboxes}>
+                    {categories.find(c => c.id === selectedCategory)?.subcategories.map(sub => (
+                      <label key={sub} className={styles.filter_panel__checkbox_label}>
+                        <input
+                          type="checkbox"
+                          checked={selectedSubcategory === sub}
+                          onChange={() => selectSubcategory(selectedSubcategory === sub ? '' : sub)}
+                        />
+                        <span>{sub}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <div className={styles.filter_panel__group}>
                 <label className={styles.filter_panel__label}>Plats</label>
@@ -346,11 +412,22 @@ export default function TjansterClient({ services }: Props) {
             <div className={styles.filter_modal__body}>
               <div className={styles.filter_modal__group}>
                 <label>Kategori</label>
-                <select className={styles.filter_panel__select} value={selectedCategory} onChange={e => setSelectedCategory(e.target.value)}>
+                <select className={styles.filter_panel__select} value={selectedCategory} onChange={e => selectCategory(e.target.value)}>
                   <option value="">Alla kategorier</option>
                   {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.icon} {cat.label}</option>)}
                 </select>
               </div>
+              {selectedCategory && (
+                <div className={styles.filter_modal__group}>
+                  <label>Underkategori</label>
+                  <select className={styles.filter_panel__select} value={selectedSubcategory} onChange={e => selectSubcategory(e.target.value)}>
+                    <option value="">Alla underkategorier</option>
+                    {categories.find(c => c.id === selectedCategory)?.subcategories.map(sub => (
+                      <option key={sub} value={sub}>{sub}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
               <div className={styles.filter_modal__group}>
                 <label>Plats</label>
                 <select className={styles.filter_panel__select} value={selectedLocation} onChange={e => setSelectedLocation(e.target.value)}>

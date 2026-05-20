@@ -6,26 +6,36 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import useAuth from '@/hooks/useAuth'
 import CreateModal from './CreateModal'
+import MegaMenu from './MegaMenu'
+import MegaMenuRequests from './MegaMenuRequests'
 import SearchBar from './SearchBar'
 import { useNotifications } from '@/hooks/useNotifications'
 import styles from './Navbar.module.scss'
 import Image from 'next/image'
-import { Bell, User, Wrench, Users, Package, MessageCircle, Pencil, LogOut } from 'lucide-react'
+import { Bell, User, Wrench, Users, Package, MessageCircle, Pencil, LogOut, ChevronDown } from 'lucide-react'
 
 export default function Navbar() {
   const { user, loading, avatarUrl } = useAuth()
   const { unreadCount } = useNotifications()
   const [menuOpen, setMenuOpen] = useState(false)
+  const [megaOpen, setMegaOpen] = useState(false)
+  const [megaRequestsOpen, setMegaRequestsOpen] = useState(false)
   const [showCreate, setShowCreate] = useState(false)
   const router = useRouter()
 
 
-  // Stäng dropdown vid klick utanför
+  // Stäng dropdowns vid klick utanför
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement
       if (!target.closest(`.${styles.navbar__profile}`)) {
         setMenuOpen(false)
+      }
+      if (!target.closest('[data-mega-trigger]') && !target.closest('[data-mega-menu]')) {
+        setMegaOpen(false)
+      }
+      if (!target.closest('[data-mega-requests-trigger]') && !target.closest('[data-mega-menu-requests]')) {
+        setMegaRequestsOpen(false)
       }
     }
     document.addEventListener('mousedown', handleClick)
@@ -47,8 +57,24 @@ export default function Navbar() {
         </Link>
 
         <div className={styles.navbar__links}>
-          <Link href="/services" className={styles.navbar__link}>Tjänster</Link>
-          <Link href="/requests" className={styles.navbar__link}>Förfrågningar</Link>
+          <div data-mega-trigger>
+            <button
+              className={`${styles.navbar__link} ${styles.navbar__mega_btn}`}
+              onClick={() => { setMegaOpen(o => !o); setMegaRequestsOpen(false) }}
+            >
+              Tjänster
+              <ChevronDown size={14} className={megaOpen ? styles['navbar__chevron--open'] : styles.navbar__chevron} />
+            </button>
+          </div>
+          <div data-mega-requests-trigger>
+            <button
+              className={`${styles.navbar__link} ${styles.navbar__mega_btn}`}
+              onClick={() => { setMegaRequestsOpen(o => !o); setMegaOpen(false) }}
+            >
+              Förfrågningar
+              <ChevronDown size={14} className={megaRequestsOpen ? styles['navbar__chevron--open'] : styles.navbar__chevron} />
+            </button>
+          </div>
         </div>
 
         <SearchBar />
@@ -139,6 +165,8 @@ export default function Navbar() {
 
       </div>
 
+      {megaOpen && <MegaMenu onClose={() => setMegaOpen(false)} />}
+      {megaRequestsOpen && <MegaMenuRequests onClose={() => setMegaRequestsOpen(false)} />}
       {showCreate && <CreateModal onClose={() => setShowCreate(false)} />}
     </nav>
   )

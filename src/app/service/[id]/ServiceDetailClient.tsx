@@ -62,6 +62,7 @@ const { user } = useAuth()
   const [deleting, setDeleting] = useState(false)
   const [activeOrdersCount, setActiveOrdersCount] = useState(0)
   const [inProgressCount, setInProgressCount] = useState(0)
+  const [matchingCerts, setMatchingCerts] = useState<{ id: string; name: string; file_url: string }[]>([])
 
   const isOwner = user?.id === service.user_id
   const shouldAutoOpen = searchParams.get('order') === 'true' && !isOwner
@@ -90,6 +91,18 @@ const { user } = useAuth()
     }
     fetchOrders()
   }, [isOwner, service.id])
+
+  useEffect(() => {
+    const fetchCerts = async () => {
+      const { data } = await supabase
+        .from('certificates')
+        .select('id, name, file_url')
+        .eq('user_id', service.user_id)
+        .eq('subcategory', service.subcategory)
+      setMatchingCerts(data ?? [])
+    }
+    fetchCerts()
+  }, [service.user_id, service.subcategory])
 
   const handleDelete = async () => {
     if (inProgressCount > 0) return
@@ -351,6 +364,22 @@ const filteredReviews = reviews
                 <p>Vi hjälper till att hantera trassel som kan dyka upp.</p>
               </div>
             </div>
+
+            {/* Verifierad kompetens */}
+            {matchingCerts.length > 0 && (
+              <div className={`${styles.detail__certs} card`}>
+                <div className={styles.detail__certs_header}>
+                  <CheckCircle size={16} />
+                  <strong>Verifierad kompetens</strong>
+                </div>
+                {matchingCerts.map(cert => (
+                  <div key={cert.id} className={styles.detail__cert_row}>
+                    <span>{cert.name}</span>
+                    <a href={cert.file_url} target="_blank" rel="noopener noreferrer">Visa PDF</a>
+                  </div>
+                ))}
+              </div>
+            )}
 
           </div>
         </div>

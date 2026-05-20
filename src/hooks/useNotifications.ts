@@ -67,8 +67,10 @@ export function useNotifications() {
   // Realtid via Supabase Realtime
   useEffect(() => {
     if (!user) return
+
+    const channelName = `notifications:${user.id}:${Date.now()}`
     const channel = supabase
-      .channel('notifications')
+      .channel(channelName)
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
@@ -80,8 +82,11 @@ export function useNotifications() {
       })
       .subscribe()
 
-    return () => { supabase.removeChannel(channel) }
-  }, [user])
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id])
 
   const markAsRead = async (id: string) => {
     await supabase.from('notifications').update({ read: true }).eq('id', id)
