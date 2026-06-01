@@ -158,9 +158,6 @@ export default function ForfragningarClient({ requests }: Props) {
 
       <div className={`container ${styles.requests__inner}`}>
 
-        {/* Kategori-prenumerationer */}
-        <CategorySubscriptions />
-
         {/* Kategorier */}
         {!selectedCategory && (
           <div className={styles.requests__categories}>
@@ -205,20 +202,23 @@ export default function ForfragningarClient({ requests }: Props) {
         <div className={styles.requests__filters}>
           {/* Desktop filter-rad */}
           <div className={styles.requests__filter_row}>
-            <select className={styles.requests__select} value={selectedCategory} onChange={e => setSelectedCategory(e.target.value)}>
-              <option value="">Alla kategorier</option>
-              {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.icon} {cat.label}</option>)}
-            </select>
-            <select className={styles.requests__select} value={selectedLocation} onChange={e => setSelectedLocation(e.target.value)}>
-              <option value="">Alla platser</option>
-              {locations.map(loc => <option key={loc} value={loc}>{loc}</option>)}
-            </select>
-            <select className={styles.requests__select} value={sortBy} onChange={e => setSortBy(e.target.value)}>
-              <option value="newest">Nyast först</option>
-              <option value="budget_asc">Lägst budget</option>
-              <option value="budget_desc">Högst budget</option>
-            </select>
-            {hasFilters && <button className={styles.requests__clear_btn} onClick={clearFilters}>Rensa filter</button>}
+            <div className={styles.requests__filter_left}>
+              <select className={styles.requests__select} value={selectedCategory} onChange={e => setSelectedCategory(e.target.value)}>
+                <option value="">Alla kategorier</option>
+                {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.icon} {cat.label}</option>)}
+              </select>
+              <select className={styles.requests__select} value={selectedLocation} onChange={e => setSelectedLocation(e.target.value)}>
+                <option value="">Alla platser</option>
+                {locations.map(loc => <option key={loc} value={loc}>{loc}</option>)}
+              </select>
+              <select className={styles.requests__select} value={sortBy} onChange={e => setSortBy(e.target.value)}>
+                <option value="newest">Nyast först</option>
+                <option value="budget_asc">Lägst budget</option>
+                <option value="budget_desc">Högst budget</option>
+              </select>
+              {hasFilters && <button className={styles.requests__clear_btn} onClick={clearFilters}>Rensa filter</button>}
+            </div>
+            <CategorySubscriptions />
           </div>
 
           {/* Mobil filter-knapp */}
