@@ -184,3 +184,9 @@
   object-fit: cover;
   border-radius: 50%;
 }
+
+@media (max-width: 768px) {
+  .service_card__avatar {
+    display: none;
+  }
+}
