@@ -10,6 +10,7 @@ import { categories } from '@/data/categories'
 import styles from './profile.module.scss'
 import { Home, Wrench, Bell, Inbox, Users, Eye, Send, Star, Trophy, Settings, Zap, Pencil, Trash2, CheckCircle, Clock, XCircle, MessageCircle, ClipboardList, Wallet, Package } from 'lucide-react'
 import type { ReactNode } from 'react'
+import DashboardOversikt from './DashboardOversikt'
 
 type Section =
   | 'oversikt'
@@ -413,157 +414,21 @@ export default function ProfilePage() {
         {/* ÖVERSIKT */}
         {activeSection === 'oversikt' && (
           <div className={styles.profile__section}>
-            <div className={styles.welcome_banner}>
-              <div className={styles.welcome_banner__content}>
-                <div className={styles.welcome_banner__avatar}>
-                  {avatarUrl
-                    ? <img src={avatarUrl} alt={displayName} className={styles.welcome_banner__avatar_img} />
-                    : (displayName || user.email || '?').charAt(0).toUpperCase()
-                  }
-                </div>
-                <div>
-                  <p className={styles.welcome_banner__greeting}>Välkommen tillbaka 👋</p>
-                  <h1 className={styles.welcome_banner__name}>{displayName || 'Inget namn'}</h1>
-                  {(dbAccountType === 'svippare' || dbAccountType === 'foretag' || dbAccountType === 'uf-foretag') && (
-                    <Link href={`/provider/${user.id}`} className={styles.welcome_banner__publink}>
-                      Se din publika profil →
-                    </Link>
-                  )}
-                </div>
-              </div>
-              <div className={styles.welcome_banner__actions}>
-                {canCreateService && (
-                  <button className="btn btn-primary" onClick={() => router.push('/create-service')}>
-                    <Wrench size={16} /> Skapa tjänst
-                  </button>
-                )}
-                <button className="btn btn-orange" onClick={() => router.push('/create-request')}>
-                  <Users size={16} /> Skapa förfrågan
-                </button>
-              </div>
-            </div>
-
-            {notifications.length > 0 && (
-              <div className={styles.profile__notifications}>
-                {notifications.map(notif => (
-                  <div key={notif.id} className={`${styles.profile__notification} ${styles[`profile__notification--${notif.type}`]}`}>
-                    <span className={styles.profile__notification_icon}>
-                      {notif.type === 'project_completed' ? '🎉' : notif.type === 'new_order' ? <Package size={18} /> : notif.type === 'order_accepted' ? <CheckCircle size={18} /> : <Wallet size={18} />}
-                    </span>
-                    <div className={styles.profile__notification_content}>
-                      <p>{notif.message}</p>
-                    </div>
-                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexShrink: 0 }}>
-                      {notif.type === 'project_completed' && <Link href={`/my-order/${notif.order_id}`} className="btn btn-primary">Lämna recension</Link>}
-                      {notif.type === 'request_review' && <Link href={`/order/${notif.order_id}`} className="btn btn-orange">Ta betalt</Link>}
-                      {notif.type === 'new_order' && <Link href={`/order/${notif.order_id}`} className="btn btn-primary">Se beställning</Link>}
-                      <button className={styles.notifications__dismiss} onClick={() => dismissNotif(notif.id)}>✕</button>
-                    </div>
-                  </div>
-                ))}
-                <Link href="/notifications" className={styles.profile__notif_all}>Se alla notifikationer →</Link>
-              </div>
-            )}
-
-            <div className={styles.profile__stats}>
-              {canCreateService && (
-                <div className={`${styles.profile__stat_card} ${styles['profile__stat_card--blue']}`} onClick={() => setActiveSection('mina-tjanster')}>
-                  <div className={styles.stat_icon_wrap}><Wrench size={20} /></div>
-                  <div className={styles.stat_info}><strong>{services.length}</strong><span>Aktiva tjänster</span></div>
-                </div>
-              )}
-              {canCreateService && (
-                <div className={`${styles.profile__stat_card} ${styles['profile__stat_card--orange']}`} onClick={() => setActiveSection('inkomna-bestallningar')}>
-                  <div className={styles.stat_icon_wrap}><Inbox size={20} /></div>
-                  <div className={styles.stat_info}><strong>{pendingOrders.length}</strong><span>Nya beställningar</span></div>
-                </div>
-              )}
-              <div className={`${styles.profile__stat_card} ${styles['profile__stat_card--green']}`} onClick={() => setActiveSection('mina-forfragningar')}>
-                <div className={styles.stat_icon_wrap}><Users size={20} /></div>
-                <div className={styles.stat_info}><strong>{myRequests.length}</strong><span>Förfrågningar</span></div>
-              </div>
-              <div className={`${styles.profile__stat_card} ${styles['profile__stat_card--purple']}`} onClick={() => setActiveSection('intresseanmalningar')}>
-                <div className={styles.stat_icon_wrap}><Eye size={20} /></div>
-                <div className={styles.stat_info}><strong>{interests.length}</strong><span>Intresseanmälningar</span></div>
-              </div>
-            </div>
-
-            {/* Bli Svippare-banner för beställare */}
-            {isBestellare && (
-              <div className={`${styles.profile__block} card`} style={{ marginBottom: '24px', padding: '28px', display: 'flex', alignItems: 'center', gap: '20px' }}>
-                <span style={{ flexShrink: 0 }}><Zap size={40} /></span>
-                <div style={{ flex: 1 }}>
-                  <h2 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '6px' }}>Vill du sälja dina kunskaper?</h2>
-                  <p style={{ color: 'var(--color-gray)', fontSize: '14px', margin: 0 }}>Bli en Svippare och börja tjäna pengar på dina färdigheter – helt gratis att komma igång.</p>
-                </div>
-                <Link href="/become-svippare" className="btn btn-primary" style={{ flexShrink: 0 }}>
-                  <Zap size={16} /> Ansök nu
-                </Link>
-              </div>
-            )}
+            <DashboardOversikt
+              displayName={displayName}
+              dbAccountType={dbAccountType}
+              canCreateService={canCreateService}
+              services={services}
+              incomingOrders={incomingOrders}
+              placedOrders={placedOrders}
+              myRequests={myRequests}
+              interests={interests}
+              notifications={notifications}
+              userId={user.id}
+              onDismissNotif={dismissNotif}
+            />
 
             <div className={styles.profile__dashboard}>
-              <div className={styles.profile__dashboard_left}>
-
-                {canCreateService && (
-                  <div className={`${styles.profile__block} card`}>
-                    <div className={styles.profile__block_header}>
-                      <div className={styles.profile__block_title}><Wrench size={18} /><h2>Mina tjänster</h2></div>
-                      <button className={styles.profile__block_link} onClick={() => setActiveSection('mina-tjanster')}>Se alla →</button>
-                    </div>
-                    {services.length === 0 ? (
-                      <div className={styles.profile__block_empty}>
-                        <p>Inga aktiva tjänster ännu</p>
-                        <button className="btn btn-primary" onClick={() => router.push('/create-service')}>+ Skapa tjänst</button>
-                      </div>
-                    ) : (
-                      <div className={styles.profile__block_list}>
-                        {services.slice(0, 3).map(s => (
-                          <Link href={`/service/${s.id}`} key={s.id} className={styles.profile__block_item}>
-                            <div className={styles.profile__block_item_info}>
-                              <strong>{s.title}</strong>
-                              <span>{s.subcategory} · {s.location}</span>
-                            </div>
-                            <span className={`${styles.profile__item_tag} ${styles['item_tag--blue']}`}>
-                              {s.price_type === 'offert' ? 'Offert' : `${s.price} kr`}
-                            </span>
-                          </Link>
-                        ))}
-                        <button className="btn btn-primary" onClick={() => router.push('/create-service')}>+ Ny tjänst</button>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {canCreateService && (
-                  <div className={`${styles.profile__block} card`}>
-                    <div className={styles.profile__block_header}>
-                      <div className={styles.profile__block_title}>
-                        <Inbox size={18} /><h2>Inkomna beställningar</h2>
-                        {pendingOrders.length > 0 && <span className={styles.profile__nav_badge}>{pendingOrders.length}</span>}
-                      </div>
-                      <button className={styles.profile__block_link} onClick={() => setActiveSection('inkomna-bestallningar')}>Se alla →</button>
-                    </div>
-                    {incomingOrders.length === 0 ? (
-                      <div className={styles.profile__block_empty}><p>Inga beställningar ännu</p></div>
-                    ) : (
-                      <div className={styles.profile__block_list}>
-                        {incomingOrders.slice(0, 3).map(order => (
-                          <Link href={`/order/${order.id}`} key={order.id} className={styles.profile__block_item}>
-                            <div className={styles.profile__block_item_info}>
-                              <strong>{order.buyer_name}</strong>
-                              <span>{order.service_title}</span>
-                            </div>
-                            <span className={`${styles.profile__item_tag} ${statusTag(order)}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>{statusLabel(order)}</span>
-                          </Link>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
-
-              </div>
-
               <div className={styles.profile__dashboard_right}>
                 <div className={`${styles.profile__block} card`}>
                   <div className={styles.profile__block_header}>
