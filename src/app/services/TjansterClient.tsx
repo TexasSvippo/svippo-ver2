@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { categories } from '@/data/categories'
 import styles from './tjanster.module.scss'
-import { Search, MapPin, Star } from 'lucide-react'
+import { MapPin, Star } from 'lucide-react'
 
 type Service = {
   id: string
@@ -29,6 +29,19 @@ type Props = {
 }
 
 const WORD_LIMIT = 20
+
+const categoryDescriptions: Record<string, string> = {
+  'digitala-tjanster': 'Hitta experter inom webb, app och IT och få hjälp med ditt digitala projekt idag.',
+  'medie-design':      'Ge ditt varumärke ett lyft och anlita kreatörer inom design, foto och innehåll.',
+  'utbildning':        'Lär dig något nytt eller få hjälp att nå dina mål och hitta din perfekta lärare.',
+  'hushall':           'Få mer tid till det som betyder något och boka hjälp med hem och vardag.',
+  'bil':               'Håll bilen i toppskick och hitta pålitlig hjälp med service, tvätt och transport.',
+  'skonhet-halsa':     'Ta hand om dig själv och boka behandlingar inom skönhet, hälsa och träning.',
+  'bygg-hantverk':     'Förverkliga ditt byggprojekt och anlita hantverkare du kan lita på.',
+  'frakt-flytt':       'Flytta smidigt och stressfritt och hitta hjälp med transport och flytt nära dig.',
+}
+
+const DEFAULT_DESC = 'Svippo kopplar ihop dig med kvalificerade utförare inom hundratals kategorier.'
 
 function truncate(text: string, limit: number) {
   if (!text) return ''
@@ -65,34 +78,34 @@ export default function TjansterClient({ services }: Props) {
   const searchParams = useSearchParams()
   const router = useRouter()
   const [search, setSearch] = useState(searchParams.get('search') ?? '')
-  // Derived directly from URL — no useState needed; external navigation updates these automatically
-  const selectedCategory = searchParams.get('kategori') ?? ''
+
+  const selectedCategory    = searchParams.get('kategori')     ?? ''
   const selectedSubcategory = searchParams.get('underkategori') ?? ''
   const [selectedLocation, setSelectedLocation] = useState('')
   const [sortBy, setSortBy] = useState('newest')
   const [showFilterModal, setShowFilterModal] = useState(false)
   const [maxPrice, setMaxPrice] = useState('')
 
+  const categoryLabel = categories.find(c => c.id === selectedCategory)?.label ?? ''
+
   const buildUrl = (cat: string, sub: string, srch: string) => {
     const params = new URLSearchParams()
     if (srch) params.set('search', srch)
-    if (cat) params.set('kategori', cat)
-    if (sub) params.set('underkategori', sub)
+    if (cat)  params.set('kategori', cat)
+    if (sub)  params.set('underkategori', sub)
     return params.toString() ? `/services?${params.toString()}` : '/services'
   }
 
-  const selectCategory = (catId: string) => {
+  const selectCategory = (catId: string) =>
     router.replace(buildUrl(catId, '', search), { scroll: false })
-  }
 
-  const selectSubcategory = (sub: string) => {
+  const selectSubcategory = (sub: string) =>
     router.replace(buildUrl(selectedCategory, sub, search), { scroll: false })
-  }
 
-  // Sync search input changes to the URL (preserves current category/subcategory)
   useEffect(() => {
     router.replace(buildUrl(selectedCategory, selectedSubcategory, search), { scroll: false })
-  }, [search, selectedCategory, selectedSubcategory, router])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search])
 
   const locations = [...new Set(services.map(s => s.location).filter(Boolean))]
 
@@ -102,16 +115,16 @@ export default function TjansterClient({ services }: Props) {
         s.title?.toLowerCase().includes(search.toLowerCase()) ||
         s.description?.toLowerCase().includes(search.toLowerCase()) ||
         s.subcategory?.toLowerCase().includes(search.toLowerCase())
-      const matchCategory = selectedCategory === '' || s.category_id === selectedCategory
+      const matchCategory    = selectedCategory    === '' || s.category_id === selectedCategory
       const matchSubcategory = selectedSubcategory === '' || s.subcategory === selectedSubcategory
-      const matchLocation = selectedLocation === '' || s.location === selectedLocation
-      const matchPrice = maxPrice === '' || s.price_type === 'offert' || s.price <= Number(maxPrice)
+      const matchLocation    = selectedLocation    === '' || s.location    === selectedLocation
+      const matchPrice       = maxPrice === '' || s.price_type === 'offert' || s.price <= Number(maxPrice)
       return matchSearch && matchCategory && matchSubcategory && matchLocation && matchPrice
     })
     .sort((a, b) => {
-      if (sortBy === 'price_asc') return a.price - b.price
+      if (sortBy === 'price_asc')  return a.price - b.price
       if (sortBy === 'price_desc') return b.price - a.price
-      if (sortBy === 'rating') return (b.rating || 0) - (a.rating || 0)
+      if (sortBy === 'rating')     return (b.rating || 0) - (a.rating || 0)
       return 0
     })
 
@@ -128,46 +141,62 @@ export default function TjansterClient({ services }: Props) {
 
   return (
     <div className={styles.tjanster}>
-      <div className={`container ${styles.tjanster__inner}`}>
 
-        {/* Header */}
-        <div className={styles.tjanster__header}>
-          {selectedCategory && (
-            <div className={styles.tjanster__breadcrumb}>
-              <button onClick={() => selectCategory('')}>Tjänster</button>
-              <span>·</span>
-              {selectedSubcategory ? (
+      {/* ── Hero ───────────────────────────────────────────────── */}
+      <div className={styles.tjanster__hero}>
+        <div className={styles.tjanster__hero_inner}>
+          <div className={styles.tjanster__hero_card}>
+
+            {/* Breadcrumbs */}
+            <nav className={styles.tjanster__hero_bc}>
+              <Link href="/" className={styles.tjanster__hero_bc_link}>Hem</Link>
+              <span className={styles.tjanster__hero_bc_sep}>/</span>
+              {selectedCategory ? (
                 <>
-                  <button onClick={() => selectSubcategory('')}>{categories.find(c => c.id === selectedCategory)?.label}</button>
-                  <span>·</span>
-                  <span>{selectedSubcategory}</span>
+                  <Link href="/services" className={styles.tjanster__hero_bc_link}>Tjänster</Link>
+                  <span className={styles.tjanster__hero_bc_sep}>/</span>
+                  <span className={styles.tjanster__hero_bc_active}>{categoryLabel}</span>
                 </>
               ) : (
-                <span>{categories.find(c => c.id === selectedCategory)?.label}</span>
+                <span className={styles.tjanster__hero_bc_active}>Tjänster</span>
               )}
-            </div>
-          )}
-          <h1 className={styles.tjanster__title}>
-            {selectedSubcategory
-              ? selectedSubcategory
-              : selectedCategory
-              ? categories.find(c => c.id === selectedCategory)?.label
-              : 'Tjänster'}
-          </h1>
+            </nav>
 
-          {/* Sökfält */}
-          <div className={styles.tjanster__search}>
-            <Search size={16} />
-            <input
-              type="text"
-              placeholder="Sök tjänster..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              className={styles.tjanster__search_input}
-            />
-            {search && <button className={styles.tjanster__clear_search} onClick={() => setSearch('')}>✕</button>}
+            {/* H1 */}
+            <h1 className={styles.tjanster__hero_title}>
+              {selectedCategory ? categoryLabel : 'Tjänster'}
+            </h1>
+
+            {/* Kategoribeskrivning */}
+            <p className={styles.tjanster__hero_desc}>
+              {categoryDescriptions[selectedCategory] ?? DEFAULT_DESC}
+            </p>
+
+            {/* Sökfält */}
+            <div className={styles.tjanster__hero_search}>
+              <input
+                type="text"
+                className={styles.tjanster__hero_search_input}
+                placeholder="Sök efter en tjänst..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && router.push(buildUrl(selectedCategory, selectedSubcategory, search))}
+              />
+              <button
+                type="button"
+                className={styles.tjanster__hero_search_btn}
+                onClick={() => router.push(buildUrl(selectedCategory, selectedSubcategory, search))}
+              >
+                Sök
+              </button>
+            </div>
+
           </div>
         </div>
+      </div>
+
+      {/* ── Innehåll under hero ─────────────────────────────────── */}
+      <div className={`container ${styles.tjanster__inner}`}>
 
         {/* Kategorier */}
         {!selectedCategory && (
@@ -187,33 +216,36 @@ export default function TjansterClient({ services }: Props) {
 
         {/* Underkategorier */}
         {selectedCategory && (
-          <div className={styles.tjanster__subcategories}>
-            <button
-              className={`${styles.tjanster__sub_pill} ${selectedSubcategory === '' ? styles['tjanster__sub_pill--active'] : ''}`}
-              onClick={() => selectSubcategory('')}
-            >
-              Alla
-            </button>
-            {categories.find(c => c.id === selectedCategory)?.subcategories.map(sub => (
+          <>
+            <p className={styles.tjanster__subcategories_heading}>Förfina din sökning</p>
+            <div className={styles.tjanster__subcategories}>
               <button
-                key={sub}
-                className={`${styles.tjanster__sub_pill} ${selectedSubcategory === sub ? styles['tjanster__sub_pill--active'] : ''}`}
-                onClick={() => selectSubcategory(sub)}
+                className={`${styles.tjanster__sub_pill} ${selectedSubcategory === '' ? styles['tjanster__sub_pill--active'] : ''}`}
+                onClick={() => selectSubcategory('')}
               >
-                {sub}
+                Alla
               </button>
-            ))}
-          </div>
+              {categories.find(c => c.id === selectedCategory)?.subcategories.map(sub => (
+                <button
+                  key={sub}
+                  className={`${styles.tjanster__sub_pill} ${selectedSubcategory === sub ? styles['tjanster__sub_pill--active'] : ''}`}
+                  onClick={() => selectSubcategory(sub)}
+                >
+                  {sub}
+                </button>
+              ))}
+            </div>
+          </>
         )}
 
         {/* Aktiva filter-taggar */}
         {hasFilters && (
           <div className={styles.tjanster__active_filters}>
-            {search && <span className={styles.tjanster__filter_tag}><Search size={12} /> &quot;{search}&quot;<button onClick={() => setSearch('')}>✕</button></span>}
-            {selectedCategory && <span className={styles.tjanster__filter_tag}>{categories.find(c => c.id === selectedCategory)?.label}<button onClick={() => selectCategory('')}>✕</button></span>}
+            {search         && <span className={styles.tjanster__filter_tag}>&quot;{search}&quot;<button onClick={() => setSearch('')}>✕</button></span>}
+            {selectedCategory && <span className={styles.tjanster__filter_tag}>{categoryLabel}<button onClick={() => selectCategory('')}>✕</button></span>}
             {selectedSubcategory && <span className={styles.tjanster__filter_tag}>{selectedSubcategory}<button onClick={() => selectSubcategory('')}>✕</button></span>}
-            {selectedLocation && <span className={styles.tjanster__filter_tag}><MapPin size={12} /> {selectedLocation}<button onClick={() => setSelectedLocation('')}>✕</button></span>}
-            {maxPrice && <span className={styles.tjanster__filter_tag}>Pris: {maxPrice}kr<button onClick={() => setMaxPrice('')}>✕</button></span>}
+            {selectedLocation    && <span className={styles.tjanster__filter_tag}><MapPin size={12} /> {selectedLocation}<button onClick={() => setSelectedLocation('')}>✕</button></span>}
+            {maxPrice            && <span className={styles.tjanster__filter_tag}>Pris: {maxPrice}kr<button onClick={() => setMaxPrice('')}>✕</button></span>}
             <button className={styles.tjanster__clear_btn} onClick={clearFilters}>Rensa alla</button>
           </div>
         )}
@@ -239,7 +271,6 @@ export default function TjansterClient({ services }: Props) {
                     className={`${styles.service_card} ${getCardStyle(s.account_type)}`}
                   >
                     <div className={styles.service_card__top}>
-                      {/* Avatar + info */}
                       <div className={styles.service_card__header}>
                         <div className={`${styles.service_card__avatar} ${getAvatarStyle(s.account_type)}`}>
                           {s.avatar_url
@@ -261,7 +292,6 @@ export default function TjansterClient({ services }: Props) {
                         <button className={styles.service_card__more}>···</button>
                       </div>
 
-                      {/* Beskrivning */}
                       {s.description && (
                         <p className={styles.service_card__description}>
                           {truncate(s.description, WORD_LIMIT)}
@@ -269,15 +299,12 @@ export default function TjansterClient({ services }: Props) {
                       )}
                     </div>
 
-                    {/* Footer: badges + pris */}
                     <div className={styles.service_card__footer}>
                       <div className={styles.service_card__badges}>
                         <span className={`${styles.service_card__badge} ${getBadgeStyle(s.account_type)}`}>
                           {getBadgeLabel(s.account_type)}
                         </span>
-                        <span className={styles.service_card__subcategory_badge}>
-                          {s.subcategory}
-                        </span>
+                        <span className={styles.service_card__subcategory_badge}>{s.subcategory}</span>
                       </div>
                       <div className={styles.service_card__price}>
                         <span className={styles.service_card__price_from}>
@@ -308,14 +335,7 @@ export default function TjansterClient({ services }: Props) {
               <div className={styles.filter_panel__group}>
                 <label className={styles.filter_panel__label}>Kategorier</label>
                 <div className={styles.filter_panel__search_wrap}>
-                  <input
-                    className={styles.filter_panel__search}
-                    placeholder="Sök efter kategori"
-                    onChange={e => {
-                      const val = e.target.value.toLowerCase()
-                      // filtreras visuellt via state om vi vill – enkel implementation
-                    }}
-                  />
+                  <input className={styles.filter_panel__search} placeholder="Sök efter kategori" onChange={() => {}} />
                 </div>
                 <div className={styles.filter_panel__checkboxes}>
                   {categories.map(cat => (
@@ -351,11 +371,7 @@ export default function TjansterClient({ services }: Props) {
 
               <div className={styles.filter_panel__group}>
                 <label className={styles.filter_panel__label}>Plats</label>
-                <select
-                  className={styles.filter_panel__select}
-                  value={selectedLocation}
-                  onChange={e => setSelectedLocation(e.target.value)}
-                >
+                <select className={styles.filter_panel__select} value={selectedLocation} onChange={e => setSelectedLocation(e.target.value)}>
                   <option value="">Alla platser</option>
                   {locations.map(loc => <option key={loc} value={loc}>{loc}</option>)}
                 </select>
@@ -374,11 +390,7 @@ export default function TjansterClient({ services }: Props) {
 
               <div className={styles.filter_panel__group}>
                 <label className={styles.filter_panel__label}>Sortera</label>
-                <select
-                  className={styles.filter_panel__select}
-                  value={sortBy}
-                  onChange={e => setSortBy(e.target.value)}
-                >
+                <select className={styles.filter_panel__select} value={sortBy} onChange={e => setSortBy(e.target.value)}>
                   <option value="newest">Nyast först</option>
                   <option value="price_asc">Lägst pris</option>
                   <option value="price_desc">Högst pris</option>
@@ -386,14 +398,10 @@ export default function TjansterClient({ services }: Props) {
                 </select>
               </div>
 
-              <button className={`btn btn-primary ${styles.filter_panel__btn}`} onClick={() => {}}>
-                Filtrera
-              </button>
+              <button className={`btn btn-primary ${styles.filter_panel__btn}`} onClick={() => {}}>Filtrera</button>
 
               {hasFilters && (
-                <button className={styles.filter_panel__clear} onClick={clearFilters}>
-                  Rensa filter
-                </button>
+                <button className={styles.filter_panel__clear} onClick={clearFilters}>Rensa filter</button>
               )}
             </div>
           </aside>
@@ -468,6 +476,7 @@ export default function TjansterClient({ services }: Props) {
         </button>
         {hasFilters && <button className={styles.tjanster__clear_btn} onClick={clearFilters}>Rensa</button>}
       </div>
+
     </div>
   )
 }

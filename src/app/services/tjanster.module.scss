@@ -1,5 +1,160 @@
+// ================================
+// HERO
+// ================================
+
+.tjanster__hero {
+  width: 100%;
+  min-height: 280px;
+  background-image: url('/services-hero-bg.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  display: flex;
+  align-items: center;
+  padding: 48px 0;
+}
+
+.tjanster__hero_inner {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.tjanster__hero_card {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
+  max-width: 560px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tjanster__hero_bc {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+  font-size: 13px;
+}
+
+.tjanster__hero_bc_link {
+  color: #696969;
+  text-decoration: none;
+  &:hover { text-decoration: underline; }
+}
+
+.tjanster__hero_bc_sep {
+  color: #696969;
+}
+
+.tjanster__hero_bc_active {
+  color: #05334A;
+  font-weight: 600;
+}
+
+.tjanster__hero_title {
+  font-family: var(--font-heading);
+  font-size: 32px;
+  font-weight: 800;
+  color: #05334A;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.tjanster__hero_desc {
+  font-size: 15px;
+  color: #555;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.tjanster__hero_search {
+  display: flex;
+  align-items: center;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  background: white;
+  margin-top: 4px;
+
+  &:focus-within {
+    border-color: var(--color-primary);
+  }
+}
+
+.tjanster__hero_search_input {
+  flex: 1;
+  padding: 10px 16px;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  font-family: var(--font-body);
+  color: var(--color-dark);
+  background: transparent;
+
+  &::placeholder { color: var(--color-gray); }
+}
+
+.tjanster__hero_search_btn {
+  padding: 10px 22px;
+  border: none;
+  background: #D4EDF9;
+  color: #05334A;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: var(--font-body);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s;
+
+  &:hover { background: #bfe5f7; }
+}
+
+// "Förfina din sökning"-rubrik
+.tjanster__subcategories_heading {
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: #05334A;
+  margin-top: 2rem;
+  margin-bottom: 0.25rem;
+}
+
+@media (max-width: 768px) {
+  .tjanster__hero {
+    background-image: url('/services-hero-bg-mobile.png');
+    min-height: 220px;
+    align-items: flex-end;
+    padding: 0 0 20px;
+  }
+
+  .tjanster__hero_inner {
+    padding: 0 16px;
+  }
+
+  .tjanster__hero_card {
+    max-width: 100%;
+    padding: 1.25rem;
+    gap: 10px;
+  }
+
+  .tjanster__hero_title {
+    font-size: 22px;
+  }
+
+  .tjanster__hero_desc {
+    font-size: 14px;
+  }
+}
+
+// ================================
+
 .tjanster {
-  padding: 40px 0 80px;
+  padding-bottom: 80px;
   min-height: calc(100vh - 68px);
 }
 
