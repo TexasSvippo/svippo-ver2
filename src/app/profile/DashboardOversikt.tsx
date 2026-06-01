@@ -28,6 +28,7 @@ type BlogPost = {
 
 type Props = {
   displayName: string
+  avatarUrl?: string | null
   dbAccountType: string | null
   canCreateService: boolean
   services: Service[]
@@ -58,7 +59,7 @@ function statusLabel(status: string, projectStatus: string) {
 }
 
 export default function DashboardOversikt({
-  displayName, dbAccountType, canCreateService,
+  displayName, avatarUrl, dbAccountType, canCreateService,
   services, incomingOrders, placedOrders, myRequests, interests,
   notifications, userId, onDismissNotif,
 }: Props) {
@@ -183,7 +184,10 @@ export default function DashboardOversikt({
               {services.slice(0, 3).map(s => (
                 <Link href={`/service/${s.id}`} key={s.id} className={styles.dash__service_row}>
                   <div className={styles.dash__service_avatar}>
-                    {s.title.charAt(0).toUpperCase()}
+                    {avatarUrl
+                      ? <img src={avatarUrl} alt={displayName} className={styles.dash__service_avatar_img} />
+                      : (displayName || '?').charAt(0).toUpperCase()
+                    }
                   </div>
                   <div className={styles.dash__service_info}>
                     <span className={styles.dash__service_title}>{s.title}</span>

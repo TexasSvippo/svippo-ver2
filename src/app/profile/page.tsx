@@ -416,6 +416,7 @@ export default function ProfilePage() {
           <div className={styles.profile__section}>
             <DashboardOversikt
               displayName={displayName}
+              avatarUrl={avatarUrl}
               dbAccountType={dbAccountType}
               canCreateService={canCreateService}
               services={services}
@@ -428,59 +429,6 @@ export default function ProfilePage() {
               onDismissNotif={dismissNotif}
             />
 
-            <div className={styles.profile__dashboard}>
-              <div className={styles.profile__dashboard_right}>
-                <div className={`${styles.profile__block} card`}>
-                  <div className={styles.profile__block_header}>
-                    <div className={styles.profile__block_title}><Users size={18} /><h2>Mina förfrågningar</h2></div>
-                    <button className={styles.profile__block_link} onClick={() => setActiveSection('mina-forfragningar')}>Se alla →</button>
-                  </div>
-                  {myRequests.length === 0 ? (
-                    <div className={styles.profile__block_empty}>
-                      <p>Inga förfrågningar ännu</p>
-                      <button className="btn btn-orange" onClick={() => router.push('/create-request')}>+ Skapa förfrågan</button>
-                    </div>
-                  ) : (
-                    <div className={styles.profile__block_list}>
-                      {myRequests.slice(0, 3).map(r => (
-                        <Link href={`/request/${r.id}`} key={r.id} className={styles.profile__block_item}>
-                          <div className={styles.profile__block_item_info}>
-                            <strong>{r.title}</strong>
-                            <span>{r.subcategory} · {r.location}</span>
-                          </div>
-                          <span className={`${styles.profile__item_tag} ${styles['item_tag--orange']}`}>
-                            {r.budget_type === 'prisforslag' ? 'Prisförslag' : `${r.budget} kr`}
-                          </span>
-                        </Link>
-                      ))}
-                      <button className="btn btn-orange" onClick={() => router.push('/create-request')}>+ Ny förfrågan</button>
-                    </div>
-                  )}
-                </div>
-
-                <div className={`${styles.profile__block} card`}>
-                  <div className={styles.profile__block_header}>
-                    <div className={styles.profile__block_title}><Eye size={18} /><h2>Intresseanmälningar</h2></div>
-                    <button className={styles.profile__block_link} onClick={() => setActiveSection('intresseanmalningar')}>Se alla →</button>
-                  </div>
-                  {interests.length === 0 ? (
-                    <div className={styles.profile__block_empty}><p>Inga intresseanmälningar ännu</p></div>
-                  ) : (
-                    <div className={styles.profile__block_list}>
-                      {interests.slice(0, 3).map(interest => (
-                        <div key={interest.id} className={styles.profile__block_item}>
-                          <div className={styles.profile__block_item_info}>
-                            <strong>{interest.svippar_name}</strong>
-                            <span>{interest.request_title}</span>
-                          </div>
-                          {interest.price && <span className={`${styles.profile__item_tag} ${styles['item_tag--blue']}`}>{interest.price} kr</span>}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
           </div>
         )}
 
