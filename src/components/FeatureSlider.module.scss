@@ -214,8 +214,16 @@
   }
 
   .fs__track {
-    padding-right: 24px;
     gap: 16px;
+
+    // padding-right on flex overflow containers is silently dropped by browsers;
+    // a ::after pseudo-element is the reliable workaround.
+    &::after {
+      content: '';
+      display: block;
+      min-width: 24px;
+      flex-shrink: 0;
+    }
   }
 
   .fs__card {
