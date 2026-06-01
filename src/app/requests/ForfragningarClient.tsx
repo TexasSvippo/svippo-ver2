@@ -138,7 +138,7 @@ export default function ForfragningarClient({ requests }: Props) {
               <input
                 type="text"
                 className={styles.requests__hero_search_input}
-                placeholder="Vad vill du hjälpa med..."
+                placeholder="Sök bland förfrågningar..."
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && router.replace(buildUrl(selectedCategory, selectedSubcategory, search), { scroll: false })}
@@ -203,18 +203,6 @@ export default function ForfragningarClient({ requests }: Props) {
 
         {/* Sök & filter */}
         <div className={styles.requests__filters}>
-          <div className={styles.requests__search}>
-            <Search size={16} />
-            <input
-              type="text"
-              placeholder="Sök förfrågningar..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              className={styles.requests__search_input}
-            />
-            {search && <button className={styles.requests__clear_search} onClick={() => setSearch('')}>✕</button>}
-          </div>
-
           {/* Desktop filter-rad */}
           <div className={styles.requests__filter_row}>
             <select className={styles.requests__select} value={selectedCategory} onChange={e => setSelectedCategory(e.target.value)}>

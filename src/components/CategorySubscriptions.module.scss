@@ -2,28 +2,24 @@
 .trigger_btn {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 18px;
-  border-radius: var(--radius-full);
-  border: 1.5px solid var(--color-border);
-  background: white;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--color-dark);
+  gap: 6px;
+  padding: 0.4rem 1rem;
+  border-radius: 999px;
+  border: 1.5px solid #05334A;
+  background: transparent;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #05334A;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: background 0.15s, color 0.15s;
   font-family: var(--font-body);
 
   &:hover {
-    border-color: var(--color-primary);
-    background: #f0f8ff;
-    color: var(--color-primary);
+    background: #EAF4FB;
   }
 
   &--active {
-    border-color: var(--color-primary);
-    background: #e0f0fa;
-    color: var(--color-primary);
+    background: #EAF4FB;
   }
 }
 
