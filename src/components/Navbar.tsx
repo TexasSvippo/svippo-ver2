@@ -74,6 +74,7 @@ export default function Navbar() {
               <ChevronDown size={14} className={megaRequestsOpen ? styles['navbar__chevron--open'] : styles.navbar__chevron} />
             </button>
           </div>
+          <Link href="/blogg" className={styles.navbar__link}>Blogg</Link>
         </div>
 
         {/* Sökfält – wrappat för att kunna döljas på mobil */}
