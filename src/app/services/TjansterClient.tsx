@@ -217,7 +217,15 @@ export default function TjansterClient({ services }: Props) {
         {/* Underkategorier */}
         {selectedCategory && (
           <>
-            <p className={styles.tjanster__subcategories_heading}>Förfina din sökning</p>
+            <div className={styles.tjanster__subcategory_header}>
+              <p className={styles.tjanster__subcategories_heading}>Förfina din sökning</p>
+              <button
+                className={`${styles.tjanster__filter_btn_compact} ${activeFilterCount > 0 ? styles['tjanster__filter_btn_compact--active'] : ''}`}
+                onClick={() => setShowFilterModal(true)}
+              >
+                Filter{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}
+              </button>
+            </div>
             <div className={styles.tjanster__subcategories}>
               <button
                 className={`${styles.tjanster__sub_pill} ${selectedSubcategory === '' ? styles['tjanster__sub_pill--active'] : ''}`}
