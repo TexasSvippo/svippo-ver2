@@ -149,6 +149,18 @@
   .tjanster__hero_desc {
     font-size: 14px;
   }
+
+  .tjanster__subcategories {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 0.25rem;
+
+    &::-webkit-scrollbar { display: none; }
+
+    > * { flex-shrink: 0; }
+  }
 }
 
 // ================================
@@ -162,7 +174,6 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
-  padding-top: 2rem;
 }
 
 // ================================
@@ -244,6 +255,7 @@
   scrollbar-width: none;
   padding-bottom: 4px;
   &::-webkit-scrollbar { display: none; }
+  padding-top: 20px;
 }
 
 .tjanster__category_btn {
