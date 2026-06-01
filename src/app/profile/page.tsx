@@ -99,8 +99,11 @@ export default function ProfilePage() {
   const [watchedRequests, setWatchedRequests] = useState<Request[]>([])
   const [selectedWatchCategory, setSelectedWatchCategory] = useState('')
 
-  const isCompanyType = accountType === 'foretag' || accountType === 'uf-foretag'
-  const isBestellare = accountType === 'bestellare'
+  const [dbAccountType, setDbAccountType] = useState<string | null>(null)
+
+  const resolvedAccountType = dbAccountType ?? accountType
+  const isCompanyType = resolvedAccountType === 'foretag' || resolvedAccountType === 'uf-foretag'
+  const isBestellare = resolvedAccountType === 'bestellare'
 
   const [karriarOrders, setKarriarOrders] = useState<KarriarOrder[]>([])
   const [karriarReviews, setKarriarReviews] = useState<{ rating: number }[]>([])
@@ -134,6 +137,7 @@ export default function ProfilePage() {
         setPhone(profileRes.data.phone || '')
         setBio(profileRes.data.bio || '')
         setAvatarUrl(profileRes.data.avatar_url || null)
+        setDbAccountType(profileRes.data.account_type || null)
       }
       setServices(servicesRes.data ?? [])
       setIncomingOrders(incomingRes.data ?? [])
@@ -334,7 +338,7 @@ export default function ProfilePage() {
           <div>
             <strong className={styles.profile__sidebar_name}>{displayName || 'Inget namn'}</strong>
             <p className={styles.profile__sidebar_email}>{user.email}</p>
-            {!isBestellare && (
+            {(dbAccountType === 'svippare' || dbAccountType === 'foretag' || dbAccountType === 'uf-foretag') && (
               <Link href={`/provider/${user.id}`} className={styles.profile__sidebar_publink} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                 <Eye size={14} /> Se publik profil →
               </Link>
@@ -420,7 +424,7 @@ export default function ProfilePage() {
                 <div>
                   <p className={styles.welcome_banner__greeting}>Välkommen tillbaka 👋</p>
                   <h1 className={styles.welcome_banner__name}>{displayName || 'Inget namn'}</h1>
-                  {!isBestellare && (
+                  {(dbAccountType === 'svippare' || dbAccountType === 'foretag' || dbAccountType === 'uf-foretag') && (
                     <Link href={`/provider/${user.id}`} className={styles.welcome_banner__publink}>
                       Se din publika profil →
                     </Link>

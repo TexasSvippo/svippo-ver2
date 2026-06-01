@@ -1,72 +1,76 @@
 .categories {
-  background: var(--color-white);
-  padding: 32px 0;
-  border-bottom: 1px solid var(--color-border);
+  padding: 48px 0;
+}
+
+.categories__container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.categories__heading {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--color-dark);
+  margin-bottom: 24px;
 }
 
 .categories__grid {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  scrollbar-width: none;
-  padding-bottom: 4px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
 
-  &::-webkit-scrollbar {
-    display: none;
+@media (max-width: 768px) {
+  .categories__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .categories__grid {
+    grid-template-columns: 1fr;
   }
 }
 
 .categories__item {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 8px;
-  padding: 16px 20px;
-  border-radius: var(--radius-md);
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: #F2EEEB;
   border: 1px solid var(--color-border);
-  cursor: pointer;
-  transition: all 0.2s;
+  border-radius: var(--radius-sm);
   text-decoration: none;
-  flex-shrink: 0;
-  min-width: 100px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
 
   &:hover {
+    background: white;
     border-color: var(--color-primary);
-    background: #f0f8ff;
-    transform: translateY(-2px);
     box-shadow: var(--shadow-sm);
   }
 }
 
-.categories__icon {
+.categories__left {
+  display: flex;
+  align-items: center;
+}
+
+.categories__emoji {
   font-size: 28px;
   line-height: 1;
+  flex-shrink: 0;
 }
 
 .categories__label {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 500;
   color: var(--color-dark);
-  text-align: center;
-  line-height: 1.3;
+  margin-left: 12px;
 }
 
-
-@media (max-width: 768px) {
-  .categories__grid {
-    gap: 6px;
-  }
-
-  .categories__item {
-    padding: 12px 14px;
-    min-width: 80px;
-  }
-
-  .categories__icon {
-    font-size: 22px;
-  }
-
-  .categories__label {
-    font-size: 11px;
-  }
+.categories__chevron {
+  color: var(--color-gray);
+  flex-shrink: 0;
 }

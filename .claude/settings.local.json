@@ -7,7 +7,9 @@
       "Bash(sed -n '502,520p' \"/c/Users/TexasForslund/OneDrive - GT Konsult i Sverige AB/Dokument/svippo/src/app/provider/[id]/publicprofile.module.scss\")",
       "Bash(sed -n '134,145p' \"/c/Users/TexasForslund/OneDrive - GT Konsult i Sverige AB/Dokument/svippo/src/app/service/[id]/servicedetail.module.scss\")",
       "Bash(cat >> *)",
-      "Bash(npm install *)"
+      "Bash(npm install *)",
+      "Bash(npx tsc *)",
+      "Bash(npm run *)"
     ],
     "additionalDirectories": [
       "C:\\Users\\TexasForslund\\OneDrive - GT Konsult i Sverige AB\\Dokument\\svippo\\src\\app\\provider\\[id]",
