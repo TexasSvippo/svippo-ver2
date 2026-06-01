@@ -3,16 +3,16 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Briefcase, ShoppingBag, Star, FileText, ShoppingCart, MessageCircle, Package, CheckCircle, Clock, Wallet } from 'lucide-react'
+import { Briefcase, ShoppingBag, Star, FileText, ShoppingCart, MessageCircle, Package, CheckCircle, Wallet, Rocket } from 'lucide-react'
 import { sanityClient } from '@/sanity/client'
 import { blogPostsQuery } from '@/sanity/queries'
 import styles from './dashboard.module.scss'
 
 type Service  = { id: string; title: string; subcategory: string; price_type: string; price: number }
-type Order    = { id: string; service_title: string; buyer_name: string; status: string; project_status: string; created_at?: string }
-type Placed   = { id: string; service_title: string; seller_name: string; status: string; project_status: string; created_at?: string }
-type Request  = { id: string; title: string; subcategory: string; budget: number; budget_type: string }
-type Interest = { id: string; request_title: string; svippar_name: string; price: number; created_at?: string }
+type Order    = { id: string; service_title: string; buyer_name: string; status: string; project_status: string }
+type Placed   = { id: string; service_title: string; seller_name: string; status: string; project_status: string }
+type Request  = { id: string; title: string; subcategory: string; location?: string; budget: number; budget_type: string; status?: string }
+type Interest = { id: string; request_title: string; svippar_name: string; price: number }
 type Notif    = { id: string; type: string; order_id: string; service_title: string; message: string; read: boolean }
 
 type BlogPost = {
@@ -21,7 +21,6 @@ type BlogPost = {
   slug: { current: string }
   excerpt?: string
   category?: string
-  publishedAt?: string
   targetRole?: string[]
   mainImage?: { asset: { url: string } }
 }
@@ -30,6 +29,7 @@ type Props = {
   displayName: string
   avatarUrl?: string | null
   dbAccountType: string | null
+  svippareStatus?: string | null
   canCreateService: boolean
   services: Service[]
   incomingOrders: Order[]
@@ -51,22 +51,22 @@ const GREETINGS = [
   'Du är på gång',
 ]
 
-function statusLabel(status: string, projectStatus: string) {
+function orderStatus(status: string, projectStatus: string) {
   if (projectStatus === 'completed') return { text: 'Avslutat', cls: styles['dash__badge--green'] }
-  if (status === 'pending')  return { text: 'Väntar',   cls: styles['dash__badge--orange'] }
-  if (status === 'accepted') return { text: 'Pågår',    cls: styles['dash__badge--blue'] }
+  if (status === 'pending')  return { text: 'Väntar',  cls: styles['dash__badge--orange'] }
+  if (status === 'accepted') return { text: 'Pågår',   cls: styles['dash__badge--blue'] }
   return { text: 'Nekad', cls: styles['dash__badge--red'] }
 }
 
 export default function DashboardOversikt({
-  displayName, avatarUrl, dbAccountType, canCreateService,
+  displayName, avatarUrl, dbAccountType, svippareStatus, canCreateService,
   services, incomingOrders, placedOrders, myRequests, interests,
   notifications, userId, onDismissNotif,
 }: Props) {
   const router = useRouter()
   const [tips, setTips] = useState<BlogPost[]>([])
 
-  const isProvider  = dbAccountType !== 'bestellare' && dbAccountType !== null
+  const isProvider   = dbAccountType !== 'bestellare' && dbAccountType !== null
   const isBestellare = dbAccountType === 'bestellare'
 
   const greeting  = GREETINGS[new Date().getDate() % GREETINGS.length]
@@ -86,10 +86,14 @@ export default function DashboardOversikt({
     }).catch(() => {})
   }, [dbAccountType])
 
+  // ── Svippare CTA logic ────────────────────────────────────────────────────
+  const showSvippareCta    = isBestellare && !svippareStatus
+  const showPendingBanner  = isBestellare && svippareStatus === 'pending'
+
   return (
     <div className={styles.dash}>
 
-      {/* ── Top row: greeting + CTA ────────────────────────────────────────── */}
+      {/* ── Top row ────────────────────────────────────────────────────────── */}
       <div className={styles.dash__top}>
         <h1 className={styles.dash__greeting}>{greeting}, {firstName}! 👋</h1>
         {isProvider && (
@@ -112,13 +116,36 @@ export default function DashboardOversikt({
               </span>
               <p className={styles.dash__notif_msg}>{n.message}</p>
               <div className={styles.dash__notif_actions}>
-                {n.type === 'new_order'          && <Link href={`/order/${n.order_id}`}    className="btn btn-primary" style={{ fontSize: 13, padding: '6px 12px' }}>Se beställning</Link>}
-                {n.type === 'project_completed'  && <Link href={`/my-order/${n.order_id}`} className="btn btn-primary" style={{ fontSize: 13, padding: '6px 12px' }}>Lämna recension</Link>}
+                {n.type === 'new_order'         && <Link href={`/order/${n.order_id}`}    className="btn btn-primary" style={{ fontSize: 13, padding: '6px 12px' }}>Se beställning</Link>}
+                {n.type === 'project_completed' && <Link href={`/my-order/${n.order_id}`} className="btn btn-primary" style={{ fontSize: 13, padding: '6px 12px' }}>Lämna recension</Link>}
                 <button className={styles.dash__notif_close} onClick={() => onDismissNotif(n.id)}>✕</button>
               </div>
             </div>
           ))}
           <Link href="/notifications" className={styles.dash__notifs_all}>Se alla notifikationer →</Link>
+        </div>
+      )}
+
+      {/* ── Svippare CTA / pending banner ──────────────────────────────────── */}
+      {showPendingBanner && (
+        <div className={`${styles.dash__promo} ${styles['dash__promo--pending']}`}>
+          <p className={styles.dash__promo_pending_text}>
+            ⏳ Din ansökan granskas – vi återkommer inom kort!
+          </p>
+        </div>
+      )}
+      {showSvippareCta && (
+        <div className={styles.dash__promo}>
+          <Rocket size={32} className={styles.dash__promo_icon} />
+          <div className={styles.dash__promo_content}>
+            <h2 className={styles.dash__promo_title}>Börja tjäna pengar på Svippo</h2>
+            <p className={styles.dash__promo_text}>
+              Bli Svippare och sälj dina tjänster till tusentals kunder. Du bestämmer själv pris, tid och plats.
+            </p>
+          </div>
+          <Link href="/become-svippare" className={styles.dash__promo_btn}>
+            Ansök om att bli Svippare →
+          </Link>
         </div>
       )}
 
@@ -167,7 +194,7 @@ export default function DashboardOversikt({
         )}
       </div>
 
-      {/* ── Active services (provider only) ────────────────────────────────── */}
+      {/* ── Provider: Active services ───────────────────────────────────────── */}
       {isProvider && (
         <div className={styles.dash__section}>
           <div className={styles.dash__section_head}>
@@ -203,14 +230,49 @@ export default function DashboardOversikt({
         </div>
       )}
 
+      {/* ── Bestellare: My requests (full-width section) ────────────────────── */}
+      {isBestellare && (
+        <div className={styles.dash__section}>
+          <div className={styles.dash__section_head}>
+            <span className={styles.dash__section_title}>Mina förfrågningar</span>
+            <Link href="/requests?mine=true" className={styles.dash__see_all}>Se alla</Link>
+          </div>
+          {myRequests.length === 0 ? (
+            <div className={styles.dash__empty}>Du har inga förfrågningar ännu.</div>
+          ) : (
+            <div className={styles.dash__item_list}>
+              {myRequests.slice(0, 3).map(r => (
+                <Link href={`/request/${r.id}`} key={r.id} className={styles.dash__item_row}>
+                  <div className={styles.dash__item_info}>
+                    <span className={styles.dash__item_name}>{r.title}</span>
+                    <span className={styles.dash__item_sub}>
+                      {r.subcategory}{r.location ? ` · ${r.location}` : ''}
+                    </span>
+                  </div>
+                  <span className={`${styles.dash__badge} ${styles['dash__badge--blue']}`}>
+                    {r.budget_type === 'prisforslag' ? 'Prisförslag' : `${r.budget} kr`}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          )}
+          <button
+            className={styles.dash__add_btn}
+            onClick={() => router.push('/create-request')}
+          >
+            + Ny förfrågan
+          </button>
+        </div>
+      )}
+
       {/* ── Two columns ────────────────────────────────────────────────────── */}
       <div className={styles.dash__columns}>
 
-        {/* Left column */}
+        {/* Left */}
         <div className={styles.dash__section}>
           <div className={styles.dash__section_head}>
             <span className={styles.dash__section_title}>
-              {isProvider ? 'Inkommna beställningar' : 'Mina förfrågningar'}
+              {isProvider ? 'Inkommna beställningar' : 'Placerade beställningar'}
             </span>
             <Link href={isProvider ? '/orders' : '/profile'} className={styles.dash__see_all}>Se alla</Link>
           </div>
@@ -220,7 +282,7 @@ export default function DashboardOversikt({
             ) : (
               <div className={styles.dash__item_list}>
                 {incomingOrders.slice(0, 3).map(o => {
-                  const { text, cls } = statusLabel(o.status, o.project_status)
+                  const { text, cls } = orderStatus(o.status, o.project_status)
                   return (
                     <Link href={`/order/${o.id}`} key={o.id} className={styles.dash__item_row}>
                       <div className={styles.dash__item_info}>
@@ -234,59 +296,12 @@ export default function DashboardOversikt({
               </div>
             )
           ) : (
-            myRequests.length === 0 ? (
-              <div className={styles.dash__empty}>Inga förfrågningar ännu.</div>
-            ) : (
-              <div className={styles.dash__item_list}>
-                {myRequests.slice(0, 3).map(r => (
-                  <Link href={`/request/${r.id}`} key={r.id} className={styles.dash__item_row}>
-                    <div className={styles.dash__item_info}>
-                      <span className={styles.dash__item_name}>{r.title}</span>
-                      <span className={styles.dash__item_sub}>{r.subcategory}</span>
-                    </div>
-                    <span className={`${styles.dash__badge} ${styles['dash__badge--blue']}`}>
-                      {r.budget_type === 'prisforslag' ? 'Prisförslag' : `${r.budget} kr`}
-                    </span>
-                  </Link>
-                ))}
-              </div>
-            )
-          )}
-        </div>
-
-        {/* Right column */}
-        <div className={styles.dash__section}>
-          <div className={styles.dash__section_head}>
-            <span className={styles.dash__section_title}>
-              {isProvider ? 'Intresseanmälningar' : 'Mina beställningar'}
-            </span>
-            <Link href={isProvider ? '/profile' : '/profile'} className={styles.dash__see_all}>Se alla</Link>
-          </div>
-          {isProvider ? (
-            interests.length === 0 ? (
-              <div className={styles.dash__empty}>Inga intresseanmälningar ännu.</div>
-            ) : (
-              <div className={styles.dash__item_list}>
-                {interests.slice(0, 3).map(i => (
-                  <div key={i.id} className={styles.dash__item_row}>
-                    <div className={styles.dash__item_info}>
-                      <span className={styles.dash__item_name}>{i.svippar_name}</span>
-                      <span className={styles.dash__item_sub}>{i.request_title}</span>
-                    </div>
-                    {i.price > 0 && (
-                      <span className={`${styles.dash__badge} ${styles['dash__badge--blue']}`}>{i.price} kr</span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )
-          ) : (
             placedOrders.length === 0 ? (
-              <div className={styles.dash__empty}>Inga beställningar ännu.</div>
+              <div className={styles.dash__empty}>Inga placerade beställningar ännu.</div>
             ) : (
               <div className={styles.dash__item_list}>
                 {placedOrders.slice(0, 3).map(o => {
-                  const { text, cls } = statusLabel(o.status, o.project_status)
+                  const { text, cls } = orderStatus(o.status, o.project_status)
                   return (
                     <Link href={`/my-order/${o.id}`} key={o.id} className={styles.dash__item_row}>
                       <div className={styles.dash__item_info}>
@@ -299,6 +314,31 @@ export default function DashboardOversikt({
                 })}
               </div>
             )
+          )}
+        </div>
+
+        {/* Right */}
+        <div className={styles.dash__section}>
+          <div className={styles.dash__section_head}>
+            <span className={styles.dash__section_title}>Intresseanmälningar</span>
+            <Link href="/profile" className={styles.dash__see_all}>Se alla</Link>
+          </div>
+          {interests.length === 0 ? (
+            <div className={styles.dash__empty}>Inga intresseanmälningar ännu.</div>
+          ) : (
+            <div className={styles.dash__item_list}>
+              {interests.slice(0, 3).map(i => (
+                <div key={i.id} className={styles.dash__item_row}>
+                  <div className={styles.dash__item_info}>
+                    <span className={styles.dash__item_name}>{i.svippar_name}</span>
+                    <span className={styles.dash__item_sub}>{i.request_title}</span>
+                  </div>
+                  {i.price > 0 && (
+                    <span className={`${styles.dash__badge} ${styles['dash__badge--blue']}`}>{i.price} kr</span>
+                  )}
+                </div>
+              ))}
+            </div>
           )}
         </div>
 

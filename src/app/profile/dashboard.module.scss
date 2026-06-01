@@ -1,10 +1,16 @@
 .dash {
-  max-width: 860px;
+  max-width: 1100px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  padding: 2rem 0 1rem;
+  padding: 2rem 2rem 2rem;
+}
+
+@media (max-width: 640px) {
+  .dash {
+    padding: 1rem 1rem 1.5rem;
+  }
 }
 
 // ─── Top row ──────────────────────────────────────────────────────────────────
@@ -184,9 +190,28 @@
 }
 
 .dash__empty {
-  font-size: 14px;
+  font-size: 0.95rem;
   color: var(--color-gray);
   padding: 8px 0;
+}
+
+.dash__add_btn {
+  display: block;
+  width: 100%;
+  margin-top: 1rem;
+  padding: 10px;
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 600;
+  font-family: var(--font-body);
+  cursor: pointer;
+  text-align: center;
+  transition: opacity 0.15s;
+
+  &:hover { opacity: 0.88; }
 }
 
 .dash__empty_link {
@@ -249,7 +274,7 @@
 }
 
 .dash__service_title {
-  font-size: 14px;
+  font-size: 0.95rem;
   font-weight: 600;
   color: var(--color-dark);
   white-space: nowrap;
@@ -258,7 +283,7 @@
 }
 
 .dash__service_sub {
-  font-size: 12px;
+  font-size: 0.875rem;
   color: var(--color-gray);
 }
 
@@ -315,7 +340,7 @@
 }
 
 .dash__item_name {
-  font-size: 14px;
+  font-size: 0.95rem;
   font-weight: 600;
   color: var(--color-dark);
   white-space: nowrap;
@@ -324,7 +349,7 @@
 }
 
 .dash__item_sub {
-  font-size: 12px;
+  font-size: 0.875rem;
   color: var(--color-gray);
   white-space: nowrap;
   overflow: hidden;
@@ -442,7 +467,7 @@
 }
 
 .dash__tip_excerpt {
-  font-size: 13px;
+  font-size: 0.95rem;
   color: var(--color-gray);
   line-height: 1.5;
   margin: 0;
@@ -466,4 +491,84 @@
   transition: background 0.15s;
 
   .dash__tip_card:hover & { background: #f5f5f5; }
+}
+
+// ─── Svippare promo banner ────────────────────────────────────────────────────
+
+.dash__promo {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  background: #EAF4FB;
+  border: 1px solid #c8e3f5;
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+}
+
+.dash__promo--pending {
+  background: #fff8e1;
+  border-color: #fde68a;
+}
+
+.dash__promo_pending_text {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #b45309;
+  margin: 0;
+}
+
+.dash__promo_icon {
+  color: #05334A;
+  flex-shrink: 0;
+}
+
+.dash__promo_content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dash__promo_title {
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: #05334A;
+  margin: 0;
+}
+
+.dash__promo_text {
+  font-size: 0.875rem;
+  color: #444;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.dash__promo_btn {
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-full);
+  padding: 10px 20px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font-body);
+  text-decoration: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: opacity 0.15s;
+
+  &:hover { opacity: 0.88; }
+}
+
+@media (max-width: 640px) {
+  .dash__promo {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .dash__promo_btn {
+    align-self: stretch;
+    text-align: center;
+  }
 }

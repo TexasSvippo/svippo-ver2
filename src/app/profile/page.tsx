@@ -418,6 +418,7 @@ export default function ProfilePage() {
               displayName={displayName}
               avatarUrl={avatarUrl}
               dbAccountType={dbAccountType}
+              svippareStatus={svippareStatus}
               canCreateService={canCreateService}
               services={services}
               incomingOrders={incomingOrders}
