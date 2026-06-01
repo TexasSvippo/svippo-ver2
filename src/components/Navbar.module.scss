@@ -223,6 +223,16 @@
   border-radius: 50%;
 }
 
+// Sökfält-wrapper – tar upp tillgängligt utrymme i flex-raden på desktop
+.navbar__search {
+  flex: 1;
+}
+
+// Mobil sökfält – visas under navbaren när mobileSearchOpen är true
+.navbar__mobile_search_bar {
+  display: none;
+}
+
 // Mobil högersektion – dold på desktop
 .navbar__mobile_right {
   display: none;
@@ -297,5 +307,14 @@
   .navbar__dropdown {
     right: 0;
     min-width: 200px;
+  }
+
+  // Sökfält-overlay under navbaren på mobil
+  .navbar__mobile_search_bar {
+    display: block;
+    padding: 10px 16px 14px;
+    background: white;
+    border-top: 1px solid var(--color-border);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   }
 }

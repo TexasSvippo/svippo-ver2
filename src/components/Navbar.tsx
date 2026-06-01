@@ -22,6 +22,7 @@ export default function Navbar() {
   const [megaRequestsOpen, setMegaRequestsOpen] = useState(false)
   const [showCreate, setShowCreate] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
   const router = useRouter()
 
   // Stäng dropdowns vid klick utanför
@@ -171,8 +172,9 @@ export default function Navbar() {
         <div className={styles.navbar__mobile_right}>
           <button
             className={styles.navbar__mobile_icon_btn}
-            onClick={() => router.push('/services')}
+            onClick={() => setMobileSearchOpen(o => !o)}
             aria-label="Sök"
+            aria-expanded={mobileSearchOpen}
           >
             <Search size={22} />
           </button>
@@ -232,6 +234,12 @@ export default function Navbar() {
         </div>
 
       </div>
+
+      {mobileSearchOpen && (
+        <div className={styles.navbar__mobile_search_bar}>
+          <SearchBar />
+        </div>
+      )}
 
       {megaOpen && <MegaMenu onClose={() => setMegaOpen(false)} />}
       {megaRequestsOpen && <MegaMenuRequests onClose={() => setMegaRequestsOpen(false)} />}
