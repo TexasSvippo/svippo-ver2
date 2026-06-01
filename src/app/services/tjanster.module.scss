@@ -950,3 +950,9 @@
     flex-shrink: 0;
   }
 }
+
+@media (max-width: 768px) {
+  .service_card__avatar {
+    display: none;
+  }
+}
