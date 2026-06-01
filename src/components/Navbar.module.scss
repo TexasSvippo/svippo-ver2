@@ -223,6 +223,38 @@
   border-radius: 50%;
 }
 
+// Mobil högersektion – dold på desktop
+.navbar__mobile_right {
+  display: none;
+}
+
+// Mobila ikonknappar – 44×44px touch target
+.navbar__mobile_icon_btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  color: var(--color-dark);
+  flex-shrink: 0;
+  transition: background 0.15s;
+
+  &:hover {
+    background: var(--color-gray-light);
+  }
+}
+
+// Liten profilbild i mobilmenyn
+.navbar__avatar_sm {
+  width: 36px;
+  height: 36px;
+  font-size: 14px;
+}
+
 // ================================
 // MOBILANPASSNING
 // ================================
@@ -234,41 +266,32 @@
   }
 
   .navbar__inner {
-    gap: 12px;
+    gap: 8px;
     height: 60px;
   }
 
-  // Göm navigeringslänkar
+  // Göm desktop-navigering
   .navbar__links {
     display: none;
   }
 
-  // Göm "Skapa inlägg"-knapp
-  .navbar__create_btn {
-    display: none !important;
-  }
-
-  // Göm notifikationsklocka
-  .navbar__notif_btn {
+  // Göm desktop sökfält
+  .navbar__search {
     display: none;
   }
 
-  // Sökfältet tar upp resterande utrymme
-  :global(.searchbar) {
-    max-width: 100%;
-    flex: 1;
-  }
-
+  // Göm hela desktop actions-sektionen
   .navbar__actions {
-    gap: 8px;
-    margin-left: 0;
-    flex-shrink: 0;
+    display: none;
   }
 
-  .navbar__avatar {
-    width: 36px;
-    height: 36px;
-    font-size: 14px;
+  // Visa mobil högersektion
+  .navbar__mobile_right {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: auto;
+    flex-shrink: 0;
   }
 
   .navbar__dropdown {

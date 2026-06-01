@@ -12,7 +12,7 @@ import SearchBar from './SearchBar'
 import { useNotifications } from '@/hooks/useNotifications'
 import styles from './Navbar.module.scss'
 import Image from 'next/image'
-import { Bell, User, Wrench, Users, Package, MessageCircle, Pencil, LogOut, ChevronDown } from 'lucide-react'
+import { Bell, User, Wrench, Users, Package, MessageCircle, Pencil, LogOut, ChevronDown, Search, Menu } from 'lucide-react'
 
 export default function Navbar() {
   const { user, loading, avatarUrl } = useAuth()
@@ -21,8 +21,8 @@ export default function Navbar() {
   const [megaOpen, setMegaOpen] = useState(false)
   const [megaRequestsOpen, setMegaRequestsOpen] = useState(false)
   const [showCreate, setShowCreate] = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const router = useRouter()
-
 
   // Stäng dropdowns vid klick utanför
   useEffect(() => {
@@ -77,8 +77,12 @@ export default function Navbar() {
           </div>
         </div>
 
-        <SearchBar />
+        {/* Sökfält – wrappat för att kunna döljas på mobil */}
+        <div className={styles.navbar__search}>
+          <SearchBar />
+        </div>
 
+        {/* Desktop actions */}
         <div className={styles.navbar__actions}>
           {!loading && (
             <>
@@ -160,6 +164,70 @@ export default function Navbar() {
                 </>
               )}
             </>
+          )}
+        </div>
+
+        {/* Mobil högersektion – logga in/sök/hamburgare/profilbild */}
+        <div className={styles.navbar__mobile_right}>
+          <button
+            className={styles.navbar__mobile_icon_btn}
+            onClick={() => router.push('/services')}
+            aria-label="Sök"
+          >
+            <Search size={22} />
+          </button>
+          <button
+            className={styles.navbar__mobile_icon_btn}
+            onClick={() => setMobileMenuOpen(o => !o)}
+            aria-label="Öppna meny"
+            aria-expanded={mobileMenuOpen}
+          >
+            <Menu size={22} />
+          </button>
+          {!loading && user && (
+            <div className={styles.navbar__profile}>
+              <button
+                className={`${styles.navbar__avatar} ${styles.navbar__avatar_sm}`}
+                onClick={() => setMenuOpen(o => !o)}
+              >
+                {avatarUrl
+                  ? <Image src={avatarUrl} alt="Profil" width={36} height={36} className={styles.navbar__avatar_img} />
+                  : <span>{user.email?.charAt(0).toUpperCase()}</span>
+                }
+              </button>
+              {menuOpen && (
+                <div className={styles.navbar__dropdown}>
+                  <div className={styles.navbar__dropdown_email}>{user.email}</div>
+                  <Link href="/profile" className={styles.navbar__dropdown_item} onClick={() => setMenuOpen(false)}>
+                    <User size={16} /> Min profil
+                  </Link>
+                  <Link href="/services" className={styles.navbar__dropdown_item} onClick={() => setMenuOpen(false)}>
+                    <Wrench size={16} /> Tjänster
+                  </Link>
+                  <Link href="/requests" className={styles.navbar__dropdown_item} onClick={() => setMenuOpen(false)}>
+                    <Users size={16} /> Förfrågningar
+                  </Link>
+                  <Link href="/bestallningar" className={styles.navbar__dropdown_item} onClick={() => setMenuOpen(false)}>
+                    <Package size={16} /> Beställningar
+                  </Link>
+                  <Link href="/messages" className={styles.navbar__dropdown_item} onClick={() => setMenuOpen(false)}>
+                    <MessageCircle size={16} /> Meddelanden
+                  </Link>
+                  <button
+                    className={`${styles.navbar__dropdown_item} ${styles.navbar__dropdown_create}`}
+                    onClick={() => { setMenuOpen(false); setShowCreate(true) }}
+                  >
+                    <Pencil size={16} /> Skapa inlägg
+                  </button>
+                  <button
+                    className={`${styles.navbar__dropdown_item} ${styles.navbar__dropdown_signout}`}
+                    onClick={handleSignOut}
+                  >
+                    <LogOut size={16} /> Logga ut
+                  </button>
+                </div>
+              )}
+            </div>
           )}
         </div>
 
