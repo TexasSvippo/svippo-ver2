@@ -27,6 +27,18 @@ type Props = {
   requests: Request[]
 }
 
+const categoryDescriptions: Record<string, string> = {
+  'digitala-tjanster': 'Hitta kunder som söker hjälp inom webb, app och IT och ta de uppdrag som passar dig.',
+  'medie-design':      'Bläddra bland förfrågningar inom design, foto och innehåll och erbjud din kreativa kompetens.',
+  'utbildning':        'Hitta elever och kursdeltagare som söker just din kunskap inom undervisning och coaching.',
+  'hushall':           'Se vad folk i ditt område behöver hjälp med hemma och ta de uppdrag som passar din vardag.',
+  'bil':               'Hitta uppdrag inom bilservice, tvätt och transport och bygg din kundkrets.',
+  'skonhet-halsa':     'Bläddra bland förfrågningar inom skönhet, hälsa och träning och fyll din bokningskalender.',
+  'bygg-hantverk':     'Hitta bygguppdrag nära dig och visa vad du går för som hantverkare.',
+  'frakt-flytt':       'Se aktuella flytt och transportuppdrag i ditt område och ta de som passar dig.',
+}
+const DEFAULT_DESC = 'Bläddra bland förfrågningar från kunder som söker hjälp och ta de uppdrag som passar dig.'
+
 export default function ForfragningarClient({ requests }: Props) {
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -90,39 +102,61 @@ export default function ForfragningarClient({ requests }: Props) {
 
   return (
     <div className={styles.requests}>
-      <div className={`container ${styles.requests__inner}`}>
 
-        {/* Header */}
-        <div className={styles.requests__header}>
-          <div>
-            {selectedCategory && (
-              <div className={styles.requests__breadcrumb}>
-                <button onClick={() => setSelectedCategory('')}>Förfrågningar</button>
-                <span>·</span>
-                {selectedSubcategory ? (
-                  <>
-                    <button onClick={() => setSelectedSubcategory('')}>{activeCat?.label}</button>
-                    <span>·</span>
-                    <span>{selectedSubcategory}</span>
-                  </>
-                ) : (
-                  <span>{activeCat?.label}</span>
-                )}
-              </div>
-            )}
-            <h1 className={styles.requests__title}>
-              {selectedSubcategory
-                ? selectedSubcategory
-                : selectedCategory
-                ? activeCat?.label
-                : 'Förfrågningar'}
+      {/* ── Hero ─────────────────────────────────────────────────────────── */}
+      <div className={styles.requests__hero}>
+        <div className={styles.requests__hero_inner}>
+          <div className={styles.requests__hero_card}>
+
+            {/* Breadcrumbs */}
+            <nav className={styles.requests__hero_bc}>
+              <Link href="/" className={styles.requests__hero_bc_link}>Hem</Link>
+              <span className={styles.requests__hero_bc_sep}>/</span>
+              {selectedCategory ? (
+                <>
+                  <Link href="/requests" className={styles.requests__hero_bc_link}>Förfrågningar</Link>
+                  <span className={styles.requests__hero_bc_sep}>/</span>
+                  <span className={styles.requests__hero_bc_active}>{activeCat?.label}</span>
+                </>
+              ) : (
+                <span className={styles.requests__hero_bc_active}>Förfrågningar</span>
+              )}
+            </nav>
+
+            {/* H1 */}
+            <h1 className={styles.requests__hero_title}>
+              {selectedCategory ? activeCat?.label : 'Förfrågningar'}
             </h1>
-            <p className={styles.requests__subtitle}>{filtered.length} förfrågningar hittades</p>
+
+            {/* Kategoribeskrivning */}
+            <p className={styles.requests__hero_desc}>
+              {categoryDescriptions[selectedCategory] ?? DEFAULT_DESC}
+            </p>
+
+            {/* Sökfält */}
+            <div className={styles.requests__hero_search}>
+              <input
+                type="text"
+                className={styles.requests__hero_search_input}
+                placeholder="Vad vill du hjälpa med..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && router.replace(buildUrl(selectedCategory, selectedSubcategory, search), { scroll: false })}
+              />
+              <button
+                type="button"
+                className={styles.requests__hero_search_btn}
+                onClick={() => router.replace(buildUrl(selectedCategory, selectedSubcategory, search), { scroll: false })}
+              >
+                Sök
+              </button>
+            </div>
+
           </div>
-          <Link href="/create-request" className="btn btn-orange">
-            + Skapa förfrågan
-          </Link>
         </div>
+      </div>
+
+      <div className={`container ${styles.requests__inner}`}>
 
         {/* Kategori-prenumerationer */}
         <CategorySubscriptions />
@@ -145,6 +179,8 @@ export default function ForfragningarClient({ requests }: Props) {
 
         {/* Underkategorier */}
         {selectedCategory && (
+          <>
+          <p className={styles.requests__subcategories_heading}>Förfina din sökning</p>
           <div className={styles.requests__subcategories}>
             <button
               className={`${styles.requests__sub_pill} ${selectedSubcategory === '' ? styles['requests__sub_pill--active'] : ''}`}
@@ -162,6 +198,7 @@ export default function ForfragningarClient({ requests }: Props) {
               </button>
             ))}
           </div>
+          </>
         )}
 
         {/* Sök & filter */}
