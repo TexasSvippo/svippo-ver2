@@ -12,7 +12,7 @@ import SearchBar from './SearchBar'
 import { useNotifications } from '@/hooks/useNotifications'
 import styles from './Navbar.module.scss'
 import Image from 'next/image'
-import { Bell, User, Wrench, Users, Package, MessageCircle, Pencil, LogOut, ChevronDown, Search, Menu } from 'lucide-react'
+import { Bell, User, Wrench, Users, Package, MessageCircle, Pencil, LogOut, ChevronDown, Menu } from 'lucide-react'
 
 export default function Navbar() {
   const { user, loading, avatarUrl } = useAuth()
@@ -22,7 +22,6 @@ export default function Navbar() {
   const [megaRequestsOpen, setMegaRequestsOpen] = useState(false)
   const [showCreate, setShowCreate] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
   const router = useRouter()
 
   // Stäng dropdowns vid klick utanför
@@ -168,16 +167,14 @@ export default function Navbar() {
           )}
         </div>
 
-        {/* Mobil högersektion – logga in/sök/hamburgare/profilbild */}
+        {/* Mobil högersektion – notifikationer/hamburgare/profilbild */}
         <div className={styles.navbar__mobile_right}>
-          <button
-            className={styles.navbar__mobile_icon_btn}
-            onClick={() => setMobileSearchOpen(o => !o)}
-            aria-label="Sök"
-            aria-expanded={mobileSearchOpen}
-          >
-            <Search size={22} />
-          </button>
+          {!loading && user && (
+            <Link href="/notifications" className={styles.navbar__notif_btn}>
+              <Bell size={22} />
+              {unreadCount > 0 && <span className={styles.navbar__notif_badge}>{unreadCount}</span>}
+            </Link>
+          )}
           <button
             className={styles.navbar__mobile_icon_btn}
             onClick={() => setMobileMenuOpen(o => !o)}
@@ -235,11 +232,9 @@ export default function Navbar() {
 
       </div>
 
-      {mobileSearchOpen && (
-        <div className={styles.navbar__mobile_search_bar}>
-          <SearchBar />
-        </div>
-      )}
+      <div className={styles.navbar__mobile_search_bar}>
+        <SearchBar />
+      </div>
 
       {megaOpen && <MegaMenu onClose={() => setMegaOpen(false)} />}
       {megaRequestsOpen && <MegaMenuRequests onClose={() => setMegaRequestsOpen(false)} />}
