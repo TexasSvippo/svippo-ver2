@@ -121,6 +121,8 @@
 @media (max-width: 768px) {
   .requests__hero {
     background-image: url('/images/requests-hero-bg-mobile.png');
+    background-size: cover;
+    background-position: center;
     min-height: 220px;
     align-items: flex-end;
     padding: 140px 0 20px;
@@ -521,6 +523,10 @@
 
 @media (max-width: 768px) {
   .requests__filter_row {
+    justify-content: flex-end;
+  }
+
+  .requests__filter_left {
     display: none;
   }
 
