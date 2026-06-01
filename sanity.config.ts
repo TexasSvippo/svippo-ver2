@@ -4,10 +4,15 @@ import { visionTool } from '@sanity/vision'
 import { schemaTypes } from './src/sanity/schemas'
 
 export default defineConfig({
-  name: 'svippo',
+  name: 'default',
   title: 'Svippo CMS',
   projectId: '39ack986',
   dataset: 'production',
-  plugins: [structureTool(), visionTool()],
-  schema: { types: schemaTypes },
+  plugins: [
+    structureTool(),
+    visionTool(),
+  ],
+  schema: {
+    types: schemaTypes,
+  },
 })
