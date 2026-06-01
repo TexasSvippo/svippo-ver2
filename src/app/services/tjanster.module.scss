@@ -149,18 +149,6 @@
   .tjanster__hero_desc {
     font-size: 14px;
   }
-
-  .tjanster__subcategories {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
-    padding-bottom: 0.25rem;
-
-    &::-webkit-scrollbar { display: none; }
-
-    > * { flex-shrink: 0; }
-  }
 }
 
 // ================================
@@ -917,5 +905,22 @@
       border-color: #055880;
       color: white;
     }
+  }
+}
+
+// Måste ligga EFTER bas-stilen ovan för att media query ska vinna
+@media (max-width: 768px) {
+  .tjanster__subcategories {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 0.25rem;
+
+    &::-webkit-scrollbar { display: none; }
+  }
+
+  .tjanster__sub_pill {
+    flex-shrink: 0;
   }
 }
