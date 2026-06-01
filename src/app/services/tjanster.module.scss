@@ -5,7 +5,7 @@
 .tjanster__hero {
   width: 100%;
   min-height: 280px;
-  background-image: url('/services-hero-bg.png');
+  background-image: url('/images/services-hero-bg.png');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -126,7 +126,7 @@
 
 @media (max-width: 768px) {
   .tjanster__hero {
-    background-image: url('/services-hero-bg-mobile.png');
+    background-image: url('/images/services-hero-bg-mobile.png');
     min-height: 220px;
     align-items: flex-end;
     padding: 0 0 20px;
