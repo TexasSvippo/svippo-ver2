@@ -1,11 +1,13 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { categories } from '@/data/categories'
+import { supabase } from '@/lib/supabase'
+import useAuth from '@/hooks/useAuth'
 import styles from './tjanster.module.scss'
-import { MapPin, Star } from 'lucide-react'
+import { MapPin, Star, Share2, Flag, MessageCircle, Pencil, Trash2 } from 'lucide-react'
 
 type Service = {
   id: string
@@ -24,9 +26,7 @@ type Service = {
   reviews: number
 }
 
-type Props = {
-  services: Service[]
-}
+type Props = { services: Service[] }
 
 const WORD_LIMIT = 20
 
@@ -40,45 +40,42 @@ const categoryDescriptions: Record<string, string> = {
   'bygg-hantverk':     'Förverkliga ditt byggprojekt och anlita hantverkare du kan lita på.',
   'frakt-flytt':       'Flytta smidigt och stressfritt och hitta hjälp med transport och flytt nära dig.',
 }
-
 const DEFAULT_DESC = 'Svippo kopplar ihop dig med kvalificerade utförare inom hundratals kategorier.'
 
 function truncate(text: string, limit: number) {
   if (!text) return ''
   const words = text.split(' ')
-  if (words.length <= limit) return text
-  return words.slice(0, limit).join(' ') + '...'
+  return words.length <= limit ? text : words.slice(0, limit).join(' ') + '...'
 }
-
-function getCardStyle(accountType: string) {
-  if (accountType === 'foretag') return styles['service_card--foretag']
-  if (accountType === 'uf-foretag') return styles['service_card--uf']
+function getCardStyle(t: string) {
+  if (t === 'foretag') return styles['service_card--foretag']
+  if (t === 'uf-foretag') return styles['service_card--uf']
   return styles['service_card--svippare']
 }
-
-function getAvatarStyle(accountType: string) {
-  if (accountType === 'foretag') return styles['service_card__avatar--foretag']
-  if (accountType === 'uf-foretag') return styles['service_card__avatar--uf']
+function getAvatarStyle(t: string) {
+  if (t === 'foretag') return styles['service_card__avatar--foretag']
+  if (t === 'uf-foretag') return styles['service_card__avatar--uf']
   return styles['service_card__avatar--svippare']
 }
-
-function getBadgeStyle(accountType: string) {
-  if (accountType === 'foretag') return styles['service_card__badge--foretag']
-  if (accountType === 'uf-foretag') return styles['service_card__badge--uf']
+function getBadgeStyle(t: string) {
+  if (t === 'foretag') return styles['service_card__badge--foretag']
+  if (t === 'uf-foretag') return styles['service_card__badge--uf']
   return styles['service_card__badge--svippare']
 }
-
-function getBadgeLabel(accountType: string) {
-  if (accountType === 'foretag') return 'Företag'
-  if (accountType === 'uf-foretag') return 'UF företag'
+function getBadgeLabel(t: string) {
+  if (t === 'foretag') return 'Företag'
+  if (t === 'uf-foretag') return 'UF företag'
   return 'Svippare'
 }
+
+const REPORT_REASONS = ['Felaktig information', 'Olämpligt innehåll', 'Spam', 'Annat']
 
 export default function TjansterClient({ services }: Props) {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const [search, setSearch] = useState(searchParams.get('search') ?? '')
+  const { user } = useAuth()
 
+  const [search, setSearch] = useState(searchParams.get('search') ?? '')
   const selectedCategory    = searchParams.get('kategori')     ?? ''
   const selectedSubcategory = searchParams.get('underkategori') ?? ''
   const [selectedLocation, setSelectedLocation] = useState('')
@@ -86,40 +83,73 @@ export default function TjansterClient({ services }: Props) {
   const [showFilterModal, setShowFilterModal] = useState(false)
   const [maxPrice, setMaxPrice] = useState('')
 
+  // Popup menu
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null)
+  const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set())
+
+  // Toast
+  const [toast, setToast] = useState('')
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Report modal
+  const [reportServiceId, setReportServiceId] = useState<string | null>(null)
+  const [reportReason, setReportReason] = useState('')
+  const [reportSending, setReportSending] = useState(false)
+
   const categoryLabel = categories.find(c => c.id === selectedCategory)?.label ?? ''
 
-  const buildUrl = (cat: string, sub: string, srch: string) => {
-    const params = new URLSearchParams()
-    if (srch) params.set('search', srch)
-    if (cat)  params.set('kategori', cat)
-    if (sub)  params.set('underkategori', sub)
-    return params.toString() ? `/services?${params.toString()}` : '/services'
+  // ── Helpers ────────────────────────────────────────────────────────────────
+
+  const showToast = (msg: string) => {
+    setToast(msg)
+    if (toastTimer.current) clearTimeout(toastTimer.current)
+    toastTimer.current = setTimeout(() => setToast(''), 2500)
   }
 
-  const selectCategory = (catId: string) =>
-    router.replace(buildUrl(catId, '', search), { scroll: false })
+  const buildUrl = (cat: string, sub: string, srch: string) => {
+    const p = new URLSearchParams()
+    if (srch) p.set('search', srch)
+    if (cat)  p.set('kategori', cat)
+    if (sub)  p.set('underkategori', sub)
+    return p.toString() ? `/services?${p.toString()}` : '/services'
+  }
 
-  const selectSubcategory = (sub: string) =>
-    router.replace(buildUrl(selectedCategory, sub, search), { scroll: false })
+  const selectCategory    = (id: string)  => router.replace(buildUrl(id, '', search), { scroll: false })
+  const selectSubcategory = (sub: string) => router.replace(buildUrl(selectedCategory, sub, search), { scroll: false })
 
-  useEffect(() => {
-    router.replace(buildUrl(selectedCategory, selectedSubcategory, search), { scroll: false })
+  // ── Effects ────────────────────────────────────────────────────────────────
+
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search])
+  useEffect(() => { router.replace(buildUrl(selectedCategory, selectedSubcategory, search), { scroll: false }) }, [search])
+
+  // Close popup on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (!(e.target as HTMLElement).closest('[data-card-menu]')) setOpenMenuId(null)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
+
+  // ── Data ───────────────────────────────────────────────────────────────────
 
   const locations = [...new Set(services.map(s => s.location).filter(Boolean))]
 
   const filtered = services
+    .filter(s => !deletedIds.has(s.id))
     .filter(s => {
-      const matchSearch = search === '' ||
-        s.title?.toLowerCase().includes(search.toLowerCase()) ||
-        s.description?.toLowerCase().includes(search.toLowerCase()) ||
-        s.subcategory?.toLowerCase().includes(search.toLowerCase())
-      const matchCategory    = selectedCategory    === '' || s.category_id === selectedCategory
-      const matchSubcategory = selectedSubcategory === '' || s.subcategory === selectedSubcategory
-      const matchLocation    = selectedLocation    === '' || s.location    === selectedLocation
-      const matchPrice       = maxPrice === '' || s.price_type === 'offert' || s.price <= Number(maxPrice)
-      return matchSearch && matchCategory && matchSubcategory && matchLocation && matchPrice
+      const q = search.toLowerCase()
+      const matchSearch = !search ||
+        s.title?.toLowerCase().includes(q) ||
+        s.description?.toLowerCase().includes(q) ||
+        s.subcategory?.toLowerCase().includes(q)
+      return (
+        matchSearch &&
+        (!selectedCategory    || s.category_id === selectedCategory) &&
+        (!selectedSubcategory || s.subcategory  === selectedSubcategory) &&
+        (!selectedLocation    || s.location     === selectedLocation) &&
+        (!maxPrice            || s.price_type === 'offert' || s.price <= Number(maxPrice))
+      )
     })
     .sort((a, b) => {
       if (sortBy === 'price_asc')  return a.price - b.price
@@ -139,15 +169,71 @@ export default function TjansterClient({ services }: Props) {
   const hasFilters = search || selectedCategory || selectedSubcategory || selectedLocation || sortBy !== 'newest' || maxPrice
   const activeFilterCount = [selectedCategory, selectedSubcategory, selectedLocation, sortBy !== 'newest' ? sortBy : '', maxPrice].filter(Boolean).length
 
+  // ── Action handlers ────────────────────────────────────────────────────────
+
+  const handleShare = (e: React.MouseEvent, serviceId: string) => {
+    e.preventDefault(); e.stopPropagation()
+    navigator.clipboard.writeText(`${window.location.origin}/service/${serviceId}`)
+    showToast('Länk kopierad!')
+    setOpenMenuId(null)
+  }
+
+  const handleDelete = async (e: React.MouseEvent, serviceId: string) => {
+    e.preventDefault(); e.stopPropagation()
+    if (!confirm('Är du säker på att du vill ta bort detta inlägg?')) return
+    const { error } = await supabase.from('services').delete().eq('id', serviceId)
+    if (!error) {
+      setDeletedIds(prev => new Set([...prev, serviceId]))
+      showToast('Inlägget togs bort')
+    }
+    setOpenMenuId(null)
+  }
+
+  const handleMessage = async (e: React.MouseEvent, sellerId: string) => {
+    e.preventDefault(); e.stopPropagation()
+    if (!user) { router.push('/login'); return }
+    const check = async (p1: string, p2: string) => {
+      const { data } = await supabase.from('conversations').select('id').eq('participant_1_id', p1).eq('participant_2_id', p2).limit(1)
+      return data?.[0]?.id ?? null
+    }
+    const existing = (await check(user.id, sellerId)) ?? (await check(sellerId, user.id))
+    if (existing) { router.push(`/messages/${existing}`); return }
+    const { data: conv } = await supabase.from('conversations').insert({
+      type: 'inquiry', anchor_type: 'listing', anchor_id: sellerId,
+      participant_1_id: user.id, participant_2_id: sellerId,
+      created_at: new Date().toISOString(),
+    }).select().single()
+    if (conv) router.push(`/messages/${conv.id}`)
+    setOpenMenuId(null)
+  }
+
+  const handleReport = async () => {
+    if (!reportReason || !reportServiceId) return
+    setReportSending(true)
+    await supabase.from('notifications').insert({
+      user_id: user?.id ?? null,
+      type: 'report',
+      message: `Rapporterat tjänst: ${reportReason}`,
+      action_url: `/service/${reportServiceId}`,
+      order_id: reportServiceId,
+      read: false, dismissed: false, email_sent: false,
+      created_at: new Date().toISOString(),
+    })
+    setReportSending(false)
+    setReportServiceId(null)
+    setReportReason('')
+    showToast('Inlägg rapporterat – tack!')
+  }
+
+  // ── Render ─────────────────────────────────────────────────────────────────
+
   return (
     <div className={styles.tjanster}>
 
-      {/* ── Hero ───────────────────────────────────────────────── */}
+      {/* Hero */}
       <div className={styles.tjanster__hero}>
         <div className={styles.tjanster__hero_inner}>
           <div className={styles.tjanster__hero_card}>
-
-            {/* Breadcrumbs */}
             <nav className={styles.tjanster__hero_bc}>
               <Link href="/" className={styles.tjanster__hero_bc_link}>Hem</Link>
               <span className={styles.tjanster__hero_bc_sep}>/</span>
@@ -161,18 +247,8 @@ export default function TjansterClient({ services }: Props) {
                 <span className={styles.tjanster__hero_bc_active}>Tjänster</span>
               )}
             </nav>
-
-            {/* H1 */}
-            <h1 className={styles.tjanster__hero_title}>
-              {selectedCategory ? categoryLabel : 'Tjänster'}
-            </h1>
-
-            {/* Kategoribeskrivning */}
-            <p className={styles.tjanster__hero_desc}>
-              {categoryDescriptions[selectedCategory] ?? DEFAULT_DESC}
-            </p>
-
-            {/* Sökfält */}
+            <h1 className={styles.tjanster__hero_title}>{selectedCategory ? categoryLabel : 'Tjänster'}</h1>
+            <p className={styles.tjanster__hero_desc}>{categoryDescriptions[selectedCategory] ?? DEFAULT_DESC}</p>
             <div className={styles.tjanster__hero_search}>
               <input
                 type="text"
@@ -182,39 +258,28 @@ export default function TjansterClient({ services }: Props) {
                 onChange={e => setSearch(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && router.push(buildUrl(selectedCategory, selectedSubcategory, search))}
               />
-              <button
-                type="button"
-                className={styles.tjanster__hero_search_btn}
-                onClick={() => router.push(buildUrl(selectedCategory, selectedSubcategory, search))}
-              >
+              <button type="button" className={styles.tjanster__hero_search_btn}
+                onClick={() => router.push(buildUrl(selectedCategory, selectedSubcategory, search))}>
                 Sök
               </button>
             </div>
-
           </div>
         </div>
       </div>
 
-      {/* ── Innehåll under hero ─────────────────────────────────── */}
+      {/* Innehåll */}
       <div className={`container ${styles.tjanster__inner}`}>
 
-        {/* Kategorier */}
         {!selectedCategory && (
           <div className={styles.tjanster__categories}>
             {categories.map(cat => (
-              <button
-                key={cat.id}
-                className={styles.tjanster__category_btn}
-                onClick={() => selectCategory(cat.id)}
-              >
-                <span>{cat.icon}</span>
-                <span>{cat.label}</span>
+              <button key={cat.id} className={styles.tjanster__category_btn} onClick={() => selectCategory(cat.id)}>
+                <span>{cat.icon}</span><span>{cat.label}</span>
               </button>
             ))}
           </div>
         )}
 
-        {/* Underkategorier */}
         {selectedCategory && (
           <>
             <div className={styles.tjanster__subcategory_header}>
@@ -227,38 +292,25 @@ export default function TjansterClient({ services }: Props) {
               </button>
             </div>
             <div className={styles.tjanster__subcategories}>
-              <button
-                className={`${styles.tjanster__sub_pill} ${selectedSubcategory === '' ? styles['tjanster__sub_pill--active'] : ''}`}
-                onClick={() => selectSubcategory('')}
-              >
-                Alla
-              </button>
+              <button className={`${styles.tjanster__sub_pill} ${!selectedSubcategory ? styles['tjanster__sub_pill--active'] : ''}`} onClick={() => selectSubcategory('')}>Alla</button>
               {categories.find(c => c.id === selectedCategory)?.subcategories.map(sub => (
-                <button
-                  key={sub}
-                  className={`${styles.tjanster__sub_pill} ${selectedSubcategory === sub ? styles['tjanster__sub_pill--active'] : ''}`}
-                  onClick={() => selectSubcategory(sub)}
-                >
-                  {sub}
-                </button>
+                <button key={sub} className={`${styles.tjanster__sub_pill} ${selectedSubcategory === sub ? styles['tjanster__sub_pill--active'] : ''}`} onClick={() => selectSubcategory(sub)}>{sub}</button>
               ))}
             </div>
           </>
         )}
 
-        {/* Aktiva filter-taggar */}
         {hasFilters && (
           <div className={styles.tjanster__active_filters}>
-            {search         && <span className={styles.tjanster__filter_tag}>&quot;{search}&quot;<button onClick={() => setSearch('')}>✕</button></span>}
-            {selectedCategory && <span className={styles.tjanster__filter_tag}>{categoryLabel}<button onClick={() => selectCategory('')}>✕</button></span>}
+            {search            && <span className={styles.tjanster__filter_tag}>&quot;{search}&quot;<button onClick={() => setSearch('')}>✕</button></span>}
+            {selectedCategory  && <span className={styles.tjanster__filter_tag}>{categoryLabel}<button onClick={() => selectCategory('')}>✕</button></span>}
             {selectedSubcategory && <span className={styles.tjanster__filter_tag}>{selectedSubcategory}<button onClick={() => selectSubcategory('')}>✕</button></span>}
-            {selectedLocation    && <span className={styles.tjanster__filter_tag}><MapPin size={12} /> {selectedLocation}<button onClick={() => setSelectedLocation('')}>✕</button></span>}
-            {maxPrice            && <span className={styles.tjanster__filter_tag}>Pris: {maxPrice}kr<button onClick={() => setMaxPrice('')}>✕</button></span>}
+            {selectedLocation  && <span className={styles.tjanster__filter_tag}><MapPin size={12} /> {selectedLocation}<button onClick={() => setSelectedLocation('')}>✕</button></span>}
+            {maxPrice          && <span className={styles.tjanster__filter_tag}>Pris: {maxPrice}kr<button onClick={() => setMaxPrice('')}>✕</button></span>}
             <button className={styles.tjanster__clear_btn} onClick={clearFilters}>Rensa alla</button>
           </div>
         )}
 
-        {/* Huvud-layout: tjänster + filter */}
         <div className={styles.tjanster__layout}>
 
           {/* Tjänstelista */}
@@ -273,11 +325,7 @@ export default function TjansterClient({ services }: Props) {
             ) : (
               <div className={styles.tjanster__list}>
                 {filtered.map(s => (
-                  <Link
-                    href={`/service/${s.id}`}
-                    key={s.id}
-                    className={`${styles.service_card} ${getCardStyle(s.account_type)}`}
-                  >
+                  <Link href={`/service/${s.id}`} key={s.id} className={`${styles.service_card} ${getCardStyle(s.account_type)}`}>
                     <div className={styles.service_card__top}>
                       <div className={styles.service_card__header}>
                         <div className={`${styles.service_card__avatar} ${getAvatarStyle(s.account_type)}`}>
@@ -297,30 +345,64 @@ export default function TjansterClient({ services }: Props) {
                           </div>
                           <h3 className={styles.service_card__title}>{s.title}</h3>
                         </div>
-                        <button className={styles.service_card__more}>···</button>
+
+                        {/* ··· popup trigger */}
+                        <div className={styles.service_card__more_wrap} data-card-menu>
+                          <button
+                            className={styles.service_card__more}
+                            onClick={e => {
+                              e.preventDefault(); e.stopPropagation()
+                              setOpenMenuId(prev => prev === s.id ? null : s.id)
+                            }}
+                          >···</button>
+
+                          {openMenuId === s.id && (
+                            <div className={styles.card_popup}>
+                              <button className={styles.card_popup__item} onClick={e => handleShare(e, s.id)}>
+                                <Share2 size={15} /> Dela inlägg
+                              </button>
+                              <button className={styles.card_popup__item} onClick={e => {
+                                e.preventDefault(); e.stopPropagation()
+                                setReportServiceId(s.id); setOpenMenuId(null)
+                              }}>
+                                <Flag size={15} /> Rapportera inlägg
+                              </button>
+                              {user && user.id !== s.user_id && (
+                                <button className={styles.card_popup__item} onClick={e => handleMessage(e, s.user_id)}>
+                                  <MessageCircle size={15} /> Skicka meddelande
+                                </button>
+                              )}
+                              {user && user.id === s.user_id && (
+                                <button className={styles.card_popup__item} onClick={e => {
+                                  e.preventDefault(); e.stopPropagation()
+                                  router.push(`/create-service?edit=${s.id}`); setOpenMenuId(null)
+                                }}>
+                                  <Pencil size={15} /> Redigera inlägg
+                                </button>
+                              )}
+                              {user && user.id === s.user_id && (
+                                <button className={`${styles.card_popup__item} ${styles['card_popup__item--danger']}`} onClick={e => handleDelete(e, s.id)}>
+                                  <Trash2 size={15} /> Ta bort inlägg
+                                </button>
+                              )}
+                            </div>
+                          )}
+                        </div>
                       </div>
 
                       {s.description && (
-                        <p className={styles.service_card__description}>
-                          {truncate(s.description, WORD_LIMIT)}
-                        </p>
+                        <p className={styles.service_card__description}>{truncate(s.description, WORD_LIMIT)}</p>
                       )}
                     </div>
 
                     <div className={styles.service_card__footer}>
                       <div className={styles.service_card__badges}>
-                        <span className={`${styles.service_card__badge} ${getBadgeStyle(s.account_type)}`}>
-                          {getBadgeLabel(s.account_type)}
-                        </span>
+                        <span className={`${styles.service_card__badge} ${getBadgeStyle(s.account_type)}`}>{getBadgeLabel(s.account_type)}</span>
                         <span className={styles.service_card__subcategory_badge}>{s.subcategory}</span>
                       </div>
                       <div className={styles.service_card__price}>
-                        <span className={styles.service_card__price_from}>
-                          {s.price_type === 'offert' ? '' : 'från'}
-                        </span>
-                        <strong className={styles.service_card__price_value}>
-                          {s.price_type === 'offert' ? 'Offert' : `${s.price}kr`}
-                        </strong>
+                        <span className={styles.service_card__price_from}>{s.price_type === 'offert' ? '' : 'från'}</span>
+                        <strong className={styles.service_card__price_value}>{s.price_type === 'offert' ? 'Offert' : `${s.price}kr`}</strong>
                       </div>
                     </div>
                   </Link>
@@ -329,17 +411,11 @@ export default function TjansterClient({ services }: Props) {
             )}
           </div>
 
-          {/* Filter-panel – höger sida */}
+          {/* Filter-panel */}
           <aside className={styles.tjanster__filter_panel}>
             <div className={styles.filter_panel__inner}>
               <h2 className={styles.filter_panel__title}>Filter</h2>
-
-              {maxPrice && (
-                <div className={styles.filter_panel__active_tag}>
-                  Pris: {maxPrice}kr <button onClick={() => setMaxPrice('')}>✕</button>
-                </div>
-              )}
-
+              {maxPrice && <div className={styles.filter_panel__active_tag}>Pris: {maxPrice}kr <button onClick={() => setMaxPrice('')}>✕</button></div>}
               <div className={styles.filter_panel__group}>
                 <label className={styles.filter_panel__label}>Kategorier</label>
                 <div className={styles.filter_panel__search_wrap}>
@@ -348,35 +424,25 @@ export default function TjansterClient({ services }: Props) {
                 <div className={styles.filter_panel__checkboxes}>
                   {categories.map(cat => (
                     <label key={cat.id} className={styles.filter_panel__checkbox_label}>
-                      <input
-                        type="checkbox"
-                        checked={selectedCategory === cat.id}
-                        onChange={() => selectCategory(selectedCategory === cat.id ? '' : cat.id)}
-                      />
+                      <input type="checkbox" checked={selectedCategory === cat.id} onChange={() => selectCategory(selectedCategory === cat.id ? '' : cat.id)} />
                       <span>{cat.icon} {cat.label}</span>
                     </label>
                   ))}
                 </div>
               </div>
-
               {selectedCategory && (
                 <div className={styles.filter_panel__group}>
                   <label className={styles.filter_panel__label}>Underkategori</label>
                   <div className={styles.filter_panel__checkboxes}>
                     {categories.find(c => c.id === selectedCategory)?.subcategories.map(sub => (
                       <label key={sub} className={styles.filter_panel__checkbox_label}>
-                        <input
-                          type="checkbox"
-                          checked={selectedSubcategory === sub}
-                          onChange={() => selectSubcategory(selectedSubcategory === sub ? '' : sub)}
-                        />
+                        <input type="checkbox" checked={selectedSubcategory === sub} onChange={() => selectSubcategory(selectedSubcategory === sub ? '' : sub)} />
                         <span>{sub}</span>
                       </label>
                     ))}
                   </div>
                 </div>
               )}
-
               <div className={styles.filter_panel__group}>
                 <label className={styles.filter_panel__label}>Plats</label>
                 <select className={styles.filter_panel__select} value={selectedLocation} onChange={e => setSelectedLocation(e.target.value)}>
@@ -384,18 +450,10 @@ export default function TjansterClient({ services }: Props) {
                   {locations.map(loc => <option key={loc} value={loc}>{loc}</option>)}
                 </select>
               </div>
-
               <div className={styles.filter_panel__group}>
                 <label className={styles.filter_panel__label}>Max pris (kr)</label>
-                <input
-                  className={styles.filter_panel__input}
-                  type="number"
-                  placeholder="T.ex. 2000"
-                  value={maxPrice}
-                  onChange={e => setMaxPrice(e.target.value)}
-                />
+                <input className={styles.filter_panel__input} type="number" placeholder="T.ex. 2000" value={maxPrice} onChange={e => setMaxPrice(e.target.value)} />
               </div>
-
               <div className={styles.filter_panel__group}>
                 <label className={styles.filter_panel__label}>Sortera</label>
                 <select className={styles.filter_panel__select} value={sortBy} onChange={e => setSortBy(e.target.value)}>
@@ -405,19 +463,15 @@ export default function TjansterClient({ services }: Props) {
                   <option value="rating">Bäst betyg</option>
                 </select>
               </div>
-
               <button className={`btn btn-primary ${styles.filter_panel__btn}`} onClick={() => {}}>Filtrera</button>
-
-              {hasFilters && (
-                <button className={styles.filter_panel__clear} onClick={clearFilters}>Rensa filter</button>
-              )}
+              {hasFilters && <button className={styles.filter_panel__clear} onClick={clearFilters}>Rensa filter</button>}
             </div>
           </aside>
 
         </div>
       </div>
 
-      {/* Mobil filter-modal */}
+      {/* Filter-modal (mobil) */}
       {showFilterModal && (
         <div className="modal-backdrop" onClick={() => setShowFilterModal(false)}>
           <div className={`modal-box ${styles.filter_modal}`} onClick={e => e.stopPropagation()}>
@@ -438,9 +492,7 @@ export default function TjansterClient({ services }: Props) {
                   <label>Underkategori</label>
                   <select className={styles.filter_panel__select} value={selectedSubcategory} onChange={e => selectSubcategory(e.target.value)}>
                     <option value="">Alla underkategorier</option>
-                    {categories.find(c => c.id === selectedCategory)?.subcategories.map(sub => (
-                      <option key={sub} value={sub}>{sub}</option>
-                    ))}
+                    {categories.find(c => c.id === selectedCategory)?.subcategories.map(sub => <option key={sub} value={sub}>{sub}</option>)}
                   </select>
                 </div>
               )}
@@ -479,11 +531,45 @@ export default function TjansterClient({ services }: Props) {
           className={`${styles.tjanster__filter_btn} ${activeFilterCount > 0 ? styles['tjanster__filter_btn--active'] : ''}`}
           onClick={() => setShowFilterModal(true)}
         >
-          🎛️ Filter
-          {activeFilterCount > 0 && <span className={styles.tjanster__filter_badge}>{activeFilterCount}</span>}
+          🎛️ Filter{activeFilterCount > 0 && <span className={styles.tjanster__filter_badge}>{activeFilterCount}</span>}
         </button>
         {hasFilters && <button className={styles.tjanster__clear_btn} onClick={clearFilters}>Rensa</button>}
       </div>
+
+      {/* Rapporteringsmodal */}
+      {reportServiceId && (
+        <div className={styles.report_overlay} onClick={() => setReportServiceId(null)}>
+          <div className={styles.report_modal} onClick={e => e.stopPropagation()}>
+            <div className={styles.report_modal__header}>
+              <h2>Rapportera inlägg</h2>
+              <button onClick={() => setReportServiceId(null)}>✕</button>
+            </div>
+            <div className={styles.report_modal__body}>
+              {REPORT_REASONS.map(reason => (
+                <label key={reason} className={styles.report_modal__option}>
+                  <input
+                    type="radio"
+                    name="report_reason"
+                    value={reason}
+                    checked={reportReason === reason}
+                    onChange={e => setReportReason(e.target.value)}
+                  />
+                  {reason}
+                </label>
+              ))}
+            </div>
+            <div className={styles.report_modal__footer}>
+              <button className="btn btn-outline" onClick={() => setReportServiceId(null)}>Avbryt</button>
+              <button className="btn btn-primary" onClick={handleReport} disabled={!reportReason || reportSending}>
+                {reportSending ? 'Skickar...' : 'Skicka rapport'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toast */}
+      {toast && <div className={styles.toast}>{toast}</div>}
 
     </div>
   )

@@ -395,8 +395,8 @@
 
   // UF-företag – lila border
   &--uf {
-    border-color: #342054;
-    &:hover { border-color: #342054; box-shadow: 0 4px 16px rgba(52, 32, 84, 0.15); }
+    border-color: #ff99cc;
+    &:hover { border-color: #b31162; box-shadow: 0 4px 16px rgba(52, 32, 84, 0.15); }
   }
 }
 
@@ -541,9 +541,9 @@
   }
 
   &--uf {
-    background: #ede8f5;
-    color: #342054;
-    border: 1px solid #342054;
+    background: #f5e6ed;
+    color: #3b0520;
+    border: 1px solid #ff99cc;
   }
 }
 
@@ -955,4 +955,145 @@
   .service_card__avatar {
     display: none;
   }
+}
+
+// ================================
+// POPUP-MENY PÅ TJÄNSTEKORT
+// ================================
+
+.service_card__more_wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.card_popup {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.13);
+  border: 1px solid var(--color-border);
+  min-width: 200px;
+  z-index: 120;
+  overflow: hidden;
+}
+
+.card_popup__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0.75rem 1rem;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-dark);
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  font-family: var(--font-body);
+  transition: background 0.1s;
+
+  &:hover { background: #f5f5f5; }
+
+  &--danger {
+    color: #dc2626;
+    border-top: 1px solid var(--color-border);
+    &:hover { background: #fef2f2; }
+  }
+}
+
+// ================================
+// RAPPORTERINGSMODAL
+// ================================
+
+.report_overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.report_modal {
+  background: white;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  width: 100%;
+  max-width: 400px;
+  overflow: hidden;
+}
+
+.report_modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--color-border);
+
+  h2 { font-size: 18px; font-weight: 700; color: var(--color-dark); }
+  button { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--color-gray); line-height: 1; &:hover { color: var(--color-dark); } }
+}
+
+.report_modal__body {
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.report_modal__option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--color-dark);
+  cursor: pointer;
+
+  input[type='radio'] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--color-primary);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+}
+
+.report_modal__footer {
+  display: flex;
+  gap: 12px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--color-border);
+
+  button { flex: 1; justify-content: center; }
+}
+
+// ================================
+// TOAST
+// ================================
+
+.toast {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--color-dark);
+  color: white;
+  padding: 10px 22px;
+  border-radius: var(--radius-full);
+  font-size: 14px;
+  font-weight: 500;
+  z-index: 1000;
+  pointer-events: none;
+  white-space: nowrap;
+  animation: toast_in 0.2s ease;
+}
+
+@keyframes toast_in {
+  from { opacity: 0; transform: translateX(-50%) translateY(8px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
