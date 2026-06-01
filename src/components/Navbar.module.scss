@@ -258,11 +258,52 @@
   }
 }
 
-// Liten profilbild i mobilmenyn
+// Liten profilbild i mobilmenyn (legacy, behålls för bakåtkompatibilitet)
 .navbar__avatar_sm {
   width: 36px;
   height: 36px;
   font-size: 14px;
+}
+
+// Pill – hamburgare + profilbild i gemensam kapsel (mobil)
+.navbar__menu_pill {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 999px;
+  padding: 0.3rem 0.4rem 0.3rem 0.75rem;
+  cursor: pointer;
+  background: white;
+  color: var(--color-dark);
+  font-family: var(--font-body);
+  transition: border-color 0.15s;
+
+  &:hover {
+    border-color: var(--color-primary);
+  }
+}
+
+// Avatar-cirkel inuti pillen
+.navbar__pill_avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-primary);
+  color: white;
+  flex-shrink: 0;
+}
+
+// Initialbokstav inuti pill-avataren
+.navbar__pill_initial {
+  font-size: 13px;
+  font-weight: 700;
+  color: white;
+  line-height: 1;
 }
 
 // ================================

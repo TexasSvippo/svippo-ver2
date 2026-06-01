@@ -21,7 +21,6 @@ export default function Navbar() {
   const [megaOpen, setMegaOpen] = useState(false)
   const [megaRequestsOpen, setMegaRequestsOpen] = useState(false)
   const [showCreate, setShowCreate] = useState(false)
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const router = useRouter()
 
   // Stäng dropdowns vid klick utanför
@@ -167,7 +166,7 @@ export default function Navbar() {
           )}
         </div>
 
-        {/* Mobil högersektion – notifikationer/hamburgare/profilbild */}
+        {/* Mobil högersektion – notifikationer + pill (hamburgare + profilbild) */}
         <div className={styles.navbar__mobile_right}>
           {!loading && user && (
             <Link href="/notifications" className={styles.navbar__notif_btn}>
@@ -175,59 +174,62 @@ export default function Navbar() {
               {unreadCount > 0 && <span className={styles.navbar__notif_badge}>{unreadCount}</span>}
             </Link>
           )}
-          <button
-            className={styles.navbar__mobile_icon_btn}
-            onClick={() => setMobileMenuOpen(o => !o)}
-            aria-label="Öppna meny"
-            aria-expanded={mobileMenuOpen}
-          >
-            <Menu size={22} />
-          </button>
-          {!loading && user && (
-            <div className={styles.navbar__profile}>
-              <button
-                className={`${styles.navbar__avatar} ${styles.navbar__avatar_sm}`}
-                onClick={() => setMenuOpen(o => !o)}
-              >
-                {avatarUrl
-                  ? <Image src={avatarUrl} alt="Profil" width={36} height={36} className={styles.navbar__avatar_img} />
-                  : <span>{user.email?.charAt(0).toUpperCase()}</span>
-                }
-              </button>
-              {menuOpen && (
-                <div className={styles.navbar__dropdown}>
-                  <div className={styles.navbar__dropdown_email}>{user.email}</div>
-                  <Link href="/profile" className={styles.navbar__dropdown_item} onClick={() => setMenuOpen(false)}>
-                    <User size={16} /> Min profil
-                  </Link>
-                  <Link href="/services" className={styles.navbar__dropdown_item} onClick={() => setMenuOpen(false)}>
-                    <Wrench size={16} /> Tjänster
-                  </Link>
-                  <Link href="/requests" className={styles.navbar__dropdown_item} onClick={() => setMenuOpen(false)}>
-                    <Users size={16} /> Förfrågningar
-                  </Link>
-                  <Link href="/bestallningar" className={styles.navbar__dropdown_item} onClick={() => setMenuOpen(false)}>
-                    <Package size={16} /> Beställningar
-                  </Link>
-                  <Link href="/messages" className={styles.navbar__dropdown_item} onClick={() => setMenuOpen(false)}>
-                    <MessageCircle size={16} /> Meddelanden
-                  </Link>
-                  <button
-                    className={`${styles.navbar__dropdown_item} ${styles.navbar__dropdown_create}`}
-                    onClick={() => { setMenuOpen(false); setShowCreate(true) }}
-                  >
-                    <Pencil size={16} /> Skapa inlägg
-                  </button>
-                  <button
-                    className={`${styles.navbar__dropdown_item} ${styles.navbar__dropdown_signout}`}
-                    onClick={handleSignOut}
-                  >
-                    <LogOut size={16} /> Logga ut
-                  </button>
-                </div>
+
+          {/* Pill: hamburgare + profilbild i gemensam kapsel */}
+          <div className={styles.navbar__profile}>
+            <button
+              className={styles.navbar__menu_pill}
+              onClick={() => setMenuOpen(o => !o)}
+              aria-label="Öppna meny"
+              aria-expanded={menuOpen}
+            >
+              <Menu size={20} />
+              {!loading && user && (
+                <span className={styles.navbar__pill_avatar}>
+                  {avatarUrl
+                    ? <Image src={avatarUrl} alt="Profil" width={32} height={32} className={styles.navbar__avatar_img} />
+                    : <span className={styles.navbar__pill_initial}>{user.email?.charAt(0).toUpperCase()}</span>
+                  }
+                </span>
               )}
-            </div>
-          )}
+            </button>
+            {menuOpen && (
+              <div className={styles.navbar__dropdown}>
+                {user && <div className={styles.navbar__dropdown_email}>{user.email}</div>}
+                <Link href="/profile" className={styles.navbar__dropdown_item} onClick={() => setMenuOpen(false)}>
+                  <User size={16} /> Min profil
+                </Link>
+                <Link href="/services" className={styles.navbar__dropdown_item} onClick={() => setMenuOpen(false)}>
+                  <Wrench size={16} /> Tjänster
+                </Link>
+                <Link href="/requests" className={styles.navbar__dropdown_item} onClick={() => setMenuOpen(false)}>
+                  <Users size={16} /> Förfrågningar
+                </Link>
+                <Link href="/bestallningar" className={styles.navbar__dropdown_item} onClick={() => setMenuOpen(false)}>
+                  <Package size={16} /> Beställningar
+                </Link>
+                <Link href="/messages" className={styles.navbar__dropdown_item} onClick={() => setMenuOpen(false)}>
+                  <MessageCircle size={16} /> Meddelanden
+                </Link>
+                {user && (
+                  <>
+                    <button
+                      className={`${styles.navbar__dropdown_item} ${styles.navbar__dropdown_create}`}
+                      onClick={() => { setMenuOpen(false); setShowCreate(true) }}
+                    >
+                      <Pencil size={16} /> Skapa inlägg
+                    </button>
+                    <button
+                      className={`${styles.navbar__dropdown_item} ${styles.navbar__dropdown_signout}`}
+                      onClick={handleSignOut}
+                    >
+                      <LogOut size={16} /> Logga ut
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
         </div>
 
       </div>
