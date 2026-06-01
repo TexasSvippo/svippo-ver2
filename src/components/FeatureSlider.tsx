@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import styles from './FeatureSlider.module.scss'
 
@@ -33,9 +33,35 @@ const SLIDES = [
 
 export default function FeatureSlider() {
   const [current, setCurrent] = useState(0)
+  const trackRef = useRef<HTMLDivElement>(null)
 
-  const prev = () => setCurrent(i => (i === 0 ? SLIDES.length - 1 : i - 1))
-  const next = () => setCurrent(i => (i === SLIDES.length - 1 ? 0 : i + 1))
+  // Distance between the start of one card and the start of the next,
+  // computed from the actual rendered positions so it works on all breakpoints.
+  const getStep = useCallback(() => {
+    const track = trackRef.current?.firstElementChild as HTMLElement | null
+    const c0 = track?.children[0] as HTMLElement | undefined
+    const c1 = track?.children[1] as HTMLElement | undefined
+    if (c0 && c1) {
+      return c1.getBoundingClientRect().left - c0.getBoundingClientRect().left
+    }
+    return c0?.getBoundingClientRect().width ?? 0
+  }, [])
+
+  const prev = () => trackRef.current?.scrollBy({ left: -getStep(), behavior: 'smooth' })
+  const next = () => trackRef.current?.scrollBy({ left:  getStep(), behavior: 'smooth' })
+
+  const handleScroll = useCallback(() => {
+    const el = trackRef.current
+    const step = getStep()
+    if (!el || step === 0) return
+    // When the container can't scroll all the way to the last snap point
+    // (not enough overflow), detect end-of-scroll and force the last index.
+    if (el.scrollLeft + el.clientWidth >= el.scrollWidth - 4) {
+      setCurrent(SLIDES.length - 1)
+      return
+    }
+    setCurrent(Math.round(el.scrollLeft / step))
+  }, [getStep])
 
   return (
     <section className={styles.fs}>
@@ -45,21 +71,14 @@ export default function FeatureSlider() {
         <div className={styles.fs__header}>
           <h2 className={styles.fs__title}>Svippa på ditt sätt</h2>
           <div className={styles.fs__nav}>
-            <button className={styles.fs__nav_btn} onClick={prev} aria-label="Föregående">
-              ‹
-            </button>
-            <button className={styles.fs__nav_btn} onClick={next} aria-label="Nästa">
-              ›
-            </button>
+            <button className={styles.fs__nav_btn} onClick={prev} aria-label="Föregående">‹</button>
+            <button className={styles.fs__nav_btn} onClick={next} aria-label="Nästa">›</button>
           </div>
         </div>
 
-        {/* Desktop – karusell med overflow */}
-        <div className={styles.fs__track_wrap}>
-          <div
-            className={styles.fs__track}
-            style={{ transform: `translateX(calc(${current} * -1 * (min(680px, 75vw) + 24px)))` }}
-          >
+        {/* Track */}
+        <div className={styles.fs__track_wrap} ref={trackRef} onScroll={handleScroll}>
+          <div className={styles.fs__track}>
             {SLIDES.map((slide, idx) => (
               <div
                 key={idx}
@@ -73,22 +92,25 @@ export default function FeatureSlider() {
                   <span className={styles.fs__card_label}>{slide.label}</span>
                   <h3 className={styles.fs__card_title}>{slide.title}</h3>
                   <p className={styles.fs__card_desc}>{slide.desc}</p>
-                  <Link href={slide.href} className={styles.fs__card_cta}>
-                    {slide.cta}
-                  </Link>
+                  <Link href={slide.href} className={styles.fs__card_cta}>{slide.cta}</Link>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Mobil – dots */}
+        {/* Dots – mobil */}
         <div className={styles.fs__dots}>
           {SLIDES.map((_, idx) => (
             <button
               key={idx}
               className={`${styles.fs__dot} ${idx === current ? styles['fs__dot--active'] : ''}`}
-              onClick={() => setCurrent(idx)}
+              onClick={() => {
+                const el = trackRef.current
+                if (!el) return
+                el.scrollTo({ left: idx * getStep(), behavior: 'smooth' })
+                setCurrent(idx)
+              }}
               aria-label={`Gå till kort ${idx + 1}`}
             />
           ))}
