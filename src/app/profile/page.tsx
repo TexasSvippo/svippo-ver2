@@ -502,11 +502,11 @@ export default function ProfilePage() {
         {/* PLACERADE BESTÄLLNINGAR */}
         {activeSection === 'placerade-bestallningar' && (() => {
           const filteredPlaced = placedOrders.filter(order => {
-            // Type filter – uses service_id if present in raw data
+            // Type filter – uses service_id / request_id from raw select('*') data
             if (placedTypeFilter !== 'all') {
-              const hasServiceId = !!(order as PlacedOrder & { service_id?: string }).service_id
-              if (placedTypeFilter === 'services' && !hasServiceId) return false
-              if (placedTypeFilter === 'requests' && hasServiceId) return false
+              const o = order as PlacedOrder & { service_id?: string; request_id?: string }
+              if (placedTypeFilter === 'services' && !o.service_id) return false
+              if (placedTypeFilter === 'requests' && !o.request_id) return false
             }
             // Status filter
             if (placedStatusFilter === 'active')
@@ -573,8 +573,9 @@ export default function ProfilePage() {
 
                 // Shared card renderer used for both active and history lists
                 const renderPlacedCard = (order: PlacedOrder) => {
-                  const raw = order as PlacedOrder & { service_id?: string; conversation_id?: string; review_id?: string }
-                  const isService = !!raw.service_id
+                  const raw = order as PlacedOrder & { service_id?: string; request_id?: string; conversation_id?: string; review_id?: string }
+                  const isService = !!raw.service_id    // service_id present → Tjänst
+                  // request_id present (or no service_id) → Förfrågan
                   const ps = order.project_status
                   const borderCls = ps === 'delivered' ? styles['placed_card--action'] : ps === 'completed' || order.status === 'rejected' ? styles['placed_card--done'] : styles['placed_card--ongoing']
                   const friendlyStatus = order.status === 'rejected' ? 'Nekad' : ps === 'completed' ? 'Avslutat' : ps === 'delivered' ? 'Inväntar godkännande' : order.status === 'accepted' ? 'Pågår' : 'Väntar på utföraren'
