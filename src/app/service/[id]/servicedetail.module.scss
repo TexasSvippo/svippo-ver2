@@ -9,6 +9,13 @@
   gap: 0;
 }
 
+@media (max-width: 768px) {
+  .detail {
+    overflow-x: hidden;
+    padding: 16px 0 60px;
+  }
+}
+
 // Brödsmulor
 .detail__breadcrumb {
   display: flex;
