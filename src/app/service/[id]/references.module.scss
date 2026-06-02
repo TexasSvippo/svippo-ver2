@@ -63,12 +63,12 @@
 .refs__track {
   display: flex;
   gap: 16px;
-  padding-bottom: 4px;
+  padding-bottom: 8px;
 
   &::after {
     content: '';
     display: block;
-    min-width: 1px;
+    min-width: 1rem;
     flex-shrink: 0;
   }
 }
@@ -231,6 +231,41 @@
   margin: 0;
 }
 
+@media (max-width: 768px) {
+  // Snap-scroll track: pad the start so first card isn't flush against the edge
+  .refs__track_wrap {
+    padding-left: 1rem;
+    scroll-padding-left: 1rem;
+    // extend to bleed past container padding so cards peek properly
+    margin-left: -1rem;
+    margin-right: -1rem;
+  }
+
+  // Cards fill ~85% of screen width, capped at 320px
+  .refs__card {
+    width: 85vw;
+    max-width: 320px;
+  }
+
+  .refs__card_img_wrap {
+    height: 200px;
+  }
+
+  // Ensure image never overflows its container
+  .refs__card_img {
+    width: 100%;
+    max-width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  // Nav buttons are redundant with touch-scroll — hide on mobile
+  .refs__nav {
+    display: none;
+  }
+}
+
 @media (max-width: 640px) {
   .modal {
     grid-template-columns: 1fr;
@@ -248,13 +283,5 @@
 
   .modal_title {
     font-size: 18px;
-  }
-
-  .refs__card {
-    width: 220px;
-  }
-
-  .refs__card_img_wrap {
-    height: 150px;
   }
 }
