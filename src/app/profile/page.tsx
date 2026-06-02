@@ -102,6 +102,10 @@ export default function ProfilePage() {
 
   const [dbAccountType, setDbAccountType] = useState<string | null>(null)
 
+  // Placerade beställningar – filter state
+  const [placedTypeFilter, setPlacedTypeFilter] = useState<'all' | 'services' | 'requests'>('all')
+  const [placedStatusFilter, setPlacedStatusFilter] = useState<'all' | 'active' | 'action' | 'completed'>('all')
+
   const resolvedAccountType = dbAccountType ?? accountType
   const isCompanyType = resolvedAccountType === 'foretag' || resolvedAccountType === 'uf-foretag'
   const isBestellare = resolvedAccountType === 'bestellare'
@@ -495,28 +499,90 @@ export default function ProfilePage() {
         )}
 
         {/* PLACERADE BESTÄLLNINGAR */}
-        {activeSection === 'placerade-bestallningar' && (
-          <div className={styles.profile__section}>
-            <h1 className={styles.profile__section_title}>Placerade beställningar</h1>
-            {placedOrders.length === 0 ? (
-              <div className={styles.profile__empty}><Send size={32} /><p>Du har inte beställt några tjänster ännu.</p><button className="btn btn-primary" onClick={() => router.push('/services')}>Utforska tjänster</button></div>
-            ) : (
-              <div className={styles.profile__list}>
-                {placedOrders.map(order => (
-                  <Link href={`/my-order/${order.id}`} key={order.id} className={`${styles.profile__item} card`}>
-                    <div className={styles.profile__item_icon}>{order.project_status === 'completed' ? <CheckCircle size={18} /> : order.status === 'pending' ? <Clock size={18} /> : order.status === 'accepted' ? '🔄' : <XCircle size={18} />}</div>
-                    <div className={styles.profile__item_info}>
-                      <strong>{order.service_title}</strong>
-                      <span>Utförare: {order.seller_name}</span>
-                      <p className={styles.profile__item_message}>{order.message}</p>
-                    </div>
-                    <span className={`${styles.profile__item_tag} ${statusTag(order)}`}>{statusLabel(order)}</span>
-                  </Link>
+        {activeSection === 'placerade-bestallningar' && (() => {
+          const filteredPlaced = placedOrders.filter(order => {
+            // Type filter – uses service_id if present in raw data
+            if (placedTypeFilter !== 'all') {
+              const hasServiceId = !!(order as PlacedOrder & { service_id?: string }).service_id
+              if (placedTypeFilter === 'services' && !hasServiceId) return false
+              if (placedTypeFilter === 'requests' && hasServiceId) return false
+            }
+            // Status filter
+            if (placedStatusFilter === 'active')
+              return order.status === 'accepted' && order.project_status !== 'completed'
+            if (placedStatusFilter === 'action')
+              return order.project_status === 'delivered'
+            if (placedStatusFilter === 'completed')
+              return order.project_status === 'completed' || order.status === 'rejected'
+            return true
+          })
+
+          const typePills: { key: typeof placedTypeFilter; label: string }[] = [
+            { key: 'all', label: 'Alla' },
+            { key: 'services', label: 'Tjänster' },
+            { key: 'requests', label: 'Förfrågningar' },
+          ]
+          const statusPills: { key: typeof placedStatusFilter; label: string }[] = [
+            { key: 'all', label: 'Alla' },
+            { key: 'active', label: 'Aktiva' },
+            { key: 'action', label: 'Kräver handling' },
+            { key: 'completed', label: 'Avslutade' },
+          ]
+
+          return (
+            <div className={styles.profile__section}>
+              <h1 className={styles.profile__section_title}>Placerade beställningar</h1>
+
+              {/* Type filter */}
+              <div className={styles.filter_bar}>
+                {typePills.map(p => (
+                  <button
+                    key={p.key}
+                    type="button"
+                    className={`${styles.filter_pill} ${placedTypeFilter === p.key ? styles['filter_pill--active'] : ''}`}
+                    onClick={() => setPlacedTypeFilter(p.key)}
+                  >
+                    {p.label}
+                  </button>
                 ))}
               </div>
-            )}
-          </div>
-        )}
+
+              {/* Status filter */}
+              <div className={styles.filter_bar}>
+                {statusPills.map(p => (
+                  <button
+                    key={p.key}
+                    type="button"
+                    className={`${styles.filter_pill} ${placedStatusFilter === p.key ? styles['filter_pill--active'] : ''}`}
+                    onClick={() => setPlacedStatusFilter(p.key)}
+                  >
+                    {p.label}
+                  </button>
+                ))}
+              </div>
+
+              {placedOrders.length === 0 ? (
+                <div className={styles.profile__empty}><Send size={32} /><p>Du har inte beställt några tjänster ännu.</p><button className="btn btn-primary" onClick={() => router.push('/services')}>Utforska tjänster</button></div>
+              ) : filteredPlaced.length === 0 ? (
+                <div className={styles.profile__empty}><p>Inga beställningar matchar valt filter.</p></div>
+              ) : (
+                <div className={styles.profile__list}>
+                  {filteredPlaced.map(order => (
+                    <Link href={`/my-order/${order.id}`} key={order.id} className={`${styles.profile__item} card`}>
+                      <div className={styles.profile__item_icon}>{order.project_status === 'completed' ? <CheckCircle size={18} /> : order.status === 'pending' ? <Clock size={18} /> : order.status === 'accepted' ? '🔄' : <XCircle size={18} />}</div>
+                      <div className={styles.profile__item_info}>
+                        <strong>{order.service_title}</strong>
+                        <span>Utförare: {order.seller_name}</span>
+                        <p className={styles.profile__item_message}>{order.message}</p>
+                      </div>
+                      <span className={`${styles.profile__item_tag} ${statusTag(order)}`}>{statusLabel(order)}</span>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+          )
+        })()}
 
         {/* MINA FÖRFRÅGNINGAR */}
         {activeSection === 'mina-forfragningar' && (
