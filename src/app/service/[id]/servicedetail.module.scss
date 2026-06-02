@@ -37,14 +37,18 @@
 
 // Layout
 .detail__layout {
-  display: grid;
-  grid-template-columns: 1fr 340px;
-  gap: 32px;
-  align-items: start;
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
 }
 
 // Huvudinnehåll
 .detail__main {
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 32px;
@@ -155,6 +159,8 @@
 
 // Sidebar
 .detail__sidebar {
+  width: 320px;
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -451,10 +457,12 @@
 
 @media (max-width: 768px) {
   .detail__layout {
-    grid-template-columns: 1fr;
+    flex-direction: column;
+    padding: 1rem;
   }
 
   .detail__sidebar {
+    width: 100%;
     position: static;
   }
 
