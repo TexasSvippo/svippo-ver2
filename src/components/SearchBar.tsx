@@ -161,6 +161,7 @@ export default function SearchBar({ hideTypePicker = false, defaultType = 'tjans
         <span className={styles.searchbar__icon}><Search size={16} /></span>
         <input
           type="text"
+          autoComplete="off"
           className={styles.searchbar__input}
           placeholder={`Sök ${searchType === 'tjanster' ? 'tjänster' : 'förfrågningar'}...`}
           value={search}
