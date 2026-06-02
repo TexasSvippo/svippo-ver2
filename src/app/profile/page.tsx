@@ -577,9 +577,9 @@ export default function ProfilePage() {
                   const isService = !!raw.service_id    // service_id present → Tjänst
                   // request_id present (or no service_id) → Förfrågan
                   const ps = order.project_status
-                  const borderCls = ps === 'delivered' ? styles['placed_card--action'] : ps === 'completed' || order.status === 'rejected' ? styles['placed_card--done'] : styles['placed_card--ongoing']
+                  const borderCls = (ps === 'cancelled' || order.status === 'cancelled') ? styles['placed_card--cancelled'] : ps === 'delivered' ? styles['placed_card--action'] : ps === 'completed' || order.status === 'rejected' ? styles['placed_card--done'] : styles['placed_card--ongoing']
                   const friendlyStatus = (ps === 'cancelled' || order.status === 'cancelled') ? 'Avbokad' : order.status === 'rejected' ? 'Nekad' : ps === 'completed' ? 'Avslutat' : ps === 'delivered' ? 'Inväntar godkännande' : order.status === 'accepted' ? 'Pågår' : 'Väntar på utföraren'
-                  const statusCls = ps === 'delivered' ? styles['placed_card__status_text--action'] : ps === 'completed' || order.status === 'rejected' ? styles['placed_card__status_text--done'] : styles['placed_card__status_text--ongoing']
+                  const statusCls = (ps === 'cancelled' || order.status === 'cancelled') ? styles['placed_card__status_text--cancelled'] : ps === 'delivered' ? styles['placed_card__status_text--action'] : ps === 'completed' || order.status === 'rejected' ? styles['placed_card__status_text--done'] : styles['placed_card__status_text--ongoing']
                   const stepKeys = ['pending', 'in_progress', 'delivered', 'completed']
                   const stepLabels = ['Beställd', 'Pågår', 'Levererat', 'Avslutat']
                   const currentStep = ps === 'completed' ? 3 : ps === 'delivered' ? 2 : (ps === 'in_progress' || ps === 'almost_done') ? 1 : order.status === 'accepted' ? 1 : 0

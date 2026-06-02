@@ -1007,9 +1007,10 @@
 
   &:hover { box-shadow: var(--shadow-sm); }
 
-  &--action { border-left-color: #ff5733; }
-  &--ongoing { border-left-color: #378ADD; }
-  &--done    { border-left-color: #b0b0b0; }
+  &--action    { border-left-color: #ff5733; }
+  &--ongoing   { border-left-color: #378ADD; }
+  &--done      { border-left-color: #b0b0b0; }
+  &--cancelled { border-left-color: #E24B4A; }
 }
 
 .placed_card__header {
@@ -1043,9 +1044,10 @@
   font-weight: 600;
   color: var(--color-gray);
 
-  &--action  { color: #cc3300; }
-  &--ongoing { color: #1a5fa8; }
-  &--done    { color: #666; }
+  &--action    { color: #cc3300; }
+  &--ongoing   { color: #1a5fa8; }
+  &--done      { color: #666; }
+  &--cancelled { background: #fdecea; color: #C0392B; border-radius: 4px; padding: 1px 6px; }
 }
 
 .placed_card__title {
