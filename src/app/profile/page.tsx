@@ -562,15 +562,6 @@ export default function ProfilePage() {
                       order.status === 'pending' ? styles['placed_card__status_text--action'] :
                       styles['placed_card__status_text--ongoing']
 
-                    // Progress steps
-                    const stepKeys = ['pending', 'in_progress', 'delivered', 'completed']
-                    const stepLabels = ['Beställd', 'Pågår', 'Levererat', 'Avslutat']
-                    const currentStep =
-                      ps === 'completed' ? 3 :
-                      ps === 'delivered' ? 2 :
-                      (ps === 'in_progress' || ps === 'almost_done') ? 1 :
-                      order.status === 'accepted' ? 1 : 0
-
                     return (
                       <div key={order.id} className={`${styles.placed_card} ${borderCls}`} onClick={() => router.push(`/order/${order.id}`)} style={{ cursor: 'pointer' }}>
                         {/* Header: badge + avatar + name / status */}
@@ -585,24 +576,6 @@ export default function ProfilePage() {
                           <span className={`${styles.placed_card__status_text} ${statusCls}`}>{friendlyStatus}</span>
                         </div>
                         <div className={styles.placed_card__title}>{order.service_title}</div>
-                        {/* Progress bar */}
-                        <div className={styles.placed_card__progress}>
-                          <div className={styles.placed_card__steps}>
-                            {stepKeys.map((_, i) => {
-                              const done = i < currentStep
-                              const current = i === currentStep
-                              const cls = done ? styles['placed_card__step--done'] : current ? styles['placed_card__step--current'] : ''
-                              return (
-                                <div key={i} className={`${styles.placed_card__step} ${cls}`}>
-                                  <div className={styles.placed_card__dot} />
-                                </div>
-                              )
-                            })}
-                          </div>
-                          <span className={styles.placed_card__progress_text}>
-                            Steg {currentStep + 1} av 4 – {stepLabels[currentStep]}
-                          </span>
-                        </div>
 
                         {/* CTAs */}
                         {(() => {
