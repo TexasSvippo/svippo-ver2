@@ -105,6 +105,7 @@ export default function ProfilePage() {
   // Placerade beställningar – filter state
   const [placedTypeFilter, setPlacedTypeFilter] = useState<'all' | 'services' | 'requests'>('all')
   const [placedStatusFilter, setPlacedStatusFilter] = useState<'all' | 'active' | 'action' | 'completed'>('all')
+  const [showHistory, setShowHistory] = useState(false)
 
   const resolvedAccountType = dbAccountType ?? accountType
   const isCompanyType = resolvedAccountType === 'foretag' || resolvedAccountType === 'uf-foretag'
@@ -565,132 +566,94 @@ export default function ProfilePage() {
                 <div className={styles.profile__empty}><Send size={32} /><p>Du har inte beställt några tjänster ännu.</p><button className="btn btn-primary" onClick={() => router.push('/services')}>Utforska tjänster</button></div>
               ) : filteredPlaced.length === 0 ? (
                 <div className={styles.profile__empty}><p>Inga beställningar matchar valt filter.</p></div>
-              ) : (
-                <div className={styles.profile__list}>
-                  {filteredPlaced.map(order => {
-                    const raw = order as PlacedOrder & { service_id?: string; conversation_id?: string; review_id?: string }
-                    const isService = !!raw.service_id
-                    const ps = order.project_status
+              ) : (() => {
+                const isDone = (o: PlacedOrder) => o.project_status === 'completed' || o.status === 'cancelled' || o.status === 'rejected'
+                const activeList = filteredPlaced.filter(o => !isDone(o))
+                const historyList = filteredPlaced.filter(o => isDone(o))
 
-                    // Left-border color category
-                    const borderCls = ps === 'delivered'
-                      ? styles['placed_card--action']
-                      : ps === 'completed' || order.status === 'rejected'
-                      ? styles['placed_card--done']
-                      : styles['placed_card--ongoing']
+                // Shared card renderer used for both active and history lists
+                const renderPlacedCard = (order: PlacedOrder) => {
+                  const raw = order as PlacedOrder & { service_id?: string; conversation_id?: string; review_id?: string }
+                  const isService = !!raw.service_id
+                  const ps = order.project_status
+                  const borderCls = ps === 'delivered' ? styles['placed_card--action'] : ps === 'completed' || order.status === 'rejected' ? styles['placed_card--done'] : styles['placed_card--ongoing']
+                  const friendlyStatus = order.status === 'rejected' ? 'Nekad' : ps === 'completed' ? 'Avslutat' : ps === 'delivered' ? 'Inväntar godkännande' : order.status === 'accepted' ? 'Pågår' : 'Väntar på utföraren'
+                  const statusCls = ps === 'delivered' ? styles['placed_card__status_text--action'] : ps === 'completed' || order.status === 'rejected' ? styles['placed_card__status_text--done'] : styles['placed_card__status_text--ongoing']
+                  const stepKeys = ['pending', 'in_progress', 'delivered', 'completed']
+                  const stepLabels = ['Beställd', 'Pågår', 'Levererat', 'Avslutat']
+                  const currentStep = ps === 'completed' ? 3 : ps === 'delivered' ? 2 : (ps === 'in_progress' || ps === 'almost_done') ? 1 : order.status === 'accepted' ? 1 : 0
+                  const openChat = (e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation(); router.push(raw.conversation_id ? `/messages/${raw.conversation_id}` : '/messages') }
+                  const cancelOrder = async (e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation(); if (!confirm('Avboka beställningen?')) return; await supabase.from('orders').update({ status: 'cancelled' }).eq('id', order.id); setPlacedOrders(prev => prev.map(o => o.id === order.id ? { ...o, status: 'cancelled' } : o)) }
 
-                    // Human-readable status
-                    const friendlyStatus =
-                      order.status === 'rejected' ? 'Nekad' :
-                      ps === 'completed' ? 'Avslutat' :
-                      ps === 'delivered' ? 'Inväntar godkännande' :
-                      order.status === 'accepted' ? 'Pågår' :
-                      'Väntar på utföraren'
-
-                    const statusCls =
-                      ps === 'delivered' ? styles['placed_card__status_text--action'] :
-                      ps === 'completed' || order.status === 'rejected' ? styles['placed_card__status_text--done'] :
-                      styles['placed_card__status_text--ongoing']
-
-                    // Progress steps: Beställd → Pågår → Levererat → Avslutat
-                    const stepKeys = ['pending', 'in_progress', 'delivered', 'completed']
-                    const stepLabels = ['Beställd', 'Pågår', 'Levererat', 'Avslutat']
-                    const currentStep =
-                      ps === 'completed' ? 3 :
-                      ps === 'delivered' ? 2 :
-                      (ps === 'in_progress' || ps === 'almost_done') ? 1 :
-                      order.status === 'accepted' ? 1 : 0
-
-                    return (
-                      <Link href={`/my-order/${order.id}`} key={order.id} className={`${styles.placed_card} ${borderCls}`}>
-
-                        {/* Header: type badge + status */}
-                        <div className={styles.placed_card__header}>
-                          <span className={`${styles.placed_card__type_badge} ${isService ? styles['placed_card__type_badge--service'] : styles['placed_card__type_badge--request']}`}>
-                            {isService ? 'Tjänst' : 'Förfrågan'}
-                          </span>
-                          <span className={`${styles.placed_card__status_text} ${statusCls}`}>
-                            {friendlyStatus}
-                          </span>
+                  return (
+                    <Link href={`/my-order/${order.id}`} key={order.id} className={`${styles.placed_card} ${borderCls}`}>
+                      <div className={styles.placed_card__header}>
+                        <span className={`${styles.placed_card__type_badge} ${isService ? styles['placed_card__type_badge--service'] : styles['placed_card__type_badge--request']}`}>{isService ? 'Tjänst' : 'Förfrågan'}</span>
+                        <span className={`${styles.placed_card__status_text} ${statusCls}`}>{friendlyStatus}</span>
+                      </div>
+                      <div className={styles.placed_card__title}>{order.service_title}</div>
+                      <div className={styles.placed_card__seller}>
+                        <div className={styles.placed_card__avatar}>{order.seller_name?.charAt(0).toUpperCase() || '?'}</div>
+                        <span>{order.seller_name}</span>
+                      </div>
+                      <div className={styles.placed_card__progress}>
+                        <div className={styles.placed_card__steps}>
+                          {stepLabels.map((label, i) => {
+                            const done = i < currentStep
+                            const current = i === currentStep
+                            const cls = done ? styles['placed_card__step--done'] : current ? styles['placed_card__step--current'] : ''
+                            return (
+                              <div key={stepKeys[i]} className={`${styles.placed_card__step} ${cls}`}>
+                                <div className={styles.placed_card__dot} />
+                                <span className={styles.placed_card__step_label}>{label}</span>
+                              </div>
+                            )
+                          })}
                         </div>
+                      </div>
+                      {(() => {
+                        if (order.status === 'pending') return <div className={styles.placed_card__actions}><button type="button" className={styles.placed_card__btn_ghost} onClick={openChat}>Öppna chatt</button><button type="button" className={styles.placed_card__btn_ghost} onClick={cancelOrder}>Avboka</button></div>
+                        if (ps === 'delivered') return <div className={styles.placed_card__actions}><Link href={`/my-order/${order.id}`} className={styles.placed_card__btn_primary} onClick={e => e.stopPropagation()}>Granska & godkänn</Link><button type="button" className={styles.placed_card__btn_ghost} onClick={openChat}>Öppna chatt</button><Link href={`/my-order/${order.id}?problem=1`} className={styles.placed_card__btn_ghost} onClick={e => e.stopPropagation()}>Rapportera problem</Link></div>
+                        if (order.status === 'accepted' && ps !== 'completed' && ps !== 'delivered') return <div className={styles.placed_card__actions}><button type="button" className={styles.placed_card__btn_ghost} onClick={openChat}>Öppna chatt</button><Link href={`/my-order/${order.id}`} className={styles.placed_card__btn_ghost} onClick={e => e.stopPropagation()}>Visa detaljer</Link></div>
+                        if (ps === 'completed' && !raw.review_id) return <div className={styles.placed_card__actions}><Link href={`/my-order/${order.id}?action=review`} className={styles.placed_card__btn_primary} onClick={e => e.stopPropagation()}>Lämna recension</Link></div>
+                        return null
+                      })()}
+                    </Link>
+                  )
+                }
 
-                        {/* Title */}
-                        <div className={styles.placed_card__title}>{order.service_title}</div>
+                return (
+                  <>
+                    {/* Aktiva beställningar */}
+                    {activeList.length === 0
+                      ? <div className={styles.profile__empty}><p>Inga aktiva beställningar.</p></div>
+                      : <>
+                          <h2 style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-gray)', margin: '4px 0' }}>Aktiva beställningar</h2>
+                          <div className={styles.profile__list}>{activeList.map(renderPlacedCard)}</div>
+                        </>
+                    }
 
-                        {/* Seller with avatar */}
-                        <div className={styles.placed_card__seller}>
-                          <div className={styles.placed_card__avatar}>
-                            {order.seller_name?.charAt(0).toUpperCase() || '?'}
+                    {/* Historik (hopfällbar) */}
+                    {historyList.length > 0 && (
+                      <div style={{ marginTop: 8 }}>
+                        <button
+                          type="button"
+                          onClick={() => setShowHistory(h => !h)}
+                          style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, fontWeight: 600, color: 'var(--color-gray)', fontFamily: 'var(--font-body)', padding: '4px 0' }}
+                        >
+                          <span style={{ fontSize: 11 }}>{showHistory ? '▲' : '▼'}</span>
+                          Historik ({historyList.length} avslutade)
+                        </button>
+                        {showHistory && (
+                          <div className={styles.profile__list} style={{ marginTop: 8 }}>
+                            {historyList.map(renderPlacedCard)}
                           </div>
-                          <span>{order.seller_name}</span>
-                        </div>
-
-                        {/* Progress bar */}
-                        <div className={styles.placed_card__progress}>
-                          <div className={styles.placed_card__steps}>
-                            {stepLabels.map((label, i) => {
-                              const done = i < currentStep
-                              const current = i === currentStep
-                              const cls = done
-                                ? styles['placed_card__step--done']
-                                : current
-                                ? styles['placed_card__step--current']
-                                : ''
-                              return (
-                                <div key={stepKeys[i]} className={`${styles.placed_card__step} ${cls}`}>
-                                  <div className={styles.placed_card__dot} />
-                                  <span className={styles.placed_card__step_label}>{label}</span>
-                                </div>
-                              )
-                            })}
-                          </div>
-                        </div>
-
-                        {/* CTAs – stopPropagation prevents the parent Link from navigating */}
-                        {(() => {
-                          const openChat = (e: React.MouseEvent) => {
-                            e.preventDefault(); e.stopPropagation()
-                            router.push(raw.conversation_id ? `/messages/${raw.conversation_id}` : '/messages')
-                          }
-                          const cancelOrder = async (e: React.MouseEvent) => {
-                            e.preventDefault(); e.stopPropagation()
-                            if (!confirm('Avboka beställningen?')) return
-                            await supabase.from('orders').update({ status: 'cancelled' }).eq('id', order.id)
-                            setPlacedOrders(prev => prev.map(o => o.id === order.id ? { ...o, status: 'cancelled' } : o))
-                          }
-
-                          if (order.status === 'pending') return (
-                            <div className={styles.placed_card__actions}>
-                              <button type="button" className={styles.placed_card__btn_ghost} onClick={openChat}>Öppna chatt</button>
-                              <button type="button" className={styles.placed_card__btn_ghost} onClick={cancelOrder}>Avboka</button>
-                            </div>
-                          )
-                          if (ps === 'delivered') return (
-                            <div className={styles.placed_card__actions}>
-                              <Link href={`/my-order/${order.id}`} className={styles.placed_card__btn_primary} onClick={e => e.stopPropagation()}>Granska & godkänn</Link>
-                              <button type="button" className={styles.placed_card__btn_ghost} onClick={openChat}>Öppna chatt</button>
-                              <Link href={`/my-order/${order.id}?problem=1`} className={styles.placed_card__btn_ghost} onClick={e => e.stopPropagation()}>Rapportera problem</Link>
-                            </div>
-                          )
-                          if (order.status === 'accepted' && ps !== 'completed' && ps !== 'delivered') return (
-                            <div className={styles.placed_card__actions}>
-                              <button type="button" className={styles.placed_card__btn_ghost} onClick={openChat}>Öppna chatt</button>
-                              <Link href={`/my-order/${order.id}`} className={styles.placed_card__btn_ghost} onClick={e => e.stopPropagation()}>Visa detaljer</Link>
-                            </div>
-                          )
-                          if (ps === 'completed' && !raw.review_id) return (
-                            <div className={styles.placed_card__actions}>
-                              <Link href={`/my-order/${order.id}?action=review`} className={styles.placed_card__btn_primary} onClick={e => e.stopPropagation()}>Lämna recension</Link>
-                            </div>
-                          )
-                          return null
-                        })()}
-
-                      </Link>
-                    )
-                  })}
-                </div>
-              )}
+                        )}
+                      </div>
+                    )}
+                  </>
+                )
+              })()}
             </div>
           )
         })()}
