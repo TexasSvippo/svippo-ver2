@@ -567,17 +567,88 @@ export default function ProfilePage() {
                 <div className={styles.profile__empty}><p>Inga beställningar matchar valt filter.</p></div>
               ) : (
                 <div className={styles.profile__list}>
-                  {filteredPlaced.map(order => (
-                    <Link href={`/my-order/${order.id}`} key={order.id} className={`${styles.profile__item} card`}>
-                      <div className={styles.profile__item_icon}>{order.project_status === 'completed' ? <CheckCircle size={18} /> : order.status === 'pending' ? <Clock size={18} /> : order.status === 'accepted' ? '🔄' : <XCircle size={18} />}</div>
-                      <div className={styles.profile__item_info}>
-                        <strong>{order.service_title}</strong>
-                        <span>Utförare: {order.seller_name}</span>
-                        <p className={styles.profile__item_message}>{order.message}</p>
-                      </div>
-                      <span className={`${styles.profile__item_tag} ${statusTag(order)}`}>{statusLabel(order)}</span>
-                    </Link>
-                  ))}
+                  {filteredPlaced.map(order => {
+                    const raw = order as PlacedOrder & { service_id?: string }
+                    const isService = !!raw.service_id
+                    const ps = order.project_status
+
+                    // Left-border color category
+                    const borderCls = ps === 'delivered'
+                      ? styles['placed_card--action']
+                      : ps === 'completed' || order.status === 'rejected'
+                      ? styles['placed_card--done']
+                      : styles['placed_card--ongoing']
+
+                    // Human-readable status
+                    const friendlyStatus =
+                      order.status === 'rejected' ? 'Nekad' :
+                      ps === 'completed' ? 'Avslutat' :
+                      ps === 'delivered' ? 'Inväntar godkännande' :
+                      order.status === 'accepted' ? 'Pågår' :
+                      'Väntar på utföraren'
+
+                    const statusCls =
+                      ps === 'delivered' ? styles['placed_card__status_text--action'] :
+                      ps === 'completed' || order.status === 'rejected' ? styles['placed_card__status_text--done'] :
+                      styles['placed_card__status_text--ongoing']
+
+                    // Progress steps: Beställd → Pågår → Levererat → Avslutat
+                    const stepKeys = ['pending', 'in_progress', 'delivered', 'completed']
+                    const stepLabels = ['Beställd', 'Pågår', 'Levererat', 'Avslutat']
+                    const currentStep =
+                      ps === 'completed' ? 3 :
+                      ps === 'delivered' ? 2 :
+                      (ps === 'in_progress' || ps === 'almost_done') ? 1 :
+                      order.status === 'accepted' ? 1 : 0
+
+                    return (
+                      <Link href={`/my-order/${order.id}`} key={order.id} className={`${styles.placed_card} ${borderCls}`}>
+
+                        {/* Header: type badge + status */}
+                        <div className={styles.placed_card__header}>
+                          <span className={`${styles.placed_card__type_badge} ${isService ? styles['placed_card__type_badge--service'] : styles['placed_card__type_badge--request']}`}>
+                            {isService ? 'Tjänst' : 'Förfrågan'}
+                          </span>
+                          <span className={`${styles.placed_card__status_text} ${statusCls}`}>
+                            {friendlyStatus}
+                          </span>
+                        </div>
+
+                        {/* Title */}
+                        <div className={styles.placed_card__title}>{order.service_title}</div>
+
+                        {/* Seller with avatar */}
+                        <div className={styles.placed_card__seller}>
+                          <div className={styles.placed_card__avatar}>
+                            {order.seller_name?.charAt(0).toUpperCase() || '?'}
+                          </div>
+                          <span>{order.seller_name}</span>
+                        </div>
+
+                        {/* Progress bar */}
+                        <div className={styles.placed_card__progress}>
+                          <div className={styles.placed_card__steps}>
+                            {stepLabels.map((label, i) => {
+                              const done = i < currentStep
+                              const current = i === currentStep
+                              const cls = done
+                                ? styles['placed_card__step--done']
+                                : current
+                                ? styles['placed_card__step--current']
+                                : ''
+                              return (
+                                <div key={stepKeys[i]} className={`${styles.placed_card__step} ${cls}`}>
+                                  <div className={styles.placed_card__dot} />
+                                  <span className={styles.placed_card__step_label}>{label}</span>
+                                </div>
+                              )
+                            })}
+                          </div>
+                        </div>
+
+                      </Link>
+                    )
+                  })}
                 </div>
               )}
             </div>
