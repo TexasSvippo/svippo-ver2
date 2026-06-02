@@ -8,7 +8,7 @@ import { categories, RUT_SUBCATEGORIES, ROT_SUBCATEGORIES } from '@/data/categor
 import type { ServiceType } from '@/data/categories'
 import { municipalities } from '@/data/municipalities'
 import styles from './createservice.module.scss'
-import { Clock, Lock, Wallet, ClipboardList, MapPin, Lightbulb, CheckCircle, Pencil, FileText } from 'lucide-react'
+import { Clock, Lock, Tag, ClipboardList, MapPin, Monitor, Lightbulb, CheckCircle, Pencil, FileText } from 'lucide-react'
 import ReferenceImageUploader from '@/components/ReferenceImageUploader'
 import RichTextEditor from '@/components/RichTextEditor'
 
@@ -385,7 +385,7 @@ export default function CreateServicePage() {
                         onClick={() => update('price_type', pt)}
                         type="button"
                       >
-                        {pt === 'timpris' ? '⏱️ Timpris' : pt === 'fastpris' ? <><Wallet size={14} /> Fast pris</> : <><ClipboardList size={14} /> Ge prisförslag</>}
+                        {pt === 'timpris' ? <><Clock size={14} /> Timpris</> : pt === 'fastpris' ? <><Tag size={14} /> Fast pris</> : <><FileText size={14} /> Ge prisförslag</>}
                       </button>
                     ))}
                   </div>
@@ -419,7 +419,7 @@ export default function CreateServicePage() {
                         }}
                         type="button"
                       >
-                        {type === 'plats' ? <><MapPin size={14} /> Plats</> : '💻 Online'}
+                        {type === 'plats' ? <><MapPin size={14} /> Plats</> : <><Monitor size={14} /> Online</>}
                       </button>
                     ))}
                   </div>
@@ -461,7 +461,7 @@ export default function CreateServicePage() {
                   )}
 
                   {form.location_type === 'online' && (
-                    <p className={styles.create__online_hint}>💻 Din tjänst utförs digitalt och är tillgänglig för alla.</p>
+                    <p className={styles.create__online_hint} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}><Monitor size={14} /> Din tjänst utförs digitalt och är tillgänglig för alla.</p>
                   )}
                 </div>
 
