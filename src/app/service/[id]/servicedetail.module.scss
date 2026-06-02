@@ -32,6 +32,21 @@
   }
 }
 
+// ─── Mobile header (badges + title above grid) ───────────────────────────────
+.main_header {
+  display: none; // hidden on desktop
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+// ─── Desktop header inside .main (hidden on mobile) ──────────────────────────
+.main_body_header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
 // ─── Two-column layout ────────────────────────────────────────────────────────
 .layout {
   display: grid;
@@ -77,6 +92,14 @@
 
   .title {
     font-size: 1.5rem !important;
+  }
+
+  .main_header {
+    display: flex; // show above grid on mobile
+  }
+
+  .main_body_header {
+    display: none; // hide inside .main on mobile
   }
 }
 

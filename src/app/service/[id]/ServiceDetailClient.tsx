@@ -185,28 +185,42 @@ export default function ServiceDetailClient({ service, reviews, avgRating, refer
         <span>{service.title}</span>
       </nav>
 
+      {/* Mobile-only: badges + title shown ABOVE the grid so they appear before sidebar */}
+      <div className={styles.main_header}>
+        <div className={styles.badges}>
+          <span className={styles.badge}>{service.subcategory}</span>
+          {service.offers_rut && (
+            <span className={`${styles.badge} ${styles['badge--rut']}`}><CheckCircle size={13} /> RUT-avdrag</span>
+          )}
+          {service.offers_rot && (
+            <span className={`${styles.badge} ${styles['badge--rot']}`}><CheckCircle size={13} /> ROT-avdrag</span>
+          )}
+        </div>
+        <h1 className={styles.title}>{service.title}</h1>
+      </div>
+
       <div className={styles.layout}>
 
         {/* ── LEFT: main content ──────────────────────────────────────────── */}
         <div className={styles.main}>
 
-          {/* Badges */}
-          <div className={styles.badges}>
-            <span className={styles.badge}>{service.subcategory}</span>
-            {service.offers_rut && (
-              <span className={`${styles.badge} ${styles['badge--rut']}`}>
-                <CheckCircle size={13} /> RUT-avdrag
-              </span>
-            )}
-            {service.offers_rot && (
-              <span className={`${styles.badge} ${styles['badge--rot']}`}>
-                <CheckCircle size={13} /> ROT-avdrag
-              </span>
-            )}
+          {/* Desktop-only: badges + title (hidden on mobile — shown in main_header above) */}
+          <div className={styles.main_body_header}>
+            <div className={styles.badges}>
+              <span className={styles.badge}>{service.subcategory}</span>
+              {service.offers_rut && (
+                <span className={`${styles.badge} ${styles['badge--rut']}`}>
+                  <CheckCircle size={13} /> RUT-avdrag
+                </span>
+              )}
+              {service.offers_rot && (
+                <span className={`${styles.badge} ${styles['badge--rot']}`}>
+                  <CheckCircle size={13} /> ROT-avdrag
+                </span>
+              )}
+            </div>
+            <h1 className={styles.title}>{service.title}</h1>
           </div>
-
-          {/* H1 */}
-          <h1 className={styles.title}>{service.title}</h1>
 
           {/* Om tjänsten */}
           <div className={styles.section}>
