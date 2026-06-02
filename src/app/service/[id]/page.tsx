@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: Props) {
 export default async function ServiceDetailPage({ params }: Props) {
   const { id } = await params
 
-  const [{ data: serviceRaw }, { data: reviews }] = await Promise.all([
+  const [{ data: serviceRaw }, { data: reviews }, { data: references }] = await Promise.all([
     supabase.from('services').select('*, users(avatar_url)').eq('id', id).single(),
     supabase
       .from('reviews')
@@ -36,6 +36,11 @@ export default async function ServiceDetailPage({ params }: Props) {
       .eq('service_id', id)
       .eq('role', 'buyer')
       .order('created_at', { ascending: false }),
+    supabase
+      .from('service_references')
+      .select('*')
+      .eq('service_id', id)
+      .order('sort_order'),
   ])
 
   const service = serviceRaw ? (() => {
@@ -54,6 +59,7 @@ export default async function ServiceDetailPage({ params }: Props) {
       service={service}
       reviews={reviews ?? []}
       avgRating={avgRating}
+      references={references ?? []}
     />
   )
 }

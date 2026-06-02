@@ -9,6 +9,7 @@ import type { ServiceType } from '@/data/categories'
 import { municipalities } from '@/data/municipalities'
 import styles from './createservice.module.scss'
 import { Clock, Lock, Wallet, ClipboardList, MapPin, Lightbulb, CheckCircle, Pencil, FileText } from 'lucide-react'
+import ReferenceImageUploader from '@/components/ReferenceImageUploader'
 
 type PriceType = 'timpris' | 'fastpris' | 'offert'
 
@@ -47,6 +48,7 @@ export default function CreateServicePage() {
   const [loadingEdit, setLoadingEdit] = useState(isEditing)
   const [saving, setSaving] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
+  const [savedServiceId, setSavedServiceId] = useState<string | null>(null)
   const [newQuestion, setNewQuestion] = useState({
     label: '',
     type: 'text' as 'text' | 'select' | 'textarea',
@@ -178,7 +180,7 @@ export default function CreateServicePage() {
       } else {
         const selectedCat = categories.find(c => c.id === form.category_id)
 
-        await supabase.from('services').insert({
+        const { data: insertData } = await supabase.from('services').insert({
           title: form.title,
           description: form.description,
           category_id: form.category_id,
@@ -197,7 +199,8 @@ export default function CreateServicePage() {
           rating: 0,
           reviews: 0,
           created_at: new Date().toISOString(),
-        })
+        }).select('id').single()
+        if (insertData?.id) setSavedServiceId(insertData.id)
       }
 
 
@@ -529,6 +532,13 @@ export default function CreateServicePage() {
                   </div>
                 ))}
               </div>
+
+              {/* Reference uploader – only in edit mode */}
+              {isEditing && editId && (
+                <div style={{ marginTop: 24 }}>
+                  <ReferenceImageUploader serviceId={editId} userId={user.id} />
+                </div>
+              )}
             </div>
           )}
 
@@ -563,11 +573,22 @@ export default function CreateServicePage() {
       {/* Success popup */}
       {showSuccess && (
         <div className={styles.create__overlay}>
-          <div className={styles.create__success_modal}>
+          <div className={styles.create__success_modal} style={{ maxWidth: 560, width: '100%', maxHeight: '90vh', overflowY: 'auto' }}>
             <div className={styles.create__success_emoji}>🎉</div>
             <h2 className={styles.create__success_title}>Vad kul att du kommit igång!</h2>
             <p className={styles.create__success_text}>Ditt inlägg är nu publicerat och synligt för alla på Svippo. Lycka till!</p>
-            <div className={styles.create__success_actions}>
+
+            {/* Reference image uploader – valfritt steg */}
+            {savedServiceId && (
+              <div style={{ marginTop: 24, textAlign: 'left' }}>
+                <p style={{ fontSize: 14, color: 'var(--color-gray)', marginBottom: 12 }}>
+                  Lägg till referensbilder för att visa upp ditt arbete (valfritt, max 5 st):
+                </p>
+                <ReferenceImageUploader serviceId={savedServiceId} userId={user.id} />
+              </div>
+            )}
+
+            <div className={styles.create__success_actions} style={{ marginTop: 24 }}>
               <button className="btn btn-primary" onClick={() => router.push('/profile')}>Till din profil</button>
               <button className="btn btn-outline" onClick={() => router.push('/services')}>Se tjänster</button>
             </div>

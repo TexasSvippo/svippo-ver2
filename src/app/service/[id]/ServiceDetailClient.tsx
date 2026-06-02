@@ -1,13 +1,14 @@
 'use client'
 
 import OrderModal from '@/components/OrderModal'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import useAuth from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
 import styles from './servicedetail.module.scss'
-import { CheckCircle, Star, User, Wallet, Pencil, Trash2, Lock, MessageCircle, Shield } from 'lucide-react'
+import refStyles from './references.module.scss'
+import { CheckCircle, Star, User, Wallet, Pencil, Trash2, Lock, MessageCircle, Shield, ChevronLeft, ChevronRight } from 'lucide-react'
 
 type CustomQuestion = {
   id: string
@@ -47,15 +48,50 @@ type Review = {
   service_id: string
 }
 
+type ServiceReference = {
+  id: string
+  image_url: string
+  title: string
+  description?: string
+  sort_order: number
+}
+
 type Props = {
   service: Service
   reviews: Review[]
   avgRating: number | null
+  references?: ServiceReference[]
 }
 
-export default function ServiceDetailClient({ service, reviews, avgRating }: Props) {
+export default function ServiceDetailClient({ service, reviews, avgRating, references = [] }: Props) {
 const { user } = useAuth()
   const router = useRouter()
+
+  // ── References slideshow ──────────────────────────────────────────────────
+  const refContainerRef = useRef<HTMLDivElement>(null)
+  const [refIndex, setRefIndex] = useState(0)
+  const [activeRef, setActiveRef] = useState<ServiceReference | null>(null)
+
+  const getRefStep = useCallback(() => {
+    const track = refContainerRef.current?.firstElementChild as HTMLElement | null
+    const c0 = track?.children[0] as HTMLElement | undefined
+    const c1 = track?.children[1] as HTMLElement | undefined
+    if (c0 && c1) return c1.getBoundingClientRect().left - c0.getBoundingClientRect().left
+    return c0?.getBoundingClientRect().width ?? 0
+  }, [])
+
+  const refPrev = () => refContainerRef.current?.scrollBy({ left: -getRefStep(), behavior: 'smooth' })
+  const refNext = () => refContainerRef.current?.scrollBy({ left: getRefStep(), behavior: 'smooth' })
+
+  const handleRefScroll = useCallback(() => {
+    const el = refContainerRef.current
+    const step = getRefStep()
+    if (!el || step === 0) return
+    if (el.scrollLeft + el.clientWidth >= el.scrollWidth - 4) {
+      setRefIndex(references.length - 1); return
+    }
+    setRefIndex(Math.round(el.scrollLeft / step))
+  }, [getRefStep, references.length])
   const searchParams = useSearchParams()
   const [showOrder, setShowOrder] = useState(false)
   const [showLoginPrompt, setShowLoginPrompt] = useState(false)
@@ -209,6 +245,62 @@ const filteredReviews = reviews
               <h2 className={styles.detail__section_title}>Om tjänsten</h2>
               <p className={styles.detail__description}>{service.description}</p>
             </div>
+
+            {/* ── References slideshow ────────────────────────────────────── */}
+            {references.length > 0 && (
+              <div className={`${styles.detail__section} ${refStyles.refs}`}>
+                <div className={refStyles.refs__head}>
+                  <h2 className={refStyles.refs__title}>Referenser</h2>
+                  {references.length > 1 && (
+                    <div className={refStyles.refs__nav}>
+                      <button type="button" className={refStyles.refs__nav_btn} onClick={refPrev} aria-label="Föregående">
+                        <ChevronLeft size={18} />
+                      </button>
+                      <button type="button" className={refStyles.refs__nav_btn} onClick={refNext} aria-label="Nästa">
+                        <ChevronRight size={18} />
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                <div className={refStyles.refs__track_wrap} ref={refContainerRef} onScroll={handleRefScroll}>
+                  <div className={refStyles.refs__track}>
+                    {references.map(ref => (
+                      <div
+                        key={ref.id}
+                        className={refStyles.refs__card}
+                        onClick={() => setActiveRef(ref)}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={e => e.key === 'Enter' && setActiveRef(ref)}
+                      >
+                        <div className={refStyles.refs__card_img_wrap}>
+                          <img src={ref.image_url} alt={ref.title} className={refStyles.refs__card_img} />
+                        </div>
+                        <span className={refStyles.refs__card_label}>{ref.title}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {references.length > 1 && (
+                  <div className={refStyles.refs__dots}>
+                    {references.map((_, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        className={`${refStyles.refs__dot} ${i === refIndex ? refStyles['refs__dot--active'] : ''}`}
+                        onClick={() => {
+                          refContainerRef.current?.scrollTo({ left: i * getRefStep(), behavior: 'smooth' })
+                          setRefIndex(i)
+                        }}
+                        aria-label={`Gå till referens ${i + 1}`}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Recensioner */}
             <div className={styles.detail__section}>
@@ -410,6 +502,29 @@ const filteredReviews = reviews
             <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
               <Link href="/login" className="btn btn-primary">Logga in</Link>
               <Link href="/register" className="btn btn-outline">Skapa konto</Link>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Reference image modal ─────────────────────────────────────── */}
+      {activeRef && (
+        <div className={refStyles.modal_overlay} onClick={() => setActiveRef(null)}>
+          <div className={refStyles.modal} onClick={e => e.stopPropagation()}>
+            <button
+              type="button"
+              className={refStyles.modal_close}
+              onClick={() => setActiveRef(null)}
+              aria-label="Stäng"
+            >✕</button>
+            <div className={refStyles.modal_img_wrap}>
+              <img src={activeRef.image_url} alt={activeRef.title} className={refStyles.modal_img} />
+            </div>
+            <div className={refStyles.modal_body}>
+              <h2 className={refStyles.modal_title}>{activeRef.title}</h2>
+              {activeRef.description && (
+                <p className={refStyles.modal_desc}>{activeRef.description}</p>
+              )}
             </div>
           </div>
         </div>
