@@ -186,7 +186,7 @@ export default function Hero() {
             <input
               type="text"
               className={styles.hero__search_input}
-              placeholder="Vad behöver du hjälp med?"
+              placeholder={activeTab === 'requests' ? 'Sök bland uppdrag att utföra...' : 'Vad behöver du hjälp med?'}
               value={search}
               onChange={e => setSearch(e.target.value)}
               onKeyDown={handleKeyDown}
