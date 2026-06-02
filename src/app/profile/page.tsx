@@ -588,29 +588,33 @@ export default function ProfilePage() {
 
                   return (
                     <div key={order.id} className={`${styles.placed_card} ${borderCls}`} onClick={() => router.push(`/my-order/${order.id}`)} style={{ cursor: 'pointer' }}>
+                      {/* Header: badge + avatar + name (left) / status (right) */}
                       <div className={styles.placed_card__header}>
-                        <span className={`${styles.placed_card__type_badge} ${isService ? styles['placed_card__type_badge--service'] : styles['placed_card__type_badge--request']}`}>{isService ? 'Tjänst' : 'Förfrågan'}</span>
+                        <div className={styles.placed_card__header_left}>
+                          <span className={`${styles.placed_card__type_badge} ${isService ? styles['placed_card__type_badge--service'] : styles['placed_card__type_badge--request']}`}>{isService ? 'Tjänst' : 'Förfrågan'}</span>
+                          <div className={styles.placed_card__avatar}>{order.seller_name?.charAt(0).toUpperCase() || '?'}</div>
+                          <span style={{ fontSize: 13, color: 'var(--color-gray)' }}>{order.seller_name}</span>
+                        </div>
                         <span className={`${styles.placed_card__status_text} ${statusCls}`}>{friendlyStatus}</span>
                       </div>
                       <div className={styles.placed_card__title}>{order.service_title}</div>
-                      <div className={styles.placed_card__seller}>
-                        <div className={styles.placed_card__avatar}>{order.seller_name?.charAt(0).toUpperCase() || '?'}</div>
-                        <span>{order.seller_name}</span>
-                      </div>
+                      {/* Minimal progress bar with step text */}
                       <div className={styles.placed_card__progress}>
                         <div className={styles.placed_card__steps}>
-                          {stepLabels.map((label, i) => {
+                          {stepKeys.map((_, i) => {
                             const done = i < currentStep
                             const current = i === currentStep
                             const cls = done ? styles['placed_card__step--done'] : current ? styles['placed_card__step--current'] : ''
                             return (
-                              <div key={stepKeys[i]} className={`${styles.placed_card__step} ${cls}`}>
+                              <div key={i} className={`${styles.placed_card__step} ${cls}`}>
                                 <div className={styles.placed_card__dot} />
-                                <span className={styles.placed_card__step_label}>{label}</span>
                               </div>
                             )
                           })}
                         </div>
+                        <span className={styles.placed_card__progress_text}>
+                          Steg {currentStep + 1} av 4 – {stepLabels[currentStep]}
+                        </span>
                       </div>
                       {(() => {
                         if (order.status === 'pending') return <div className={styles.placed_card__actions}><button type="button" className={styles.placed_card__btn_ghost} onClick={openChat}>Öppna chatt</button><button type="button" className={styles.placed_card__btn_ghost} onClick={cancelOrder}>Avboka</button></div>

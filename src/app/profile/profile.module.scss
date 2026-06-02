@@ -996,8 +996,8 @@
 .placed_card {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: 16px 16px 16px 20px;
+  gap: 8px;
+  padding: 12px 12px 12px 16px;
   border-radius: var(--radius-md);
   background: white;
   border: 1px solid var(--color-border);
@@ -1020,13 +1020,19 @@
   flex-wrap: wrap;
 }
 
+.placed_card__header_left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+}
+
 .placed_card__type_badge {
   font-size: 11px;
-  font-weight: 700;
-  padding: 2px 8px;
+  font-weight: 600;
+  padding: 1px 7px;
   border-radius: var(--radius-full);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
 
   &--service  { background: #dbeeff; color: #1a5fa8; }
   &--request  { background: #ede9fe; color: #5b21b6; }
@@ -1074,10 +1080,14 @@
 // ─── Progress bar ─────────────────────────────────────────────────────────────
 
 .placed_card__progress {
-  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 2px;
 }
 
 .placed_card__steps {
+  flex: 1;
   display: flex;
   align-items: center;
   gap: 0;
@@ -1085,17 +1095,14 @@
 
 .placed_card__step {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 4px;
   flex: 1;
   position: relative;
 
-  // connecting line between dots
   &:not(:last-child)::after {
     content: '';
     position: absolute;
-    top: 6px;
+    top: 3px;
     left: 50%;
     width: 100%;
     height: 2px;
@@ -1107,10 +1114,10 @@
 }
 
 .placed_card__dot {
-  width: 14px;
-  height: 14px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
-  border: 2px solid var(--color-border);
+  border: 1.5px solid var(--color-border);
   background: white;
   z-index: 1;
   flex-shrink: 0;
@@ -1123,18 +1130,15 @@
   .placed_card__step--current & {
     border-color: #378ADD;
     background: white;
-    box-shadow: 0 0 0 3px rgba(55,138,221,0.2);
+    box-shadow: 0 0 0 2px rgba(55,138,221,0.25);
   }
 }
 
-.placed_card__step_label {
-  font-size: 10px;
+.placed_card__progress_text {
+  font-size: 12px;
   color: var(--color-gray);
-  text-align: center;
   white-space: nowrap;
-
-  .placed_card__step--done &,
-  .placed_card__step--current & { color: #378ADD; font-weight: 600; }
+  flex-shrink: 0;
 }
 
 // ─── Placerade beställningar – CTA-knappar ────────────────────────────────────
@@ -1149,12 +1153,12 @@
 }
 
 .placed_card__btn_primary {
-  padding: 6px 16px;
+  padding: 5px 12px;
   border-radius: var(--radius-full);
   border: none;
   background: #ff5733;
   color: white;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   font-family: var(--font-body);
   cursor: pointer;
@@ -1167,12 +1171,12 @@
 }
 
 .placed_card__btn_ghost {
-  padding: 6px 16px;
+  padding: 5px 12px;
   border-radius: var(--radius-full);
   border: 1.5px solid var(--color-border);
   background: transparent;
   color: var(--color-dark);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   font-family: var(--font-body);
   cursor: pointer;
