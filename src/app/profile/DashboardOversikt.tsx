@@ -198,7 +198,7 @@ export default function DashboardOversikt({
       {isProvider && (
         <div className={styles.dash__section}>
           <div className={styles.dash__section_head}>
-            <span className={styles.dash__section_title}>Aktiva tjänster</span>
+            <span className={styles.dash__section_title}><Briefcase size={18} color="#05334A" />Aktiva tjänster</span>
             <Link href="/profile" className={styles.dash__see_all}>Se alla</Link>
           </div>
           {services.length === 0 ? (
@@ -234,7 +234,7 @@ export default function DashboardOversikt({
       {isBestellare && (
         <div className={styles.dash__section}>
           <div className={styles.dash__section_head}>
-            <span className={styles.dash__section_title}>Mina förfrågningar</span>
+            <span className={styles.dash__section_title}><FileText size={18} color="#05334A" />Mina förfrågningar</span>
             <Link href="/requests?mine=true" className={styles.dash__see_all}>Se alla</Link>
           </div>
           {myRequests.length === 0 ? (
@@ -272,6 +272,7 @@ export default function DashboardOversikt({
         <div className={styles.dash__section}>
           <div className={styles.dash__section_head}>
             <span className={styles.dash__section_title}>
+              {isProvider ? <ShoppingBag size={18} color="#05334A" /> : <ShoppingCart size={18} color="#05334A" />}
               {isProvider ? 'Inkommna beställningar' : 'Placerade beställningar'}
             </span>
             <Link href={isProvider ? '/orders' : '/profile'} className={styles.dash__see_all}>Se alla</Link>
@@ -320,7 +321,7 @@ export default function DashboardOversikt({
         {/* Right */}
         <div className={styles.dash__section}>
           <div className={styles.dash__section_head}>
-            <span className={styles.dash__section_title}>Intresseanmälningar</span>
+            <span className={styles.dash__section_title}><Star size={18} color="#05334A" />Intresseanmälningar</span>
             <Link href="/profile" className={styles.dash__see_all}>Se alla</Link>
           </div>
           {interests.length === 0 ? (
