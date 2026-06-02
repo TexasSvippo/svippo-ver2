@@ -28,6 +28,11 @@ type Request = {
 
 type SearchType = 'tjanster' | 'forfragningar'
 
+const ROUTE: Record<SearchType, string> = {
+  tjanster: '/services',
+  forfragningar: '/requests',
+}
+
 type Props = {
   hideTypePicker?: boolean
   defaultType?: SearchType
@@ -115,7 +120,7 @@ export default function SearchBar({ hideTypePicker = false, defaultType = 'tjans
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && search) {
-      router.push(`/${searchType}?search=${encodeURIComponent(search)}`)
+      router.push(`${ROUTE[searchType]}?search=${encodeURIComponent(search)}`)
       setShowDropdown(false)
       setSearch('')
     }
@@ -261,7 +266,7 @@ export default function SearchBar({ hideTypePicker = false, defaultType = 'tjans
           )}
 
           <Link
-            href={`/${searchType}?search=${encodeURIComponent(search)}`}
+            href={`${ROUTE[searchType]}?search=${encodeURIComponent(search)}`}
             className={styles.searchbar__see_all}
             onClick={() => { setShowDropdown(false); setSearch('') }}
           >
