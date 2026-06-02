@@ -243,10 +243,12 @@
 
   .searchbar__dropdown {
     position: fixed;
-    top: 70px;
+    top: 130px;
     left: 16px;
     right: 16px;
     width: auto;
     z-index: 9999;
+    max-height: 60vh;
+    overflow-y: auto;
   }
 }
