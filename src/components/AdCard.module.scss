@@ -1,12 +1,19 @@
 .card {
-  border: 2px solid #ff5733;
-  border-radius: var(--radius-md);
-  background: white;
-  overflow: hidden;
-  padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 12px;
+  border: 2px solid #ff5733;
+  border-radius: var(--radius-md);
+  background: #fff5f2;
+  overflow: hidden;
+  padding: 16px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: border-color 0.15s;
+
+  &:hover {
+    border-color: #cc4422;
+  }
 }
 
 // ─── Header row ───────────────────────────────────────────────────────────────
@@ -19,24 +26,31 @@
 }
 
 .badge {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: #cc3300;
-  background: #FAECE7;
+  letter-spacing: 0.08em;
+  color: white;
+  background: #ff5733;
   border-radius: var(--radius-full);
   padding: 2px 8px;
   flex-shrink: 0;
 }
 
 .company {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-size: 12px;
   color: var(--color-gray);
-  text-align: right;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.ext_icon {
+  flex-shrink: 0;
+  color: var(--color-gray);
 }
 
 // ─── Body ─────────────────────────────────────────────────────────────────────
@@ -53,7 +67,7 @@
   border-radius: 8px;
   object-fit: contain;
   flex-shrink: 0;
-  background: var(--color-gray-light);
+  background: white;
 }
 
 .content {
@@ -89,21 +103,14 @@
   -webkit-box-orient: vertical;
 }
 
-.cta {
-  align-self: flex-start;
-  padding: 6px 14px;
-  border-radius: var(--radius-full);
-  border: none;
-  background: #FAECE7;
-  color: #993C1D;
-  font-size: 13px;
-  font-weight: 600;
-  font-family: var(--font-body);
-  cursor: pointer;
-  transition: background 0.15s;
-  white-space: nowrap;
+// ─── Footer ───────────────────────────────────────────────────────────────────
 
-  &:hover {
-    background: #f5d8cc;
-  }
+.footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.sponsored {
+  font-size: 11px;
+  color: #cc8870;
 }

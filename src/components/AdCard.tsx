@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import { ExternalLink } from 'lucide-react'
 import styles from './AdCard.module.scss'
 
 type Ad = {
@@ -22,14 +23,12 @@ export default function AdCard() {
       const { data } = await supabase
         .from('ads')
         .select('id, company_name, logo_url, headline, description, cta_label, cta_url')
-      // RLS already filters to is_active=true and within starts_at/ends_at window
 
       if (!data || data.length === 0) return
 
       const picked = data[Math.floor(Math.random() * data.length)] as Ad
       setAd(picked)
 
-      // Track impression via server route (bypasses RLS for the increment)
       fetch(`/api/ads/impression?id=${picked.id}`).catch(() => {})
     }
     load()
@@ -40,15 +39,23 @@ export default function AdCard() {
 
   const handleClick = () => {
     fetch(`/api/ads/click?id=${ad.id}`).catch(() => {})
-    window.open(ad.cta_url, '_blank', 'noopener,noreferrer')
   }
 
   return (
-    <div className={styles.card}>
+    <a
+      href={ad.cta_url}
+      target="_blank"
+      rel="noopener noreferrer"
+      onClick={handleClick}
+      className={styles.card}
+    >
       {/* Header row */}
       <div className={styles.header}>
-        <span className={styles.badge}>Reklam</span>
-        <span className={styles.company}>{ad.company_name}</span>
+        <span className={styles.badge}>REKLAM</span>
+        <span className={styles.company}>
+          {ad.company_name}
+          <ExternalLink size={12} className={styles.ext_icon} />
+        </span>
       </div>
 
       {/* Body: logo + content */}
@@ -57,11 +64,13 @@ export default function AdCard() {
         <div className={styles.content}>
           <p className={styles.headline}>{ad.headline}</p>
           <p className={styles.description}>{ad.description}</p>
-          <button type="button" className={styles.cta} onClick={handleClick}>
-            {ad.cta_label}
-          </button>
         </div>
       </div>
-    </div>
+
+      {/* Footer */}
+      <div className={styles.footer}>
+        <span className={styles.sponsored}>Sponsrat innehåll</span>
+      </div>
+    </a>
   )
 }
