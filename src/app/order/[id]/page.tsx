@@ -300,8 +300,12 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                   {order.status === 'pending' ? <><Clock size={14} /> Väntar</> : order.status === 'accepted' ? <><CheckCircle size={14} /> Godkänd</> : <><XCircle size={14} /> Nekad</>}
                 </span>
               </div>
-              <Link href={`/service/${order.service_id}`} className={styles.service_link} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                <LinkIcon size={16} /> Visa tjänsten →
+              <Link
+                href={order.from_request ? `/request/${order.service_id}` : `/service/${order.service_id}`}
+                className={styles.service_link}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+              >
+                <LinkIcon size={16} /> {order.from_request ? 'Visa förfrågan →' : 'Visa tjänsten →'}
               </Link>
             </div>
 
