@@ -221,6 +221,8 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
   )
 
   const isSeller = user?.id === order.seller_id
+  const isBuyer = user?.id === order.buyer_id
+  const isCancelled = (order.status as string) === 'cancelled' || (order.project_status as string) === 'cancelled'
   const projectStatus = order.project_status
   const serviceType = order.service_type ?? 'typ1'
   const isTyp3 = serviceType === 'typ3'
@@ -426,19 +428,28 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
               </div>
             )}
 
-            {isSeller && (
+            {(isSeller || (isCancelled && isBuyer)) && (
               <div className={`${styles.actions_card} card`}>
                 <h2 className={styles.section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Zap size={18} /> Hantera beställning</h2>
                 <div className={`${styles.current_status} ${styles[`status--${order.status}`]}`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-                  {order.status === 'pending' ? <><Clock size={14} /> Väntar på ditt svar</> : order.status === 'accepted' ? <><CheckCircle size={14} /> Du har godkänt denna beställning</> : <><XCircle size={14} /> Du har nekat denna beställning</>}
+                  {isCancelled
+                    ? isSeller
+                      ? <><XCircle size={14} /> Beställaren avbokade detta uppdrag.</>
+                      : <><XCircle size={14} /> Du avbokade detta uppdrag.</>
+                    : order.status === 'pending'
+                    ? <><Clock size={14} /> Väntar på ditt svar</>
+                    : order.status === 'accepted'
+                    ? <><CheckCircle size={14} /> Du har godkänt denna beställning</>
+                    : <><XCircle size={14} /> Du har nekat denna beställning</>
+                  }
                 </div>
-                {order.status === 'pending' && (
+                {!isCancelled && order.status === 'pending' && (
                   <div className={styles.action_btns}>
                     <button className="btn btn-primary" onClick={() => handleStatus('accepted')} disabled={updating}><CheckCircle size={16} /> Godkänn beställning</button>
                     <button className={`btn btn-outline ${styles.reject_btn}`} onClick={() => handleStatus('rejected')} disabled={updating}><XCircle size={16} /> Neka beställning</button>
                   </div>
                 )}
-                {order.status === 'rejected' && (
+                {!isCancelled && order.status === 'rejected' && (
                   <button className="btn btn-primary" onClick={() => handleStatus('accepted')} disabled={updating}>Ångra – Godkänn beställning</button>
                 )}
               </div>
