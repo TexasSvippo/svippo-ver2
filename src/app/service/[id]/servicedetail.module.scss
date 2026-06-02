@@ -32,6 +32,19 @@
   }
 }
 
+// ─── Sidebar-only: visible on desktop, hidden on mobile ──────────────────────
+// Used to hide SvippoSafe/certs on mobile (they're shown in .main_bottom instead)
+.sidebar_only {
+  display: block;
+}
+
+// ─── Main bottom: hidden on desktop, shown on mobile after reviews ────────────
+.main_bottom {
+  display: none;
+  flex-direction: column;
+  gap: 1rem;
+}
+
 // ─── Mobile header (badges + title above grid) ───────────────────────────────
 .main_header {
   display: none; // hidden on desktop
@@ -95,11 +108,25 @@
   }
 
   .main_header {
-    display: flex; // show above grid on mobile
+    display: flex;
   }
 
   .main_body_header {
-    display: none; // hide inside .main on mobile
+    display: none;
+  }
+
+  // SvippoSafe / certs: hide in sidebar, show in .main_bottom
+  .sidebar_only {
+    display: none;
+  }
+
+  .main_bottom {
+    display: flex;
+  }
+
+  // Request page: sidebar appears after .main (both at order 1, DOM order wins)
+  .sidebar_after {
+    order: 1;
   }
 }
 

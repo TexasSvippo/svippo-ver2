@@ -244,6 +244,14 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
+/* Sidebar card – same as .card but no shadow or hover lift */
+.sidebarCard {
+  background-color: var(--color-white);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  overflow: hidden;
+}
+
 /* ================================
    FORMULÄR
    ================================ */

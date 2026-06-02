@@ -224,10 +224,10 @@ export default function RequestDetailClient({ request }: Props) {
             </div>
           </div>
 
-          {/* Höger – sidebar */}
-          <div className={serviceStyles.sidebar}>
+          {/* Höger – sidebar (order: after main on mobile via sidebar_after) */}
+          <div className={`${serviceStyles.sidebar} ${serviceStyles.sidebar_after}`}>
 
-            <div className={`${serviceStyles.seller} card`}>
+            <div className={`${serviceStyles.seller} sidebarCard`}>
               <div className={serviceStyles.seller_header}>
                 <div className={`${serviceStyles.seller_avatar} ${styles.avatar__orange}`}>
                   {request.user_name?.charAt(0).toUpperCase() || '?'}
@@ -295,7 +295,7 @@ export default function RequestDetailClient({ request }: Props) {
             </div>
 
             {/* SvippoSafe */}
-            <div className={`${serviceStyles.safe} card`}>
+            <div className={`${serviceStyles.safe} sidebarCard`}>
               <Shield size={20} />
               <div>
                 <strong>Känn dig trygg med SvippoSafe</strong>

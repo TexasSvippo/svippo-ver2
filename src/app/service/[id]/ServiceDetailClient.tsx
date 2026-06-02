@@ -326,13 +326,38 @@ export default function ServiceDetailClient({ service, reviews, avgRating, refer
             )}
           </div>
 
+          {/* SvippoSafe + certs – mobile only (shown in sidebar on desktop) */}
+          <div className={styles.main_bottom}>
+            <div className={`${styles.safe} sidebarCard`}>
+              <Shield size={20} />
+              <div>
+                <strong>Känn dig trygg med SvippoSafe</strong>
+                <p>Vi hjälper till att hantera trassel som kan dyka upp.</p>
+              </div>
+            </div>
+            {matchingCerts.length > 0 && (
+              <div className={`${styles.certs} sidebarCard`}>
+                <div className={styles.certs_header}>
+                  <CheckCircle size={15} />
+                  <strong>Verifierad kompetens</strong>
+                </div>
+                {matchingCerts.map(cert => (
+                  <div key={cert.id} className={styles.cert_row}>
+                    <span>{cert.name}</span>
+                    <a href={cert.file_url} target="_blank" rel="noopener noreferrer">Visa PDF</a>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
         </div>
 
         {/* ── RIGHT: sidebar ──────────────────────────────────────────────── */}
         <div className={styles.sidebar}>
 
           {/* Seller + price + order */}
-          <div className={`${styles.seller} card`}>
+          <div className={`${styles.seller} sidebarCard`}>
 
             {/* Seller header */}
             <div className={styles.seller_header}>
@@ -436,30 +461,31 @@ export default function ServiceDetailClient({ service, reviews, avgRating, refer
             )}
           </div>
 
-          {/* SvippoSafe */}
-          <div className={`${styles.safe} card`}>
-            <Shield size={20} />
-            <div>
-              <strong>Känn dig trygg med SvippoSafe</strong>
-              <p>Vi hjälper till att hantera trassel som kan dyka upp.</p>
-            </div>
-          </div>
-
-          {/* Verifierad kompetens */}
-          {matchingCerts.length > 0 && (
-            <div className={`${styles.certs} card`}>
-              <div className={styles.certs_header}>
-                <CheckCircle size={15} />
-                <strong>Verifierad kompetens</strong>
+          {/* SvippoSafe + certs – desktop only (moved to .main_bottom on mobile) */}
+          <div className={styles.sidebar_only}>
+            <div className={`${styles.safe} sidebarCard`}>
+              <Shield size={20} />
+              <div>
+                <strong>Känn dig trygg med SvippoSafe</strong>
+                <p>Vi hjälper till att hantera trassel som kan dyka upp.</p>
               </div>
-              {matchingCerts.map(cert => (
-                <div key={cert.id} className={styles.cert_row}>
-                  <span>{cert.name}</span>
-                  <a href={cert.file_url} target="_blank" rel="noopener noreferrer">Visa PDF</a>
-                </div>
-              ))}
             </div>
-          )}
+
+            {matchingCerts.length > 0 && (
+              <div className={`${styles.certs} sidebarCard`}>
+                <div className={styles.certs_header}>
+                  <CheckCircle size={15} />
+                  <strong>Verifierad kompetens</strong>
+                </div>
+                {matchingCerts.map(cert => (
+                  <div key={cert.id} className={styles.cert_row}>
+                    <span>{cert.name}</span>
+                    <a href={cert.file_url} target="_blank" rel="noopener noreferrer">Visa PDF</a>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
 
         </div>
       </div>
