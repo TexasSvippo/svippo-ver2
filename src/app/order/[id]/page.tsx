@@ -51,8 +51,6 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
   const [showCompleteConfirm, setShowCompleteConfirm] = useState(false)
   const [showSuccessPopup, setShowSuccessPopup] = useState(false)
   const [successType, setSuccessType] = useState<'delivered' | 'completed'>('completed')
-  const [successGif] = useState(() => Math.ceil(Math.random() * 4))
-  const [successIdx] = useState(() => Math.floor(Math.random() * 4))
   const [reviewSuccess, setReviewSuccess] = useState(false)
   const [reviewText, setReviewText] = useState('')
   const [reviewRating, setReviewRating] = useState(5)
@@ -599,63 +597,28 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
         </div>
       )}
 
-      {showSuccessPopup && (() => {
-        const headings = successType === 'delivered' ? [
-          'Svippo i mål! 🚀',
-          'Du svippade klart! ⚡',
-          'Leveransen är gjord! 📦',
-          'En Svippare som levererar! 💪',
-        ] : [
-          'Projektet i hamn! 🎉',
-          'Du är en stjärna! ⭐',
-          'Svippad och klar! ⚡',
-          'Ännu ett uppdrag bockat! 🏆',
-        ]
-        const texts = successType === 'delivered' ? [
-          `${order.buyer_name} har meddelats och bekräftar inom 24 timmar – eller så sker det automatiskt.`,
-          `Bollen ligger nu hos ${order.buyer_name}. Snyggt svippad!`,
-          `${order.buyer_name} kollar att allt stämmer. Hör av dig om något är oklart.`,
-          `Grym insats! ${order.buyer_name} meddelades precis om leveransen.`,
-        ] : [
-          `${order.buyer_name} har meddelats – nu väntar förhoppningsvis en fin recension!`,
-          `Snyggt jobbat! ${order.buyer_name} ser till att du får din välförtjänta recension.`,
-          `Ännu ett uppdrag i ryggsäcken. Svippo är stolt över dig!`,
-          `${order.buyer_name} vet nu att jobbet är klart. Bra svippat!`,
-        ]
-
-        return (
-          <div className="modal-backdrop" onClick={() => setShowSuccessPopup(false)}>
-            <div className="modal-box" onClick={e => e.stopPropagation()} style={{ textAlign: 'center', padding: '0', overflow: 'hidden', maxWidth: '400px' }}>
-              <img
-                src={`/gifs/completed-${successGif}.gif`}
-                alt="Celebration"
-                style={{ width: '100%', height: '220px', objectFit: 'cover' }}
-              />
-              <div style={{ padding: '24px' }}>
-                <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#22c55e', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', fontSize: '20px', color: 'white', fontWeight: 700 }}>
-                  ✓
-                </div>
-                <p style={{ fontSize: '12px', color: 'var(--color-gray)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>
-                  {successType === 'delivered' ? 'Leverans markerad' : 'Projekt utfört'}
-                </p>
-                <h2 style={{ fontSize: '22px', fontWeight: 800, marginBottom: '10px', color: 'var(--color-dark)' }}>
-                  {headings[successIdx]}
-                </h2>
-                <p style={{ color: 'var(--color-gray)', fontSize: '14px', lineHeight: '1.6', marginBottom: '24px' }}>
-                  {texts[successIdx]}
-                </p>
-                <button
-                  className="btn btn-primary"
-                  style={{ width: '100%', justifyContent: 'center' }}
-                  onClick={() => setShowSuccessPopup(false)}
-                >
-                  Grymt! Låt mig fortsätta
-                </button>
-              </div>
-            </div>
+      {showSuccessPopup && (
+        <div className="modal-backdrop" onClick={() => setShowSuccessPopup(false)}>
+          <div className="modal-box" onClick={e => e.stopPropagation()} style={{ textAlign: 'center', padding: '40px 32px', maxWidth: '400px' }}>
+            <CheckCircle size={64} style={{ color: '#22c55e', margin: '0 auto 20px' }} />
+            <h2 style={{ fontSize: '22px', fontWeight: 800, marginBottom: '10px', color: 'var(--color-dark)' }}>
+              Svippad och klar!
+            </h2>
+            <p style={{ color: 'var(--color-gray)', fontSize: '14px', lineHeight: '1.6', marginBottom: '24px' }}>
+              {successType === 'delivered'
+                ? 'Uppdraget är markerat som levererat. Beställaren granskar nu.'
+                : 'Uppdraget är avslutat. Bra jobbat!'}
+            </p>
+            <button
+              className="btn btn-primary"
+              style={{ width: '100%', justifyContent: 'center' }}
+              onClick={() => setShowSuccessPopup(false)}
+            >
+              Grymt! Låt mig fortsätta
+            </button>
           </div>
-        )
-      })()}
+        </div>
+      )}
       
     </div>
   )
