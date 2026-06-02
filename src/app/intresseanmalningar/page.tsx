@@ -127,6 +127,9 @@ export default function IntresseanmalningarPage() {
         created_at: new Date().toISOString(),
       }).select().single()
 
+      // Mark the request as assigned so it no longer appears in the public listing
+      await supabase.from('requests').update({ status: 'assigned' }).eq('id', interest.request_id)
+
       if (order) {
         await supabase.from('notifications').insert({
           user_id: interest.svippar_id,

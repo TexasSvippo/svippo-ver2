@@ -28,7 +28,7 @@ type Service = { id: string; title: string; subcategory: string; price_type: str
 type Order = { id: string; service_title: string; buyer_name: string; buyer_email: string; message: string; status: string; project_status: string }
 type PlacedOrder = { id: string; service_title: string; seller_name: string; message: string; status: string; project_status: string }
 type KarriarOrder = { id: string; service_title: string; buyer_name: string; project_status: string; created_at: string }
-type Request = { id: string; title: string; category_id: string; subcategory: string; budget: number; budget_type: string; location: string }
+type Request = { id: string; title: string; category_id: string; subcategory: string; budget: number; budget_type: string; location: string; status?: string }
 type Interest = { id: string; request_title: string; svippar_name: string; svippar_email: string; message: string; price: number }
 type Notification = { id: string; type: string; order_id: string; service_title: string; message: string; read: boolean }
 type Subscription = { id: string; category_id: string }
@@ -683,7 +683,10 @@ export default function ProfilePage() {
                     </Link>
                     <div className={styles.profile__item_right}>
                       <strong className={styles.profile__item_budget}>{r.budget_type === 'prisforslag' ? 'Prisförslag' : `${r.budget} kr`}</strong>
-                      <span className={`${styles.profile__item_tag} ${styles['item_tag--orange']}`}>Öppen</span>
+                      {r.status === 'assigned'
+                        ? <span className={`${styles.profile__item_tag} ${styles['item_tag--accepted']}`}>Tillsatt</span>
+                        : <span className={`${styles.profile__item_tag} ${styles['item_tag--completed']}`}>Öppen</span>
+                      }
                       <div className={styles.profile__item_actions}>
                         <button className={`btn btn-outline ${styles.profile__edit_btn}`} onClick={() => router.push(`/create-request?edit=${r.id}`)}><Pencil size={15} /></button>
                         <button className={`btn btn-outline ${styles.profile__delete_btn}`} onClick={async () => {

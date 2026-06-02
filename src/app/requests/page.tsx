@@ -10,6 +10,7 @@ export default async function ForfragningarPage() {
   const { data: requests } = await supabase
     .from('requests')
     .select('*')
+    .or('status.eq.open,status.is.null')
     .order('created_at', { ascending: false })
 
   return <ForfragningarClient requests={requests ?? []} />
