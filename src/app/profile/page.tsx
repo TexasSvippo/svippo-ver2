@@ -586,7 +586,7 @@ export default function ProfilePage() {
                   const cancelOrder = async (e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation(); if (!confirm('Avboka beställningen?')) return; await supabase.from('orders').update({ status: 'cancelled' }).eq('id', order.id); setPlacedOrders(prev => prev.map(o => o.id === order.id ? { ...o, status: 'cancelled' } : o)) }
 
                   return (
-                    <Link href={`/my-order/${order.id}`} key={order.id} className={`${styles.placed_card} ${borderCls}`}>
+                    <div key={order.id} className={`${styles.placed_card} ${borderCls}`} onClick={() => router.push(`/my-order/${order.id}`)} style={{ cursor: 'pointer' }}>
                       <div className={styles.placed_card__header}>
                         <span className={`${styles.placed_card__type_badge} ${isService ? styles['placed_card__type_badge--service'] : styles['placed_card__type_badge--request']}`}>{isService ? 'Tjänst' : 'Förfrågan'}</span>
                         <span className={`${styles.placed_card__status_text} ${statusCls}`}>{friendlyStatus}</span>
@@ -614,11 +614,11 @@ export default function ProfilePage() {
                       {(() => {
                         if (order.status === 'pending') return <div className={styles.placed_card__actions}><button type="button" className={styles.placed_card__btn_ghost} onClick={openChat}>Öppna chatt</button><button type="button" className={styles.placed_card__btn_ghost} onClick={cancelOrder}>Avboka</button></div>
                         if (ps === 'delivered') return <div className={styles.placed_card__actions}><Link href={`/my-order/${order.id}`} className={styles.placed_card__btn_primary} onClick={e => e.stopPropagation()}>Granska & godkänn</Link><button type="button" className={styles.placed_card__btn_ghost} onClick={openChat}>Öppna chatt</button><Link href={`/my-order/${order.id}?problem=1`} className={styles.placed_card__btn_ghost} onClick={e => e.stopPropagation()}>Rapportera problem</Link></div>
-                        if (order.status === 'accepted' && ps !== 'completed' && ps !== 'delivered') return <div className={styles.placed_card__actions}><button type="button" className={styles.placed_card__btn_ghost} onClick={openChat}>Öppna chatt</button><Link href={`/my-order/${order.id}`} className={styles.placed_card__btn_ghost} onClick={e => e.stopPropagation()}>Visa detaljer</Link></div>
+                        if (order.status === 'accepted' && ps !== 'completed' && ps !== 'delivered') return <div className={styles.placed_card__actions}><button type="button" className={styles.placed_card__btn_ghost} onClick={openChat}>Öppna chatt</button><button type="button" className={styles.placed_card__btn_ghost} onClick={e => { e.stopPropagation(); router.push(`/my-order/${order.id}`) }}>Visa detaljer</button></div>
                         if (ps === 'completed' && !raw.review_id) return <div className={styles.placed_card__actions}><Link href={`/my-order/${order.id}?action=review`} className={styles.placed_card__btn_primary} onClick={e => e.stopPropagation()}>Lämna recension</Link></div>
                         return null
                       })()}
-                    </Link>
+                    </div>
                   )
                 }
 
