@@ -5,9 +5,31 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import useAuth from '@/hooks/useAuth'
 import styles from './admin.module.scss'
-import { Users, Wrench, ClipboardList, Package, Clock, CheckCircle, XCircle, BarChart2, LogOut, Trash2 } from 'lucide-react'
+import { Users, Wrench, ClipboardList, Package, Clock, CheckCircle, XCircle, BarChart2, LogOut, Trash2, Megaphone } from 'lucide-react'
 
-type Section = 'overview' | 'applications' | 'services' | 'users' | 'orders'
+type Section = 'overview' | 'applications' | 'services' | 'users' | 'orders' | 'ads'
+
+type AdRow = {
+  id: string
+  company_name: string
+  logo_url: string
+  headline: string
+  description: string
+  cta_label: string
+  cta_url: string
+  is_active: boolean
+  starts_at: string | null
+  ends_at: string | null
+  click_count: number
+  impression_count: number
+  created_at: string
+}
+
+const EMPTY_AD_FORM = {
+  company_name: '', logo_url: '', headline: '', description: '',
+  cta_label: 'Läs mer', cta_url: '', is_active: false,
+  starts_at: '', ends_at: '',
+}
 
 type Stats = {
   users: number
@@ -67,6 +89,11 @@ export default function AdminPage() {
   const [feedback, setFeedback] = useState<Record<string, string>>({})
   const [dataLoading, setDataLoading] = useState(true)
   const [confirmModal, setConfirmModal] = useState<{ open: boolean; title: string; message: string; onConfirm: () => void } | null>(null)
+  const [ads, setAds] = useState<AdRow[]>([])
+  const [showAdForm, setShowAdForm] = useState(false)
+  const [editingAdId, setEditingAdId] = useState<string | null>(null)
+  const [adForm, setAdForm] = useState(EMPTY_AD_FORM)
+  const [adLogoUploading, setAdLogoUploading] = useState(false)
 
   // Auth + role check
   useEffect(() => {
@@ -117,6 +144,10 @@ export default function AdminPage() {
     setOrders(recentOrdersRes.data ?? [])
     setServices(allServicesRes.data ?? [])
     setDataLoading(false)
+
+    // Load ads separately (all rows, not filtered by RLS)
+    const { data: adsData } = await supabase.from('ads').select('*').order('created_at', { ascending: false })
+    setAds(adsData ?? [])
   }
 
   const handleApprove = async (app: Application) => {
@@ -168,6 +199,69 @@ export default function AdminPage() {
     onConfirm: () => handleDeleteUser(id),
   })
 
+  const handleLogoUpload = async (file: File) => {
+    setAdLogoUploading(true)
+    const ext = file.name.split('.').pop() ?? 'png'
+    const path = `${Date.now()}.${ext}`
+    const { error } = await supabase.storage.from('ad-logos').upload(path, file, { upsert: true })
+    if (error) { alert('Logo-uppladdning misslyckades: ' + error.message); setAdLogoUploading(false); return }
+    const { data: urlData } = supabase.storage.from('ad-logos').getPublicUrl(path)
+    setAdForm(f => ({ ...f, logo_url: urlData.publicUrl }))
+    setAdLogoUploading(false)
+  }
+
+  const handleSaveAd = async () => {
+    if (!adForm.company_name || !adForm.logo_url || !adForm.headline || !adForm.description || !adForm.cta_url) {
+      alert('Fyll i alla obligatoriska fält (logo måste laddas upp)')
+      return
+    }
+    const payload = {
+      company_name: adForm.company_name,
+      logo_url: adForm.logo_url,
+      headline: adForm.headline.slice(0, 60),
+      description: adForm.description.slice(0, 120),
+      cta_label: (adForm.cta_label || 'Läs mer').slice(0, 20),
+      cta_url: adForm.cta_url,
+      is_active: adForm.is_active,
+      starts_at: adForm.starts_at || null,
+      ends_at: adForm.ends_at || null,
+    }
+    if (editingAdId) {
+      const { error } = await supabase.from('ads').update(payload).eq('id', editingAdId)
+      if (error) { alert('Fel: ' + error.message); return }
+      setAds(prev => prev.map(a => a.id === editingAdId ? { ...a, ...payload } : a))
+    } else {
+      const { data, error } = await supabase.from('ads').insert(payload).select().single()
+      if (error) { alert('Fel: ' + error.message); return }
+      if (data) setAds(prev => [data as AdRow, ...prev])
+    }
+    setShowAdForm(false)
+    setEditingAdId(null)
+    setAdForm(EMPTY_AD_FORM)
+  }
+
+  const handleToggleAd = async (ad: AdRow) => {
+    const { error } = await supabase.from('ads').update({ is_active: !ad.is_active }).eq('id', ad.id)
+    if (error) { alert('Fel: ' + error.message); return }
+    setAds(prev => prev.map(a => a.id === ad.id ? { ...a, is_active: !ad.is_active } : a))
+  }
+
+  const handleEditAd = (ad: AdRow) => {
+    setAdForm({
+      company_name: ad.company_name,
+      logo_url: ad.logo_url,
+      headline: ad.headline,
+      description: ad.description,
+      cta_label: ad.cta_label,
+      cta_url: ad.cta_url,
+      is_active: ad.is_active,
+      starts_at: ad.starts_at ? ad.starts_at.slice(0, 10) : '',
+      ends_at: ad.ends_at ? ad.ends_at.slice(0, 10) : '',
+    })
+    setEditingAdId(ad.id)
+    setShowAdForm(true)
+  }
+
   const fmt = (iso: string) => new Date(iso).toLocaleDateString('sv-SE', { day: 'numeric', month: 'short', year: 'numeric' })
 
   if (authLoading || !authorized) {
@@ -186,6 +280,7 @@ export default function AdminPage() {
             { id: 'services', label: 'Tjänster', icon: <Wrench size={16} /> },
             { id: 'users', label: 'Användare', icon: <Users size={16} /> },
             { id: 'orders', label: 'Beställningar', icon: <Package size={16} /> },
+            { id: 'ads', label: 'Annonser', icon: <Megaphone size={16} /> },
           ] as { id: Section; label: string; icon: React.ReactNode; badge?: number }[]).map(item => (
             <button
               key={item.id}
@@ -386,6 +481,124 @@ export default function AdminPage() {
                         <td><span className={`${styles.badge} ${styles[`badge--${o.status}`]}`}>{o.status}</span></td>
                         <td><span className={styles.badge}>{o.project_status || '–'}</span></td>
                         <td>{fmt(o.created_at)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ANNONSER */}
+        {section === 'ads' && (
+          <div className={styles.section}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+              <h1 className={styles.section__title}>Annonser</h1>
+              <button className="btn btn-primary" onClick={() => { setAdForm(EMPTY_AD_FORM); setEditingAdId(null); setShowAdForm(true) }}>
+                + Ny annons
+              </button>
+            </div>
+
+            {/* Form */}
+            {showAdForm && (
+              <div className={styles.section__note} style={{ background: 'white', border: '1px solid var(--color-border)', borderRadius: 8, padding: 24, marginBottom: 24 }}>
+                <h2 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>{editingAdId ? 'Redigera annons' : 'Ny annons'}</h2>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                  <div>
+                    <label style={{ fontSize: 13, fontWeight: 600, display: 'block', marginBottom: 4 }}>Företagsnamn *</label>
+                    <input className="form-input" value={adForm.company_name} onChange={e => setAdForm(f => ({ ...f, company_name: e.target.value }))} placeholder="Acme AB" />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 13, fontWeight: 600, display: 'block', marginBottom: 4 }}>Logo * {adLogoUploading && '(laddar upp...)'}</label>
+                    {adForm.logo_url && <img src={adForm.logo_url} alt="" style={{ width: 48, height: 48, objectFit: 'contain', borderRadius: 6, marginBottom: 4, display: 'block' }} />}
+                    <input type="file" accept="image/*" onChange={e => { const f = e.target.files?.[0]; if (f) handleLogoUpload(f) }} />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 13, fontWeight: 600, display: 'block', marginBottom: 4 }}>Rubrik * (max 60)</label>
+                    <input className="form-input" value={adForm.headline} onChange={e => setAdForm(f => ({ ...f, headline: e.target.value.slice(0, 60) }))} placeholder="Rubrik" maxLength={60} />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 13, fontWeight: 600, display: 'block', marginBottom: 4 }}>Beskrivning * (max 120)</label>
+                    <input className="form-input" value={adForm.description} onChange={e => setAdForm(f => ({ ...f, description: e.target.value.slice(0, 120) }))} placeholder="Kort beskrivning" maxLength={120} />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 13, fontWeight: 600, display: 'block', marginBottom: 4 }}>CTA-text (max 20)</label>
+                    <input className="form-input" value={adForm.cta_label} onChange={e => setAdForm(f => ({ ...f, cta_label: e.target.value.slice(0, 20) }))} placeholder="Läs mer" maxLength={20} />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 13, fontWeight: 600, display: 'block', marginBottom: 4 }}>CTA-URL *</label>
+                    <input className="form-input" value={adForm.cta_url} onChange={e => setAdForm(f => ({ ...f, cta_url: e.target.value }))} placeholder="https://..." />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 13, fontWeight: 600, display: 'block', marginBottom: 4 }}>Startdatum</label>
+                    <input type="date" className="form-input" value={adForm.starts_at} onChange={e => setAdForm(f => ({ ...f, starts_at: e.target.value }))} />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 13, fontWeight: 600, display: 'block', marginBottom: 4 }}>Slutdatum</label>
+                    <input type="date" className="form-input" value={adForm.ends_at} onChange={e => setAdForm(f => ({ ...f, ends_at: e.target.value }))} />
+                  </div>
+                </div>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, fontSize: 14, cursor: 'pointer' }}>
+                  <input type="checkbox" checked={adForm.is_active} onChange={e => setAdForm(f => ({ ...f, is_active: e.target.checked }))} />
+                  Aktiv (visas för besökare)
+                </label>
+                <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
+                  <button className="btn btn-primary" onClick={handleSaveAd} disabled={adLogoUploading}>
+                    {adLogoUploading ? 'Laddar upp logo...' : 'Spara annons'}
+                  </button>
+                  <button className="btn btn-outline" onClick={() => { setShowAdForm(false); setEditingAdId(null); setAdForm(EMPTY_AD_FORM) }}>
+                    Avbryt
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Table */}
+            {ads.length === 0 ? (
+              <div className={styles.empty}><Megaphone size={32} /><p>Inga annonser ännu.</p></div>
+            ) : (
+              <div className={styles.table_wrap}>
+                <table className={styles.table}>
+                  <thead>
+                    <tr>
+                      <th>Företag</th>
+                      <th>Rubrik</th>
+                      <th>Status</th>
+                      <th>Start</th>
+                      <th>Slut</th>
+                      <th>Klick</th>
+                      <th>Visningar</th>
+                      <th>Åtgärder</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {ads.map(ad => (
+                      <tr key={ad.id}>
+                        <td style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          {ad.logo_url && <img src={ad.logo_url} alt="" style={{ width: 28, height: 28, objectFit: 'contain', borderRadius: 4 }} />}
+                          {ad.company_name}
+                        </td>
+                        <td className={styles.table__desc}>{ad.headline}</td>
+                        <td>
+                          <span className={`${styles.badge} ${ad.is_active ? styles['badge--accepted'] : styles['badge--pending']}`}>
+                            {ad.is_active ? 'Aktiv' : 'Pausad'}
+                          </span>
+                        </td>
+                        <td>{ad.starts_at ? fmt(ad.starts_at) : '–'}</td>
+                        <td>{ad.ends_at ? fmt(ad.ends_at) : '–'}</td>
+                        <td>{ad.click_count}</td>
+                        <td>{ad.impression_count}</td>
+                        <td>
+                          <div className={styles.action_btns}>
+                            <button className="btn btn-outline" style={{ fontSize: 12, padding: '4px 10px' }} onClick={() => handleEditAd(ad)}>
+                              Redigera
+                            </button>
+                            <button className="btn btn-outline" style={{ fontSize: 12, padding: '4px 10px' }} onClick={() => handleToggleAd(ad)}>
+                              {ad.is_active ? 'Pausa' : 'Aktivera'}
+                            </button>
+                          </div>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
