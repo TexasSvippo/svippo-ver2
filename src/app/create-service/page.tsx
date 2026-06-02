@@ -47,9 +47,9 @@ export default function CreateServicePage() {
   const [step, setStep] = useState(isEditing ? 1 : 0)
   const [loadingEdit, setLoadingEdit] = useState(isEditing)
   const [saving, setSaving] = useState(false)
+  const [savingDraft, setSavingDraft] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
   const [savedServiceId, setSavedServiceId] = useState<string | null>(null)
-  const [showRefsStep, setShowRefsStep] = useState(false)
   const [newQuestion, setNewQuestion] = useState({
     label: '',
     type: 'text' as 'text' | 'select' | 'textarea',
@@ -162,6 +162,53 @@ export default function CreateServicePage() {
   const selectedCategory = categories.find(c => c.id === form.category_id)
   const update = (field: keyof FormData, value: string) => setForm(prev => ({ ...prev, [field]: value }))
 
+  // Creates (or updates) a draft row in services when advancing step 0 → 1
+  const handleNext = async () => {
+    if (step === 0 && !isEditing) {
+      setSavingDraft(true)
+      try {
+        const { data: userData } = await supabase.from('users').select('name').eq('id', user.id).single()
+        const selectedCat = categories.find(c => c.id === form.category_id)
+
+        if (savedServiceId) {
+          // User went back and changed category — update the existing draft
+          await supabase.from('services').update({
+            category_id: form.category_id,
+            subcategory: form.subcategory,
+            service_type: selectedCat?.service_type ?? 'typ1',
+          }).eq('id', savedServiceId)
+        } else {
+          const { data } = await supabase.from('services').insert({
+            title: 'Utkast',
+            description: '',
+            category_id: form.category_id,
+            subcategory: form.subcategory,
+            user_id: user.id,
+            user_name: userData?.name || user.email,
+            user_email: user.email,
+            account_type: accountType,
+            service_type: selectedCat?.service_type ?? 'typ1',
+            price_type: 'timpris',
+            price: null,
+            location: '',
+            custom_questions: [],
+            offers_rut: false,
+            offers_rot: false,
+            rating: 0,
+            reviews: 0,
+            created_at: new Date().toISOString(),
+          }).select('id').single()
+          if (data?.id) setSavedServiceId(data.id)
+        }
+      } catch (err) {
+        console.error('Draft creation failed:', err)
+      } finally {
+        setSavingDraft(false)
+      }
+    }
+    setStep(prev => prev + 1)
+  }
+
   const handleSubmit = async () => {
     setSaving(true)
     try {
@@ -178,9 +225,22 @@ export default function CreateServicePage() {
           offers_rut: form.offers_rut,
           offers_rot: form.offers_rot,
         }).eq('id', editId)
+      } else if (savedServiceId) {
+        // Update the draft created in step 0→1 with the full form data
+        await supabase.from('services').update({
+          title: form.title,
+          description: form.description,
+          price_type: form.price_type,
+          price: form.price_type !== 'offert' ? Number(form.price) : null,
+          location: form.location,
+          user_name: userData?.name || user.email,
+          custom_questions: form.custom_questions,
+          offers_rut: form.offers_rut,
+          offers_rot: form.offers_rot,
+        }).eq('id', savedServiceId)
       } else {
+        // Fallback: full insert (shouldn't normally be reached)
         const selectedCat = categories.find(c => c.id === form.category_id)
-
         const { data: insertData } = await supabase.from('services').insert({
           title: form.title,
           description: form.description,
@@ -201,11 +261,7 @@ export default function CreateServicePage() {
           reviews: 0,
           created_at: new Date().toISOString(),
         }).select('id').single()
-        if (insertData?.id) {
-          setSavedServiceId(insertData.id)
-          setShowRefsStep(true)
-          return
-        }
+        if (insertData?.id) setSavedServiceId(insertData.id)
       }
 
       setShowSuccess(true)
@@ -214,42 +270,6 @@ export default function CreateServicePage() {
     } finally {
       setSaving(false)
     }
-  }
-
-  // ── References step (shown after new service is published) ──────────────────
-  if (showRefsStep && savedServiceId) {
-    return (
-      <div className={styles.create}>
-        <div className={`container ${styles.create__inner}`}>
-          <div className={`${styles.create__card} card`}>
-            <div className={styles.create__content}>
-              <div className={styles.create__success_emoji}>🎉</div>
-              <h1 className={styles.create__title}>Tjänsten är publicerad!</h1>
-              <p className={styles.create__subtitle}>
-                Lägg till referensbilder för att visa upp ditt arbete och öka dina chanser att få uppdrag.
-              </p>
-              <ReferenceImageUploader serviceId={savedServiceId} userId={user.id} />
-              <div className={styles.create__nav} style={{ marginTop: 24, borderTop: '1px solid var(--color-border)', paddingTop: 20 }}>
-                <button
-                  className="btn btn-primary"
-                  onClick={() => router.push(`/service/${savedServiceId}`)}
-                  type="button"
-                >
-                  Gå till mitt inlägg →
-                </button>
-                <button
-                  className="btn btn-outline"
-                  onClick={() => router.push('/profile')}
-                  type="button"
-                >
-                  Hoppa över
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
   }
 
   return (
@@ -327,6 +347,19 @@ export default function CreateServicePage() {
                   <textarea className={styles.create__textarea} placeholder="Beskriv vad du erbjuder, din erfarenhet och vad som ingår..." value={form.description} onChange={e => update('description', e.target.value)} rows={6} />
                 </div>
               </div>
+
+              {/* Reference image uploader – requires a service_id from the draft */}
+              {(savedServiceId || (isEditing && editId)) && (
+                <div style={{ marginTop: 24, paddingTop: 20, borderTop: '1px solid var(--color-border)' }}>
+                  <h3 style={{ fontFamily: 'Inter, sans-serif', fontSize: 15, fontWeight: 600, color: 'var(--color-dark)', margin: '0 0 4px' }}>
+                    Referensbilder (valfritt)
+                  </h3>
+                  <p style={{ fontSize: 13, color: 'var(--color-gray)', margin: '0 0 12px' }}>
+                    Visa upp tidigare arbeten för att öka dina chanser att få uppdrag
+                  </p>
+                  <ReferenceImageUploader serviceId={(savedServiceId ?? editId)!} userId={user.id} />
+                </div>
+              )}
             </div>
           )}
 
@@ -573,12 +606,6 @@ export default function CreateServicePage() {
                 ))}
               </div>
 
-              {/* Reference uploader – only in edit mode */}
-              {isEditing && editId && (
-                <div style={{ marginTop: 24 }}>
-                  <ReferenceImageUploader serviceId={editId} userId={user.id} />
-                </div>
-              )}
             </div>
           )}
 
@@ -590,15 +617,16 @@ export default function CreateServicePage() {
             {step < STEPS.length - 1 ? (
               <button
                 className="btn btn-primary"
-                onClick={() => setStep(step + 1)}
+                onClick={handleNext}
                 type="button"
                 disabled={
+                  savingDraft ||
                   (step === 0 && (!form.category_id || !form.subcategory)) ||
                   (step === 1 && (!form.title || !form.description)) ||
                   (step === 2 && (!form.location || form.location === '' || (form.price_type !== 'offert' && !form.price)))
                 }
               >
-                Nästa →
+                {savingDraft ? 'Sparar...' : 'Nästa →'}
               </button>
             ) : (
               <button className="btn btn-primary" onClick={handleSubmit} disabled={saving} type="button">
@@ -610,15 +638,24 @@ export default function CreateServicePage() {
         </div>
       </div>
 
-      {/* Success popup – only shown in edit mode */}
+      {/* Success popup */}
       {showSuccess && (
         <div className={styles.create__overlay}>
           <div className={styles.create__success_modal}>
             <div className={styles.create__success_emoji}>🎉</div>
-            <h2 className={styles.create__success_title}>Inlägget är uppdaterat!</h2>
-            <p className={styles.create__success_text}>Dina ändringar är sparade och synliga på Svippo.</p>
+            <h2 className={styles.create__success_title}>
+              {isEditing ? 'Inlägget är uppdaterat!' : 'Tjänsten är publicerad!'}
+            </h2>
+            <p className={styles.create__success_text}>
+              {isEditing ? 'Dina ändringar är sparade och synliga på Svippo.' : 'Ditt inlägg är nu publicerat och synligt för alla på Svippo. Lycka till!'}
+            </p>
             <div className={styles.create__success_actions}>
-              <button className="btn btn-primary" onClick={() => router.push(`/service/${editId}`)}>Se inlägget</button>
+              <button
+                className="btn btn-primary"
+                onClick={() => router.push(`/service/${savedServiceId ?? editId}`)}
+              >
+                Se inlägget
+              </button>
               <button className="btn btn-outline" onClick={() => router.push('/profile')}>Till din profil</button>
             </div>
           </div>
