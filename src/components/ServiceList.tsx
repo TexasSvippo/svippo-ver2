@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import AdCard from './AdCard'
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Star } from 'lucide-react'
@@ -115,34 +116,41 @@ export default function ServiceList() {
                     <Link href="/create-service" className="btn btn-primary">Skapa första tjänsten</Link>
                   </div>
                 ) : (
-                  services.map((s) => (
-                    <Link href={`/service/${s.id}`} key={s.id} className={`${styles.service_card} card`}>
-                      <div className={styles.service_card__avatar}>
-                        {s.avatar_url
-                          ? <img src={s.avatar_url} alt={s.user_name} className={styles.service_card__avatar_img} />
-                          : <div className={styles.service_card__avatar_placeholder}>{s.user_name?.charAt(0).toUpperCase() || '?'}</div>
-                        }
-                      </div>
-                      <div className={styles.service_card__info}>
-                        <div className={styles.service_card__meta}>
-                          <span className={styles.service_card__name}>{s.user_name}</span>
-                          <StarRating rating={s.rating} />
-                          <span className={styles.service_card__reviews}>({s.reviews})</span>
-                          <span className={styles.service_card__distance}>· {s.location}</span>
+                  services.flatMap((s, idx) => {
+                    const card = (
+                      <Link href={`/service/${s.id}`} key={s.id} className={`${styles.service_card} card`}>
+                        <div className={styles.service_card__avatar}>
+                          {s.avatar_url
+                            ? <img src={s.avatar_url} alt={s.user_name} className={styles.service_card__avatar_img} />
+                            : <div className={styles.service_card__avatar_placeholder}>{s.user_name?.charAt(0).toUpperCase() || '?'}</div>
+                          }
                         </div>
-                        <p className={styles.service_card__title}>{s.title}</p>
-                        <span className={styles.service_card__category}>{s.subcategory}</span>
-                      </div>
-                      <div className={styles.service_card__price}>
-                        <span className={styles.service_card__price_type}>
-                          {s.price_type === 'offert' ? '' : 'från:'}
-                        </span>
-                        <strong>
-                          {s.price_type === 'offert' ? 'Offert' : `${s.price}kr`}
-                        </strong>
-                      </div>
-                    </Link>
-                  ))
+                        <div className={styles.service_card__info}>
+                          <div className={styles.service_card__meta}>
+                            <span className={styles.service_card__name}>{s.user_name}</span>
+                            <StarRating rating={s.rating} />
+                            <span className={styles.service_card__reviews}>({s.reviews})</span>
+                            <span className={styles.service_card__distance}>· {s.location}</span>
+                          </div>
+                          <p className={styles.service_card__title}>{s.title}</p>
+                          <span className={styles.service_card__category}>{s.subcategory}</span>
+                        </div>
+                        <div className={styles.service_card__price}>
+                          <span className={styles.service_card__price_type}>
+                            {s.price_type === 'offert' ? '' : 'från:'}
+                          </span>
+                          <strong>
+                            {s.price_type === 'offert' ? 'Offert' : `${s.price}kr`}
+                          </strong>
+                        </div>
+                      </Link>
+                    )
+                    // Insert AdCard after the 3rd service card (index 2) when list has ≥4 items
+                    if (idx === 2 && services.length >= 4) {
+                      return [card, <AdCard key="ad-card" />]
+                    }
+                    return [card]
+                  })
                 )}
               </div>
             )}
