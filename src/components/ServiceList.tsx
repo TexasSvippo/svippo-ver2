@@ -145,8 +145,9 @@ export default function ServiceList() {
                         </div>
                       </Link>
                     )
-                    // Insert AdCard after the 3rd service card (index 2) when list has ≥4 items
-                    if (idx === 2 && services.length >= 4) {
+                    // Insert AdCard after index 2 (or after the last card if fewer than 3)
+                    const adInsertAfter = services.length >= 3 ? 2 : services.length - 1
+                    if (idx === adInsertAfter) {
                       return [card, <AdCard key="ad-card" />]
                     }
                     return [card]

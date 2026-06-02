@@ -19,11 +19,10 @@ export default function AdCard() {
 
   useEffect(() => {
     const load = async () => {
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from('ads')
         .select('id, company_name, logo_url, headline, description, cta_label, cta_url')
       // RLS already filters to is_active=true and within starts_at/ends_at window
-      console.log('[AdCard] Supabase response:', { data, error })
 
       if (!data || data.length === 0) return
 
