@@ -17,11 +17,28 @@
     padding: 16px 0 60px;
   }
 
+  .detail__breadcrumb {
+    flex-wrap: wrap;
+
+    // Clamp the service title so it doesn't overflow the row
+    span:last-child {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 55vw;
+    }
+  }
+
   .detail__main {
     width: 100%;
     max-width: 100%;
     word-break: break-word;
     overflow-wrap: break-word;
+  }
+
+  .detail__layout {
+    padding-left: 0;
+    padding-right: 0;
   }
 }
 
@@ -51,7 +68,7 @@
   align-items: flex-start;
   max-width: 1100px;
   margin: 0 auto;
-  padding: 2rem 1.5rem;
+  padding-top: 1.5rem;
 }
 
 // Huvudinnehåll
