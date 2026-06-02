@@ -95,6 +95,54 @@
   }
 }
 
+// ─── Rotating word ────────────────────────────────────────────────────────────
+
+.hero__rotating_wrap {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+}
+
+.hero__rotating_link {
+  display: inline-block;
+  color: #E8541A;
+  font-style: italic;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  animation: heroSlideUp 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+
+  &:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+}
+
+@keyframes heroSlideUp {
+  from {
+    transform: translateY(110%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+// ─── SEO visually hidden ──────────────────────────────────────────────────────
+
+.hero__sr_only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 // ─── Tabs ─────────────────────────────────────────────────────────────────────
 
 .hero__tabs {

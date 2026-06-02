@@ -25,6 +25,15 @@ type Request = {
   budget: number
 }
 
+const ROTATING_CATEGORIES = [
+  { label: 'städning',        href: '/services?kategori=hushall&underkategori=Städning' },
+  { label: 'snickeri',        href: '/services?kategori=bygg-hantverk&underkategori=Snickeri' },
+  { label: 'webbutveckling',  href: '/services?kategori=digitala-tjanster&underkategori=Webbutveckling' },
+  { label: 'däckbyte',        href: '/services?kategori=bil&underkategori=Däckbyte' },
+  { label: 'flytthjälp',      href: '/services?kategori=frakt-flytt&underkategori=Flytthjälp' },
+  { label: 'fönsterputsning', href: '/services?kategori=hushall&underkategori=Fönsterputsning' },
+]
+
 const POPULAR_PILLS = [
   { label: 'Städning',        kategori: 'hushall' },
   { label: 'Snickeri',        kategori: 'bygg-hantverk' },
@@ -37,6 +46,14 @@ const POPULAR_PILLS = [
 export default function Hero() {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<ActiveTab>('services')
+  const [activeIndex, setActiveIndex] = useState(0)
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setActiveIndex(i => (i + 1) % ROTATING_CATEGORIES.length)
+    }, 2800)
+    return () => clearInterval(id)
+  }, [])
   const [search, setSearch] = useState('')
   const [showDropdown, setShowDropdown] = useState(false)
   const [services, setServices] = useState<Service[]>([])
@@ -122,11 +139,24 @@ export default function Hero() {
           Hitta hjälp. Tjäna pengar.
         </span>
 
-        {/* H1 */}
+        {/* H1 – rotating clickable category */}
         <h1 className={styles.hero__title}>
-          Hitta tjänster för dig,{' '}
-          <span className={styles['hero__title--italic']}>i ditt område!</span>
+          Få hjälp med{' '}
+          <span className={styles.hero__rotating_wrap}>
+            <Link
+              key={activeIndex}
+              href={ROTATING_CATEGORIES[activeIndex].href}
+              className={styles.hero__rotating_link}
+            >
+              {ROTATING_CATEGORIES[activeIndex].label}
+            </Link>
+          </span>
         </h1>
+
+        {/* Visually hidden SEO text */}
+        <p className={styles.hero__sr_only}>
+          Hitta kvalificerade utförare inom städning, snickeri, webbutveckling och mycket mer nära dig.
+        </p>
 
         {/* Tabs */}
         <div className={styles.hero__tabs}>
