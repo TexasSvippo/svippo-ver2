@@ -42,10 +42,15 @@ const categoryDescriptions: Record<string, string> = {
 }
 const DEFAULT_DESC = 'Svippo kopplar ihop dig med kvalificerade utförare inom hundratals kategorier.'
 
+function stripHtml(html: string): string {
+  return html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
+}
+
 function truncate(text: string, limit: number) {
   if (!text) return ''
-  const words = text.split(' ')
-  return words.length <= limit ? text : words.slice(0, limit).join(' ') + '...'
+  const plain = stripHtml(text)
+  const words = plain.split(' ')
+  return words.length <= limit ? plain : words.slice(0, limit).join(' ') + '...'
 }
 function getCardStyle(t: string) {
   if (t === 'foretag') return styles['service_card--foretag']
