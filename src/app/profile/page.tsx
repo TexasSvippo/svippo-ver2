@@ -567,7 +567,7 @@ export default function ProfilePage() {
               ) : filteredPlaced.length === 0 ? (
                 <div className={styles.profile__empty}><p>Inga beställningar matchar valt filter.</p></div>
               ) : (() => {
-                const isDone = (o: PlacedOrder) => o.project_status === 'completed' || o.status === 'cancelled' || o.status === 'rejected'
+                const isDone = (o: PlacedOrder) => o.project_status === 'completed' || o.project_status === 'cancelled' || o.status === 'cancelled' || o.status === 'rejected'
                 const activeList = filteredPlaced.filter(o => !isDone(o))
                 const historyList = filteredPlaced.filter(o => isDone(o))
 
@@ -578,7 +578,7 @@ export default function ProfilePage() {
                   // request_id present (or no service_id) → Förfrågan
                   const ps = order.project_status
                   const borderCls = ps === 'delivered' ? styles['placed_card--action'] : ps === 'completed' || order.status === 'rejected' ? styles['placed_card--done'] : styles['placed_card--ongoing']
-                  const friendlyStatus = order.status === 'rejected' ? 'Nekad' : ps === 'completed' ? 'Avslutat' : ps === 'delivered' ? 'Inväntar godkännande' : order.status === 'accepted' ? 'Pågår' : 'Väntar på utföraren'
+                  const friendlyStatus = (ps === 'cancelled' || order.status === 'cancelled') ? 'Avbokad' : order.status === 'rejected' ? 'Nekad' : ps === 'completed' ? 'Avslutat' : ps === 'delivered' ? 'Inväntar godkännande' : order.status === 'accepted' ? 'Pågår' : 'Väntar på utföraren'
                   const statusCls = ps === 'delivered' ? styles['placed_card__status_text--action'] : ps === 'completed' || order.status === 'rejected' ? styles['placed_card__status_text--done'] : styles['placed_card__status_text--ongoing']
                   const stepKeys = ['pending', 'in_progress', 'delivered', 'completed']
                   const stepLabels = ['Beställd', 'Pågår', 'Levererat', 'Avslutat']
