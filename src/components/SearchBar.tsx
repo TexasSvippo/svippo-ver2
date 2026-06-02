@@ -96,13 +96,11 @@ export default function SearchBar({ hideTypePicker = false, defaultType = 'tjans
   }, [search, searchType])
 
   const handleFocus = () => {
-    if (!search && !hideTypePicker) {
-      setShowTypePicker(true)
-      setShowDropdown(false)
-    } else if (search) {
+    if (search) {
       setShowDropdown(true)
       setShowTypePicker(false)
     }
+    // Type picker only opens via its own button, not on input focus
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
