@@ -36,11 +36,18 @@
   }
 }
 
+@media (max-width: 768px) {
+  .hero__rotating_wrap {
+    display: block;
+    min-height: 1.3em;
+  }
+}
+
 // ─── Card ─────────────────────────────────────────────────────────────────────
 
 .hero__card {
   width: 100%;
-  max-width: 560px;
+  max-width: 650px;
   background: white;
   border-radius: var(--radius-lg);
   box-shadow: 0 4px 32px rgba(0, 0, 0, 0.10);
@@ -104,7 +111,9 @@
 }
 
 .hero__rotating_link {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
   color: #E8541A;
   font-style: italic;
   font-weight: 500;
@@ -112,9 +121,20 @@
   cursor: pointer;
   animation: heroSlideUp 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
 
-  &:hover {
-    text-decoration: underline;
-    text-underline-offset: 3px;
+  &::after {
+    content: '→';
+    display: inline-block;
+    opacity: 0;
+    transform: translateX(-6px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    font-style: normal;
+    font-size: 0.85em;
+    margin-left: 4px;
+  }
+
+  &:hover::after {
+    opacity: 1;
+    transform: translateX(0);
   }
 }
 

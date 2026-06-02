@@ -47,13 +47,15 @@ export default function Hero() {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<ActiveTab>('services')
   const [activeIndex, setActiveIndex] = useState(0)
+  const [isPaused, setIsPaused] = useState(false)
 
   useEffect(() => {
+    if (isPaused) return
     const id = setInterval(() => {
       setActiveIndex(i => (i + 1) % ROTATING_CATEGORIES.length)
-    }, 2800)
+    }, 2200)
     return () => clearInterval(id)
-  }, [])
+  }, [activeIndex, isPaused])
   const [search, setSearch] = useState('')
   const [showDropdown, setShowDropdown] = useState(false)
   const [services, setServices] = useState<Service[]>([])
@@ -147,6 +149,8 @@ export default function Hero() {
               key={activeIndex}
               href={ROTATING_CATEGORIES[activeIndex].href}
               className={styles.hero__rotating_link}
+              onMouseEnter={() => setIsPaused(true)}
+              onMouseLeave={() => setIsPaused(false)}
             >
               {ROTATING_CATEGORIES[activeIndex].label}
             </Link>
