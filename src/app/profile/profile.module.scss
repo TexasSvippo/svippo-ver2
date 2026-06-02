@@ -1136,3 +1136,53 @@
   .placed_card__step--done &,
   .placed_card__step--current & { color: #378ADD; font-weight: 600; }
 }
+
+// ─── Placerade beställningar – CTA-knappar ────────────────────────────────────
+
+.placed_card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--color-border);
+  margin-top: 4px;
+}
+
+.placed_card__btn_primary {
+  padding: 6px 16px;
+  border-radius: var(--radius-full);
+  border: none;
+  background: #ff5733;
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font-body);
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  transition: background 0.15s;
+
+  &:hover { background: #cc4422; }
+}
+
+.placed_card__btn_ghost {
+  padding: 6px 16px;
+  border-radius: var(--radius-full);
+  border: 1.5px solid var(--color-border);
+  background: transparent;
+  color: var(--color-dark);
+  font-size: 13px;
+  font-weight: 500;
+  font-family: var(--font-body);
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  transition: border-color 0.15s, color 0.15s;
+
+  &:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+  }
+}

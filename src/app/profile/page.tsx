@@ -568,7 +568,7 @@ export default function ProfilePage() {
               ) : (
                 <div className={styles.profile__list}>
                   {filteredPlaced.map(order => {
-                    const raw = order as PlacedOrder & { service_id?: string }
+                    const raw = order as PlacedOrder & { service_id?: string; conversation_id?: string; review_id?: string }
                     const isService = !!raw.service_id
                     const ps = order.project_status
 
@@ -645,6 +645,46 @@ export default function ProfilePage() {
                             })}
                           </div>
                         </div>
+
+                        {/* CTAs – stopPropagation prevents the parent Link from navigating */}
+                        {(() => {
+                          const openChat = (e: React.MouseEvent) => {
+                            e.preventDefault(); e.stopPropagation()
+                            router.push(raw.conversation_id ? `/messages/${raw.conversation_id}` : '/messages')
+                          }
+                          const cancelOrder = async (e: React.MouseEvent) => {
+                            e.preventDefault(); e.stopPropagation()
+                            if (!confirm('Avboka beställningen?')) return
+                            await supabase.from('orders').update({ status: 'cancelled' }).eq('id', order.id)
+                            setPlacedOrders(prev => prev.map(o => o.id === order.id ? { ...o, status: 'cancelled' } : o))
+                          }
+
+                          if (order.status === 'pending') return (
+                            <div className={styles.placed_card__actions}>
+                              <button type="button" className={styles.placed_card__btn_ghost} onClick={openChat}>Öppna chatt</button>
+                              <button type="button" className={styles.placed_card__btn_ghost} onClick={cancelOrder}>Avboka</button>
+                            </div>
+                          )
+                          if (ps === 'delivered') return (
+                            <div className={styles.placed_card__actions}>
+                              <Link href={`/my-order/${order.id}`} className={styles.placed_card__btn_primary} onClick={e => e.stopPropagation()}>Granska & godkänn</Link>
+                              <button type="button" className={styles.placed_card__btn_ghost} onClick={openChat}>Öppna chatt</button>
+                              <Link href={`/my-order/${order.id}?problem=1`} className={styles.placed_card__btn_ghost} onClick={e => e.stopPropagation()}>Rapportera problem</Link>
+                            </div>
+                          )
+                          if (order.status === 'accepted' && ps !== 'completed' && ps !== 'delivered') return (
+                            <div className={styles.placed_card__actions}>
+                              <button type="button" className={styles.placed_card__btn_ghost} onClick={openChat}>Öppna chatt</button>
+                              <Link href={`/my-order/${order.id}`} className={styles.placed_card__btn_ghost} onClick={e => e.stopPropagation()}>Visa detaljer</Link>
+                            </div>
+                          )
+                          if (ps === 'completed' && !raw.review_id) return (
+                            <div className={styles.placed_card__actions}>
+                              <Link href={`/my-order/${order.id}?action=review`} className={styles.placed_card__btn_primary} onClick={e => e.stopPropagation()}>Lämna recension</Link>
+                            </div>
+                          )
+                          return null
+                        })()}
 
                       </Link>
                     )
