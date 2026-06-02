@@ -226,6 +226,7 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
   const isTyp3 = order.service_type === 'typ3'
   const isDelivered = !!order.delivered_at
   const hasDispute = !!order.dispute_status
+  const isCancelled = order.status === 'rejected' || (order.status as string) === 'cancelled' || (order.project_status as string) === 'cancelled'
 
   return (
     <div className={styles.myorder}>
@@ -275,6 +276,16 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
                 <LinkIcon size={16} /> {order.from_request ? 'Visa din förfrågan →' : 'Visa tjänsten →'}
               </Link>
             </div>
+
+            {isCancelled && (
+              <div className={styles.cancelled_banner}>
+                <XCircle size={22} style={{ flexShrink: 0, marginTop: 2 }} />
+                <div>
+                  <strong>Uppdraget är avbokat</strong>
+                  <p>Det här uppdraget är avbokat och kommer inte att utföras.</p>
+                </div>
+              </div>
+            )}
 
             <div className={`${styles.myorder__message} card`}>
               <h2 className={orderStyles.section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><ClipboardList size={18} /> Ditt meddelande</h2>
@@ -372,13 +383,14 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
               <h2 className={orderStyles.section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Wrench size={18} /> Utförare</h2>
               <div className={orderStyles.customer_avatar}>{order.seller_name?.charAt(0).toUpperCase()}</div>
               <strong className={orderStyles.customer_name}>{order.seller_name}</strong>
-              <Link href={`/provider/${order.seller_id}`} className="btn btn-outline" style={{ width: '100%', justifyContent: 'center' }}>
-                <User size={16} /> Se profil
-              </Link>
+              {isCancelled
+                ? <p className={styles.cancelled_info}>Uppdraget avbokades – utföraren har meddelats.</p>
+                : <Link href={`/provider/${order.seller_id}`} className="btn btn-outline" style={{ width: '100%', justifyContent: 'center' }}><User size={16} /> Se profil</Link>
+              }
             </div>
 
             {/* CHATT */}
-            {order.status === 'accepted' && (
+            {!isCancelled && order.status === 'accepted' && (
               <div className={`${styles.svipposafe_card} card`}>
                 <div className={styles.svipposafe__header}>
                   <MessageCircle size={18} />
@@ -394,7 +406,7 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
             )}
 
             {/* SvippoSafe */}
-            {order.status === 'accepted' && projectStatus !== 'completed' && !hasDispute && (
+            {!isCancelled && order.status === 'accepted' && projectStatus !== 'completed' && !hasDispute && (
               <div className={`${styles.svipposafe_card} card`}>
                 <div className={styles.svipposafe__header}>
                   <Shield size={18} />
