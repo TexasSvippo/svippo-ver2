@@ -8,6 +8,7 @@ import { supabase } from '@/lib/supabase'
 import useAuth from '@/hooks/useAuth'
 import styles from './tjanster.module.scss'
 import { MapPin, Star, Share2, Flag, MessageCircle, Pencil, Trash2 } from 'lucide-react'
+import AdCard from '@/components/AdCard'
 
 type Service = {
   id: string
@@ -329,7 +330,9 @@ export default function TjansterClient({ services }: Props) {
               </div>
             ) : (
               <div className={styles.tjanster__list}>
-                {filtered.map(s => (
+                {filtered.flatMap((s, idx) => {
+                  const adInsertAfter = filtered.length >= 3 ? 2 : filtered.length - 1
+                  const card = (
                   <Link href={`/service/${s.id}`} key={s.id} className={`${styles.service_card} ${getCardStyle(s.account_type)}`}>
                     <div className={styles.service_card__top}>
                       <div className={styles.service_card__header}>
@@ -411,7 +414,10 @@ export default function TjansterClient({ services }: Props) {
                       </div>
                     </div>
                   </Link>
-                ))}
+                  )
+                  if (idx === adInsertAfter) return [card, <AdCard key="ad-card" />]
+                  return [card]
+                })}
               </div>
             )}
           </div>
