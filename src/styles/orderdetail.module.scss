@@ -384,7 +384,7 @@
   color: var(--color-dark);
 }
 
-.buyer_review__stars { font-size: 14px; }
+.buyer_review__stars { font-size: 14px; display: flex; flex-direction: row; gap: 2px; align-items: center; }
 
 .buyer_review__comment {
   font-size: 14px;
