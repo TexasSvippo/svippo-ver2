@@ -472,8 +472,10 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
                   <div className={orderStyles.review_form}>
                     <div style={{ display: 'flex', gap: '8px' }}>
                       {[1,2,3,4,5].map(n => (
-                        <button key={n} onClick={() => setReviewRating(n)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '24px' }}>
-                          {n <= reviewRating ? <Star size={22} fill="currentColor" /> : <Star size={22} />}
+                        <button key={n} onClick={() => setReviewRating(n)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px' }}>
+                          {n <= reviewRating
+                            ? <Star size={24} fill="#EF9F27" color="#EF9F27" />
+                            : <Star size={24} fill="#D3D1C7" color="#D3D1C7" />}
                         </button>
                       ))}
                     </div>
