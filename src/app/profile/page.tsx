@@ -106,6 +106,7 @@ export default function ProfilePage() {
   const [placedTypeFilter, setPlacedTypeFilter] = useState<'all' | 'services' | 'requests'>('all')
   const [placedStatusFilter, setPlacedStatusFilter] = useState<'all' | 'active' | 'action' | 'completed'>('all')
   const [showHistory, setShowHistory] = useState(false)
+  const [showIncomingHistory, setShowIncomingHistory] = useState(false)
   // Inkomna beställningar – filter state
   const [incomingTypeFilter, setIncomingTypeFilter] = useState<'all' | 'services' | 'requests'>('all')
   const [incomingStatusFilter, setIncomingStatusFilter] = useState<'all' | 'action' | 'active' | 'done'>('all')
@@ -527,9 +528,12 @@ export default function ProfilePage() {
                 <div className={styles.profile__empty}><Inbox size={32} /><p>Inga beställningar ännu.</p></div>
               ) : filteredIncoming.length === 0 ? (
                 <div className={styles.profile__empty}><p>Inga beställningar matchar valt filter.</p></div>
-              ) : (
-                <div className={styles.profile__list}>
-                  {filteredIncoming.map(order => {
+              ) : (() => {
+                const isDoneIncoming = (o: Order) => o.project_status === 'completed' || o.status === 'cancelled' || (o.project_status as string) === 'cancelled' || o.status === 'rejected'
+                const activeIncoming = filteredIncoming.filter(o => !isDoneIncoming(o))
+                const historyIncoming = filteredIncoming.filter(o => isDoneIncoming(o))
+
+                const renderCard = (order: Order) => {
                     const raw = order as Order & { from_request?: boolean }
                     const ps = order.project_status
                     const isCancelled = (order.status as string) === 'cancelled' || (ps as string) === 'cancelled'
@@ -659,9 +663,37 @@ export default function ProfilePage() {
                         })()}
                       </div>
                     )
-                  })}
-                </div>
-              )}
+                  }
+
+                return (
+                  <>
+                    {activeIncoming.length === 0
+                      ? <div className={styles.profile__empty}><p>Inga aktiva uppdrag.</p></div>
+                      : <>
+                          <h2 style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-gray)', margin: '4px 0' }}>Aktiva uppdrag</h2>
+                          <div className={styles.profile__list}>{activeIncoming.map(renderCard)}</div>
+                        </>
+                    }
+                    {historyIncoming.length > 0 && (
+                      <div style={{ marginTop: 8 }}>
+                        <button
+                          type="button"
+                          onClick={() => setShowIncomingHistory(h => !h)}
+                          style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, fontWeight: 600, color: 'var(--color-gray)', fontFamily: 'var(--font-body)', padding: '4px 0' }}
+                        >
+                          <span style={{ fontSize: 11 }}>{showIncomingHistory ? '▲' : '▼'}</span>
+                          Historik ({historyIncoming.length} avslutade)
+                        </button>
+                        {showIncomingHistory && (
+                          <div className={styles.profile__list} style={{ marginTop: 8 }}>
+                            {historyIncoming.map(renderCard)}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </>
+                )
+              })()}
             </div>
           )
         })()}
