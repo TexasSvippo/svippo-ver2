@@ -10,6 +10,7 @@ import { municipalities } from '@/data/municipalities'
 import styles from './createservice.module.scss'
 import { Clock, Lock, Wallet, ClipboardList, MapPin, Lightbulb, CheckCircle, Pencil, FileText } from 'lucide-react'
 import ReferenceImageUploader from '@/components/ReferenceImageUploader'
+import RichTextEditor from '@/components/RichTextEditor'
 
 type PriceType = 'timpris' | 'fastpris' | 'offert'
 
@@ -344,7 +345,10 @@ export default function CreateServicePage() {
                 </div>
                 <div className={styles.create__field}>
                   <label className={styles.create__label}>Beskrivning</label>
-                  <textarea className={styles.create__textarea} placeholder="Beskriv vad du erbjuder, din erfarenhet och vad som ingår..." value={form.description} onChange={e => update('description', e.target.value)} rows={6} />
+                  <RichTextEditor
+                    value={form.description}
+                    onChange={html => update('description', html)}
+                  />
                 </div>
               </div>
 

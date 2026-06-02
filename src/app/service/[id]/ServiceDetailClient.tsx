@@ -70,7 +70,11 @@ export default function ServiceDetailClient({ service, reviews, avgRating, refer
 
   // ── Description expand/collapse ───────────────────────────────────────────
   const [expanded, setExpanded] = useState(false)
-  const descLong = service.description && service.description.length > 280
+  // Strip tags to measure actual text length (description may contain HTML from TipTap)
+  const descTextLength = service.description
+    ? service.description.replace(/<[^>]*>/g, '').length
+    : 0
+  const descLong = descTextLength > 280
 
   // ── References slideshow ──────────────────────────────────────────────────
   const refContainerRef = useRef<HTMLDivElement>(null)
@@ -225,9 +229,10 @@ export default function ServiceDetailClient({ service, reviews, avgRating, refer
           {/* Om tjänsten */}
           <div className={styles.section}>
             <h2 className={styles.section_title}>Om tjänsten</h2>
-            <p className={`${styles.description} ${descLong && !expanded ? styles['description--collapsed'] : ''}`}>
-              {service.description}
-            </p>
+            <div
+              className={`${styles.description} ${descLong && !expanded ? styles['description--collapsed'] : ''}`}
+              dangerouslySetInnerHTML={{ __html: service.description }}
+            />
             {descLong && (
               <button className={styles.read_more_btn} onClick={() => setExpanded(e => !e)}>
                 {expanded ? 'Visa mindre' : 'Läs mer'}
