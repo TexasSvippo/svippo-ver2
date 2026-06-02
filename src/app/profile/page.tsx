@@ -599,6 +599,64 @@ export default function ProfilePage() {
                             Steg {currentStep + 1} av 4 – {stepLabels[currentStep]}
                           </span>
                         </div>
+
+                        {/* CTAs */}
+                        {(() => {
+                          const rawOrder = order as Order & { conversation_id?: string }
+
+                          const openChat = (e: React.MouseEvent) => {
+                            e.stopPropagation()
+                            router.push(rawOrder.conversation_id ? `/messages/${rawOrder.conversation_id}` : '/messages')
+                          }
+
+                          if (order.status === 'pending') return (
+                            <div className={styles.placed_card__actions}>
+                              <button type="button" className={styles.placed_card__btn_primary}
+                                onClick={e => { e.stopPropagation(); router.push(`/order/${order.id}`) }}>
+                                Acceptera uppdrag
+                              </button>
+                              <button type="button" className={styles.placed_card__btn_ghost}
+                                onClick={async e => {
+                                  e.stopPropagation()
+                                  if (!confirm('Neka denna beställning?')) return
+                                  await supabase.from('orders').update({ status: 'cancelled' }).eq('id', order.id)
+                                  setIncomingOrders(prev => prev.map(o => o.id === order.id ? { ...o, status: 'cancelled' } : o))
+                                }}>
+                                Neka
+                              </button>
+                            </div>
+                          )
+
+                          if ((ps === 'in_progress' || ps === 'almost_done' || (!ps && order.status === 'accepted'))) return (
+                            <div className={styles.placed_card__actions}>
+                              <button type="button" className={styles.placed_card__btn_primary}
+                                onClick={async e => {
+                                  e.stopPropagation()
+                                  if (!confirm('Markera uppdraget som levererat? Beställaren behöver godkänna.')) return
+                                  await supabase.from('orders').update({ project_status: 'delivered', delivered_at: new Date().toISOString() }).eq('id', order.id)
+                                  setIncomingOrders(prev => prev.map(o => o.id === order.id ? { ...o, project_status: 'delivered' } : o))
+                                }}>
+                                Markera som levererat
+                              </button>
+                              <button type="button" className={styles.placed_card__btn_ghost} onClick={openChat}>
+                                Öppna chatt
+                              </button>
+                            </div>
+                          )
+
+                          if (ps === 'delivered') return (
+                            <div className={styles.placed_card__actions}>
+                              <span style={{ fontSize: 13, color: 'var(--color-gray)', fontStyle: 'italic' }}>
+                                Inväntar beställarens godkännande
+                              </span>
+                              <button type="button" className={styles.placed_card__btn_ghost} onClick={openChat}>
+                                Öppna chatt
+                              </button>
+                            </div>
+                          )
+
+                          return null
+                        })()}
                       </div>
                     )
                   })}
