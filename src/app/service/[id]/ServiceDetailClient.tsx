@@ -64,8 +64,13 @@ type Props = {
 }
 
 export default function ServiceDetailClient({ service, reviews, avgRating, references = [] }: Props) {
-const { user } = useAuth()
+  const { user } = useAuth()
   const router = useRouter()
+  const searchParams = useSearchParams()
+
+  // ── Description expand/collapse ───────────────────────────────────────────
+  const [expanded, setExpanded] = useState(false)
+  const descLong = service.description && service.description.length > 280
 
   // ── References slideshow ──────────────────────────────────────────────────
   const refContainerRef = useRef<HTMLDivElement>(null)
@@ -92,7 +97,8 @@ const { user } = useAuth()
     }
     setRefIndex(Math.round(el.scrollLeft / step))
   }, [getRefStep, references.length])
-  const searchParams = useSearchParams()
+
+  // ── Order / contact state ─────────────────────────────────────────────────
   const [showOrder, setShowOrder] = useState(false)
   const [showLoginPrompt, setShowLoginPrompt] = useState(false)
   const [deleting, setDeleting] = useState(false)
@@ -112,371 +118,339 @@ const { user } = useAuth()
 
   useEffect(() => {
     if (!isOwner) return
-    const fetchOrders = async () => {
-      const { data } = await supabase
-        .from('orders')
-        .select('id, status, project_status')
-        .eq('service_id', service.id)
-
-      if (data) {
-        setActiveOrdersCount(data.filter(o => o.status === 'accepted').length)
-        setInProgressCount(data.filter(o =>
-          o.project_status === 'in_progress' || o.project_status === 'almost_done'
-        ).length)
-      }
-    }
-    fetchOrders()
+    supabase
+      .from('orders')
+      .select('id, status, project_status')
+      .eq('service_id', service.id)
+      .then(({ data }) => {
+        if (data) {
+          setActiveOrdersCount(data.filter(o => o.status === 'accepted').length)
+          setInProgressCount(data.filter(o =>
+            o.project_status === 'in_progress' || o.project_status === 'almost_done'
+          ).length)
+        }
+      })
   }, [isOwner, service.id])
 
   useEffect(() => {
-    const fetchCerts = async () => {
-      const { data } = await supabase
-        .from('certificates')
-        .select('id, name, file_url')
-        .eq('user_id', service.user_id)
-        .eq('subcategory', service.subcategory)
-      setMatchingCerts(data ?? [])
-    }
-    fetchCerts()
+    supabase
+      .from('certificates')
+      .select('id, name, file_url')
+      .eq('user_id', service.user_id)
+      .eq('subcategory', service.subcategory)
+      .then(({ data }) => setMatchingCerts(data ?? []))
   }, [service.user_id, service.subcategory])
 
   const handleDelete = async () => {
     if (inProgressCount > 0) return
-
-    const warningMsg = activeOrdersCount > 0
-      ? `Du har ${activeOrdersCount} aktiv(a) beställning(ar) på denna tjänst. Är du säker på att du vill ta bort den?`
+    const msg = activeOrdersCount > 0
+      ? `Du har ${activeOrdersCount} aktiv(a) beställning(ar) på denna tjänst. Är du säker?`
       : 'Är du säker på att du vill ta bort denna tjänst?'
-
-    if (!confirm(warningMsg)) return
-
+    if (!confirm(msg)) return
     setDeleting(true)
     await supabase.from('services').delete().eq('id', service.id)
     router.push('/profile')
   }
 
-const handleContact = async () => {
-    if (!user) {
-      setShowLoginPrompt(true)
-      return
-    }
+  const handleContact = async () => {
+    if (!user) { setShowLoginPrompt(true); return }
     if (user.id === service.user_id) return
 
-    // Kolla om konversation redan finns mellan dessa två för denna tjänst
-    const { data: existing } = await supabase
-      .from('conversations')
-      .select('id')
-      .eq('anchor_id', service.id)
-      .eq('participant_1_id', user.id)
-      .eq('participant_2_id', service.user_id)
-      .limit(1)
-
-    if (existing && existing.length > 0) {
-      router.push(`/messages/${existing[0].id}`)
-      return
+    const check = async (p1: string, p2: string) => {
+      const { data } = await supabase
+        .from('conversations').select('id')
+        .eq('anchor_id', service.id).eq('participant_1_id', p1).eq('participant_2_id', p2).limit(1)
+      return data?.[0]?.id ?? null
     }
+    const existing = (await check(user.id, service.user_id)) ?? (await check(service.user_id, user.id))
+    if (existing) { router.push(`/messages/${existing}`); return }
 
-    // Kolla omvänt (ifall rollerna är bytta)
-    const { data: existingReverse } = await supabase
-      .from('conversations')
-      .select('id')
-      .eq('anchor_id', service.id)
-      .eq('participant_1_id', service.user_id)
-      .eq('participant_2_id', user.id)
-      .limit(1)
-
-    if (existingReverse && existingReverse.length > 0) {
-      router.push(`/messages/${existingReverse[0].id}`)
-      return
-    }
-
-    // Skapa ny Typ A-konversation – skapas först när meddelande skickas
-    // Navigera till meddelanden med info om vem vi pratar med
-    const { data: newConv } = await supabase
-      .from('conversations')
-      .insert({
-        type: 'inquiry',
-        anchor_type: 'listing',
-        anchor_id: service.id,
-        assignment_id: null,
-        participant_1_id: user.id,
-        participant_2_id: service.user_id,
-        created_at: new Date().toISOString(),
-      })
-      .select()
-      .single()
-
-    if (newConv) {
-      router.push(`/messages/${newConv.id}`)
-    }
+    const { data: newConv } = await supabase.from('conversations').insert({
+      type: 'inquiry', anchor_type: 'listing', anchor_id: service.id,
+      assignment_id: null, participant_1_id: user.id, participant_2_id: service.user_id,
+      created_at: new Date().toISOString(),
+    }).select().single()
+    if (newConv) router.push(`/messages/${newConv.id}`)
   }
 
-const filteredReviews = reviews
-
   return (
-    <div className={styles.detail}>
-      <div className={`container ${styles.detail__inner}`}>
+    <div className={styles.page}>
 
-        {/* Brödsmulor */}
-        <div className={styles.detail__breadcrumb}>
-          <Link href="/">Hem</Link>
-          <span>·</span>
-          <Link href="/services">Tjänster</Link>
-          <span>·</span>
-          <span>{service.title}</span>
-        </div>
+      {/* Breadcrumbs */}
+      <nav className={styles.breadcrumb}>
+        <Link href="/">Hem</Link>
+        <span>·</span>
+        <Link href="/services">Tjänster</Link>
+        <span>·</span>
+        <span>{service.title}</span>
+      </nav>
 
-        <div className={styles.detail__layout}>
+      <div className={styles.layout}>
 
-          {/* Vänster – huvudinnehåll */}
-          <div className={styles.detail__main}>
-            <div className={styles.detail__badges}>
-              <span className={styles.detail__badge}>{service.subcategory}</span>
-              {service.offers_rut && (
-                <span className={`${styles.detail__badge} ${styles['detail__badge--rut']}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}><CheckCircle size={14} /> RUT-avdrag</span>
-              )}
-              {service.offers_rot && (
-                <span className={`${styles.detail__badge} ${styles['detail__badge--rot']}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}><CheckCircle size={14} /> ROT-avdrag</span>
-              )}
-            </div>
+        {/* ── LEFT: main content ──────────────────────────────────────────── */}
+        <div className={styles.main}>
 
-            <h1 className={styles.detail__title}>{service.title}</h1>
+          {/* Badges */}
+          <div className={styles.badges}>
+            <span className={styles.badge}>{service.subcategory}</span>
+            {service.offers_rut && (
+              <span className={`${styles.badge} ${styles['badge--rut']}`}>
+                <CheckCircle size={13} /> RUT-avdrag
+              </span>
+            )}
+            {service.offers_rot && (
+              <span className={`${styles.badge} ${styles['badge--rot']}`}>
+                <CheckCircle size={13} /> ROT-avdrag
+              </span>
+            )}
+          </div>
 
-            <div className={styles.detail__section}>
-              <h2 className={styles.detail__section_title}>Om tjänsten</h2>
-              <p className={styles.detail__description}>{service.description}</p>
-            </div>
+          {/* H1 */}
+          <h1 className={styles.title}>{service.title}</h1>
 
-            {/* ── References slideshow ────────────────────────────────────── */}
-            {references.length > 0 && (
-              <div className={`${styles.detail__section} ${refStyles.refs}`}>
-                <div className={refStyles.refs__head}>
-                  <h2 className={refStyles.refs__title}>Referenser</h2>
-                  {references.length > 1 && (
-                    <div className={refStyles.refs__nav}>
-                      <button type="button" className={refStyles.refs__nav_btn} onClick={refPrev} aria-label="Föregående">
-                        <ChevronLeft size={18} />
-                      </button>
-                      <button type="button" className={refStyles.refs__nav_btn} onClick={refNext} aria-label="Nästa">
-                        <ChevronRight size={18} />
-                      </button>
-                    </div>
-                  )}
-                </div>
+          {/* Om tjänsten */}
+          <div className={styles.section}>
+            <h2 className={styles.section_title}>Om tjänsten</h2>
+            <p className={`${styles.description} ${descLong && !expanded ? styles['description--collapsed'] : ''}`}>
+              {service.description}
+            </p>
+            {descLong && (
+              <button className={styles.read_more_btn} onClick={() => setExpanded(e => !e)}>
+                {expanded ? 'Visa mindre' : 'Läs mer'}
+              </button>
+            )}
+          </div>
 
-                <div className={refStyles.refs__track_wrap} ref={refContainerRef} onScroll={handleRefScroll}>
-                  <div className={refStyles.refs__track}>
-                    {references.map(ref => (
-                      <div
-                        key={ref.id}
-                        className={refStyles.refs__card}
-                        onClick={() => setActiveRef(ref)}
-                        role="button"
-                        tabIndex={0}
-                        onKeyDown={e => e.key === 'Enter' && setActiveRef(ref)}
-                      >
-                        <div className={refStyles.refs__card_img_wrap}>
-                          <img src={ref.image_url} alt={ref.title} className={refStyles.refs__card_img} />
-                        </div>
-                        <span className={refStyles.refs__card_label}>{ref.title}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
+          {/* Utförda projekt (references slideshow) */}
+          {references.length > 0 && (
+            <div className={`${styles.section} ${refStyles.refs}`}>
+              <div className={refStyles.refs__head}>
+                <h2 className={`${styles.section_title} ${refStyles.refs__title}`}>Utförda projekt</h2>
                 {references.length > 1 && (
-                  <div className={refStyles.refs__dots}>
-                    {references.map((_, i) => (
-                      <button
-                        key={i}
-                        type="button"
-                        className={`${refStyles.refs__dot} ${i === refIndex ? refStyles['refs__dot--active'] : ''}`}
-                        onClick={() => {
-                          refContainerRef.current?.scrollTo({ left: i * getRefStep(), behavior: 'smooth' })
-                          setRefIndex(i)
-                        }}
-                        aria-label={`Gå till referens ${i + 1}`}
-                      />
-                    ))}
+                  <div className={refStyles.refs__nav}>
+                    <button type="button" className={refStyles.refs__nav_btn} onClick={refPrev} aria-label="Föregående">
+                      <ChevronLeft size={18} />
+                    </button>
+                    <button type="button" className={refStyles.refs__nav_btn} onClick={refNext} aria-label="Nästa">
+                      <ChevronRight size={18} />
+                    </button>
                   </div>
                 )}
               </div>
-            )}
 
-            {/* Recensioner */}
-            <div className={styles.detail__section}>
-              <div className={styles.detail__reviews_header}>
-                <h2 className={styles.detail__section_title}>
-                  Recensioner
-                  {reviews.length > 0 && (
-                    <span className={styles.detail__reviews_count} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                      {avgRating !== null && <><Star size={14} /> {avgRating}</>} · {reviews.length} recensioner
-                    </span>
-                  )}
-                </h2>
-
+              <div className={refStyles.refs__track_wrap} ref={refContainerRef} onScroll={handleRefScroll}>
+                <div className={refStyles.refs__track}>
+                  {references.map(ref => (
+                    <div
+                      key={ref.id}
+                      className={refStyles.refs__card}
+                      onClick={() => setActiveRef(ref)}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={e => e.key === 'Enter' && setActiveRef(ref)}
+                    >
+                      <div className={refStyles.refs__card_img_wrap}>
+                        <img src={ref.image_url} alt={ref.title} className={refStyles.refs__card_img} />
+                      </div>
+                      <span className={refStyles.refs__card_label}>{ref.title}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
 
-              {filteredReviews.length === 0 ? (
-              <p className={styles.detail__no_reviews}>
-                Inga recensioner ännu.
-              </p>
-              ) : (
-                <div className={styles.detail__reviews}>
-                  {filteredReviews.map(r => (
-                    <div key={r.id} className={`${styles.detail__review} card`}>
-                      <div className={styles.detail__review_header}>
-                        <strong className={styles.detail__review_name}>{r.reviewer_name}</strong>
-                        <span className={styles.detail__review_stars} style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>{Array.from({ length: r.rating }, (_, i) => <Star key={i} size={14} fill="currentColor" />)}</span>
-                      </div>
-                      {r.comment && (
-                        <p className={styles.detail__review_comment}>{r.comment}</p>
-                      )}
-                      <span className={styles.detail__review_date}>
-                        {new Date(r.created_at).toLocaleDateString('sv-SE')}
-                      </span>
-                    </div>
+              {references.length > 1 && (
+                <div className={refStyles.refs__dots}>
+                  {references.map((_, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      className={`${refStyles.refs__dot} ${i === refIndex ? refStyles['refs__dot--active'] : ''}`}
+                      onClick={() => {
+                        refContainerRef.current?.scrollTo({ left: i * getRefStep(), behavior: 'smooth' })
+                        setRefIndex(i)
+                      }}
+                      aria-label={`Gå till projekt ${i + 1}`}
+                    />
                   ))}
                 </div>
               )}
             </div>
-          </div>
+          )}
 
-          {/* Höger – utförare & beställning */}
-          <div className={styles.detail__sidebar}>
-
-            {/* Utförare */}
-            <div className={`${styles.detail__seller} card`}>
-              <div className={styles.detail__seller_header}>
-                <div className={styles.detail__seller_avatar}>
-                  {service.avatar_url
-                    ? <img src={service.avatar_url} alt={service.user_name} className={styles.detail__seller_avatar_img} />
-                    : service.user_name?.charAt(0).toUpperCase() || '?'
-                  }
-                </div>
-                <div className={styles.detail__seller_info}>
-                  <Link href={`/provider/${service.user_id}`} className={styles.detail__seller_name}>
-                    {service.user_name}
-                  </Link>
-                  <span className={styles.detail__seller_rating} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                    <Star size={14} /> {avgRating ?? service.rating ?? '–'} ({reviews.length} recensioner)
+          {/* Recensioner */}
+          <div className={styles.section}>
+            <div className={styles.reviews_header}>
+              <h2 className={styles.section_title}>
+                Recensioner
+                {reviews.length > 0 && (
+                  <span className={styles.reviews_count} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                    {avgRating !== null && <><Star size={13} /> {avgRating}</>} · {reviews.length} recensioner
                   </span>
-                  <Link href={`/provider/${service.user_id}`} className={styles.detail__seller_profile_btn} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                    <User size={14} /> Se profil →
-                  </Link>
-                </div>
-              </div>
-
-              <div className={styles.detail__price_box}>
-                <div className={styles.detail__price_row}>
-                  <span>Pristyp</span>
-                  <span className={styles.detail__price_type}>{service.price_type}</span>
-                </div>
-
-                {service.price_type !== 'offert' && (
-                  <div className={styles.detail__price_row}>
-                    <span>Pris</span>
-                    <strong className={styles.detail__price}>{service.price} kr</strong>
-                  </div>
                 )}
-
-                <div className={styles.detail__price_row}>
-                  <span>Plats</span>
-                  <span>{service.location}</span>
-                </div>
-                {service.offers_rut && (
-                  <div className={styles.detail__rut_info}>
-                    <Wallet size={16} />
-                    <div>
-                      <strong>RUT-avdrag tillämpas</strong>
-                      <p>Du betalar ca 50% av priset efter skattereduktion. Max 75 000 kr/år.</p>
-                    </div>
-                  </div>
-                )}
-                {service.offers_rot && (
-                  <div className={styles.detail__rut_info}>
-                    <Wallet size={16} />
-                    <div>
-                      <strong>ROT-avdrag tillämpas</strong>
-                      <p>Du betalar ca 70% av priset efter skattereduktion. Max 50 000 kr/år.</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {isOwner ? (
-                <div className={styles.detail__own_service}>
-                  <div className={styles.detail__own_service_info}>
-                    <Pencil size={16} />
-                    <div>
-                      <strong>Detta är din tjänst</strong>
-                      <p>Du kan inte beställa din egen tjänst.</p>
-                    </div>
-                  </div>
-                  <div className={styles.detail__owner_actions}>
-                    <button
-                      className={`btn btn-outline ${styles.detail__edit_btn}`}
-                      onClick={() => router.push(`/create-service?edit=${service.id}`)}
-                    >
-                      <Pencil size={15} /> Redigera
-                    </button>
-                    <button
-                      className={`btn btn-outline ${styles.detail__delete_btn}`}
-                      onClick={handleDelete}
-                      disabled={deleting || inProgressCount > 0}
-                      title={inProgressCount > 0 ? 'Projektet pågår – kan inte tas bort' : ''}
-                    >
-                      {deleting ? 'Tar bort...' : inProgressCount > 0 ? <><Lock size={15} /> Pågår</> : <><Trash2 size={15} /> Ta bort</>}
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <button
-                  className={`btn btn-primary ${styles.detail__order_btn}`}
-                  onClick={() => user ? setShowOrder(true) : setShowLoginPrompt(true)}
-                >
-                  Beställ
-                </button>
-              )}
-
-              {!isOwner && (
-                <button
-                  className={`btn btn-outline ${styles.detail__question_btn}`}
-                  onClick={handleContact}
-                >
-                  <MessageCircle size={16} /> Kontakta Svipparen
-                </button>
-              )}
+              </h2>
             </div>
 
-            {/* SvippoSafe */}
-            <div className={`${styles.detail__safe} card`}>
-              <Shield size={20} />
-              <div>
-                <strong>Känn dig trygg med SvippoSafe</strong>
-                <p>Vi hjälper till att hantera trassel som kan dyka upp.</p>
-              </div>
-            </div>
-
-            {/* Verifierad kompetens */}
-            {matchingCerts.length > 0 && (
-              <div className={`${styles.detail__certs} card`}>
-                <div className={styles.detail__certs_header}>
-                  <CheckCircle size={16} />
-                  <strong>Verifierad kompetens</strong>
-                </div>
-                {matchingCerts.map(cert => (
-                  <div key={cert.id} className={styles.detail__cert_row}>
-                    <span>{cert.name}</span>
-                    <a href={cert.file_url} target="_blank" rel="noopener noreferrer">Visa PDF</a>
+            {reviews.length === 0 ? (
+              <p className={styles.no_reviews}>Inga recensioner ännu.</p>
+            ) : (
+              <div className={styles.reviews}>
+                {reviews.map(r => (
+                  <div key={r.id} className={`${styles.review} card`}>
+                    <div className={styles.review_header}>
+                      <strong className={styles.review_name}>{r.reviewer_name}</strong>
+                      <span className={styles.review_stars} style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+                        {Array.from({ length: r.rating }, (_, i) => <Star key={i} size={13} fill="currentColor" />)}
+                      </span>
+                    </div>
+                    {r.comment && <p className={styles.review_comment}>{r.comment}</p>}
+                    <span className={styles.review_date}>
+                      {new Date(r.created_at).toLocaleDateString('sv-SE')}
+                    </span>
                   </div>
                 ))}
               </div>
             )}
-
           </div>
+
+        </div>
+
+        {/* ── RIGHT: sidebar ──────────────────────────────────────────────── */}
+        <div className={styles.sidebar}>
+
+          {/* Seller + price + order */}
+          <div className={`${styles.seller} card`}>
+
+            {/* Seller header */}
+            <div className={styles.seller_header}>
+              <div className={styles.seller_avatar}>
+                {service.avatar_url
+                  ? <img src={service.avatar_url} alt={service.user_name} className={styles.seller_avatar_img} />
+                  : service.user_name?.charAt(0).toUpperCase() || '?'
+                }
+              </div>
+              <div className={styles.seller_info}>
+                <Link href={`/provider/${service.user_id}`} className={styles.seller_name}>
+                  {service.user_name}
+                </Link>
+                <span className={styles.seller_rating} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                  <Star size={13} /> {avgRating ?? service.rating ?? '–'} ({reviews.length} recensioner)
+                </span>
+                <Link href={`/provider/${service.user_id}`} className={styles.seller_profile_btn}>
+                  <User size={13} /> Se profil →
+                </Link>
+              </div>
+            </div>
+
+            {/* Info table */}
+            <div className={styles.price_box}>
+              <div className={styles.price_row}>
+                <span>Pristyp</span>
+                <span className={styles.price_type_label}>{service.price_type}</span>
+              </div>
+              {service.price_type !== 'offert' && (
+                <div className={styles.price_row}>
+                  <span>Pris</span>
+                  <strong className={styles.price}>{service.price} kr</strong>
+                </div>
+              )}
+              <div className={styles.price_row}>
+                <span>Plats</span>
+                <span>{service.location}</span>
+              </div>
+              {service.offers_rut && (
+                <div className={styles.rut_info}>
+                  <Wallet size={16} />
+                  <div>
+                    <strong>RUT-avdrag tillämpas</strong>
+                    <p>Du betalar ca 50% av priset efter skattereduktion. Max 75 000 kr/år.</p>
+                  </div>
+                </div>
+              )}
+              {service.offers_rot && (
+                <div className={styles.rut_info}>
+                  <Wallet size={16} />
+                  <div>
+                    <strong>ROT-avdrag tillämpas</strong>
+                    <p>Du betalar ca 70% av priset efter skattereduktion. Max 50 000 kr/år.</p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* CTA: owner vs buyer */}
+            {isOwner ? (
+              <div className={styles.own_service}>
+                <div className={styles.own_service_info}>
+                  <Pencil size={16} />
+                  <div>
+                    <strong>Detta är din tjänst</strong>
+                    <p>Du kan inte beställa din egen tjänst.</p>
+                  </div>
+                </div>
+                <div className={styles.owner_actions}>
+                  <button
+                    className={`btn btn-outline ${styles.edit_btn}`}
+                    onClick={() => router.push(`/create-service?edit=${service.id}`)}
+                  >
+                    <Pencil size={14} /> Redigera
+                  </button>
+                  <button
+                    className={`btn btn-outline ${styles.delete_btn}`}
+                    onClick={handleDelete}
+                    disabled={deleting || inProgressCount > 0}
+                    title={inProgressCount > 0 ? 'Projektet pågår – kan inte tas bort' : ''}
+                  >
+                    {deleting ? 'Tar bort...' : inProgressCount > 0 ? <><Lock size={14} /> Pågår</> : <><Trash2 size={14} /> Ta bort</>}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <button
+                  className={`btn btn-primary ${styles.order_btn}`}
+                  onClick={() => user ? setShowOrder(true) : setShowLoginPrompt(true)}
+                >
+                  Beställ
+                </button>
+                <button
+                  className={`btn btn-outline ${styles.question_btn}`}
+                  onClick={handleContact}
+                >
+                  <MessageCircle size={15} /> Kontakta Svipparen
+                </button>
+              </>
+            )}
+          </div>
+
+          {/* SvippoSafe */}
+          <div className={`${styles.safe} card`}>
+            <Shield size={20} />
+            <div>
+              <strong>Känn dig trygg med SvippoSafe</strong>
+              <p>Vi hjälper till att hantera trassel som kan dyka upp.</p>
+            </div>
+          </div>
+
+          {/* Verifierad kompetens */}
+          {matchingCerts.length > 0 && (
+            <div className={`${styles.certs} card`}>
+              <div className={styles.certs_header}>
+                <CheckCircle size={15} />
+                <strong>Verifierad kompetens</strong>
+              </div>
+              {matchingCerts.map(cert => (
+                <div key={cert.id} className={styles.cert_row}>
+                  <span>{cert.name}</span>
+                  <a href={cert.file_url} target="_blank" rel="noopener noreferrer">Visa PDF</a>
+                </div>
+              ))}
+            </div>
+          )}
+
         </div>
       </div>
 
+      {/* Modals */}
       {showOrder && (
         <OrderModal
           serviceId={service.id}
@@ -507,24 +481,16 @@ const filteredReviews = reviews
         </div>
       )}
 
-      {/* ── Reference image modal ─────────────────────────────────────── */}
       {activeRef && (
         <div className={refStyles.modal_overlay} onClick={() => setActiveRef(null)}>
           <div className={refStyles.modal} onClick={e => e.stopPropagation()}>
-            <button
-              type="button"
-              className={refStyles.modal_close}
-              onClick={() => setActiveRef(null)}
-              aria-label="Stäng"
-            >✕</button>
+            <button type="button" className={refStyles.modal_close} onClick={() => setActiveRef(null)} aria-label="Stäng">✕</button>
             <div className={refStyles.modal_img_wrap}>
               <img src={activeRef.image_url} alt={activeRef.title} className={refStyles.modal_img} />
             </div>
             <div className={refStyles.modal_body}>
               <h2 className={refStyles.modal_title}>{activeRef.title}</h2>
-              {activeRef.description && (
-                <p className={refStyles.modal_desc}>{activeRef.description}</p>
-              )}
+              {activeRef.description && <p className={refStyles.modal_desc}>{activeRef.description}</p>}
             </div>
           </div>
         </div>
