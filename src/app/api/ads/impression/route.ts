@@ -5,20 +5,12 @@ export async function GET(req: NextRequest) {
   const id = req.nextUrl.searchParams.get('id')
   if (!id) return NextResponse.json({ error: 'Missing id' }, { status: 400 })
 
-  const { error: rpcErr } = await supabaseAdmin.rpc('increment_ad_impression', { ad_id: id })
-  if (rpcErr) {
-    // Fallback if RPC doesn't exist yet: read then write
-    const { data } = await supabaseAdmin
-      .from('ads')
-      .select('impression_count')
-      .eq('id', id)
-      .single()
-    if (data) {
-      await supabaseAdmin
-        .from('ads')
-        .update({ impression_count: (data.impression_count ?? 0) + 1 })
-        .eq('id', id)
-    }
+  // Atomic increment via RPC (no read-then-write race condition)
+  const { error } = await supabaseAdmin.rpc('increment_ad_impression', { ad_id: id })
+
+  if (error) {
+    console.error('[ads/impression] increment failed:', error.message)
+    return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
   return NextResponse.json({ ok: true })

@@ -5,23 +5,13 @@ export async function GET(req: NextRequest) {
   const id = req.nextUrl.searchParams.get('id')
   if (!id) return NextResponse.json({ error: 'Missing id' }, { status: 400 })
 
-  // Fetch the ad to get cta_url (admin client bypasses RLS)
-  const { data: ad, error: fetchErr } = await supabaseAdmin
-    .from('ads')
-    .select('cta_url, click_count')
-    .eq('id', id)
-    .single()
+  // Atomic increment via RPC (no read-then-write race condition)
+  const { error } = await supabaseAdmin.rpc('increment_ad_clicks', { ad_id: id })
 
-  if (fetchErr || !ad) {
-    return NextResponse.json({ error: 'Ad not found' }, { status: 404 })
+  if (error) {
+    console.error('[ads/click] increment failed:', error.message)
+    return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
-  // Increment click_count (fire-and-forget – don't block the redirect)
-  supabaseAdmin
-    .from('ads')
-    .update({ click_count: (ad.click_count ?? 0) + 1 })
-    .eq('id', id)
-    .then()
-
-  return NextResponse.json({ cta_url: ad.cta_url })
+  return NextResponse.json({ ok: true })
 }
