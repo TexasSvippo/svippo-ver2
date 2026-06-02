@@ -106,6 +106,9 @@ export default function ProfilePage() {
   const [placedTypeFilter, setPlacedTypeFilter] = useState<'all' | 'services' | 'requests'>('all')
   const [placedStatusFilter, setPlacedStatusFilter] = useState<'all' | 'active' | 'action' | 'completed'>('all')
   const [showHistory, setShowHistory] = useState(false)
+  // Inkomna beställningar – filter state
+  const [incomingTypeFilter, setIncomingTypeFilter] = useState<'all' | 'services' | 'requests'>('all')
+  const [incomingStatusFilter, setIncomingStatusFilter] = useState<'all' | 'action' | 'active' | 'done'>('all')
 
   const resolvedAccountType = dbAccountType ?? accountType
   const isCompanyType = resolvedAccountType === 'foretag' || resolvedAccountType === 'uf-foretag'
@@ -476,28 +479,72 @@ export default function ProfilePage() {
         )}
 
         {/* INKOMNA BESTÄLLNINGAR */}
-        {activeSection === 'inkomna-bestallningar' && (
-          <div className={styles.profile__section}>
-            <h1 className={styles.profile__section_title}>Inkomna beställningar</h1>
-            {incomingOrders.length === 0 ? (
-              <div className={styles.profile__empty}><Inbox size={32} /><p>Inga beställningar ännu.</p></div>
-            ) : (
-              <div className={styles.profile__list}>
-                {incomingOrders.map(order => (
-                  <Link href={`/order/${order.id}`} key={order.id} className={`${styles.profile__item} card`}>
-                    <div className={styles.profile__item_icon}>{order.project_status === 'completed' ? <CheckCircle size={18} /> : order.status === 'pending' ? <Clock size={18} /> : order.status === 'accepted' ? '🔄' : <XCircle size={18} />}</div>
-                    <div className={styles.profile__item_info}>
-                      <strong>{order.service_title}</strong>
-                      <span>Från: {order.buyer_name} · {order.buyer_email}</span>
-                      <p className={styles.profile__item_message}>{order.message}</p>
-                    </div>
-                    <span className={`${styles.profile__item_tag} ${statusTag(order)}`}>{statusLabel(order)}</span>
-                  </Link>
+        {activeSection === 'inkomna-bestallningar' && (() => {
+          const filteredIncoming = incomingOrders.filter(order => {
+            const raw = order as Order & { service_id?: string; request_id?: string }
+            if (incomingTypeFilter !== 'all') {
+              if (incomingTypeFilter === 'services' && !raw.service_id) return false
+              if (incomingTypeFilter === 'requests' && !raw.request_id) return false
+            }
+            if (incomingStatusFilter === 'action') return order.status === 'pending'
+            if (incomingStatusFilter === 'active') return order.status === 'accepted' && order.project_status !== 'completed'
+            if (incomingStatusFilter === 'done') return order.project_status === 'completed' || order.status === 'rejected' || (order.status as string) === 'cancelled'
+            return true
+          })
+
+          const typePills: { key: typeof incomingTypeFilter; label: string }[] = [
+            { key: 'all', label: 'Alla' },
+            { key: 'services', label: 'Tjänster' },
+            { key: 'requests', label: 'Förfrågningar' },
+          ]
+          const statusPills: { key: typeof incomingStatusFilter; label: string }[] = [
+            { key: 'all', label: 'Alla' },
+            { key: 'action', label: 'Kräver handling' },
+            { key: 'active', label: 'Aktiva' },
+            { key: 'done', label: 'Avslutade' },
+          ]
+
+          return (
+            <div className={styles.profile__section}>
+              <h1 className={styles.profile__section_title}>Inkomna beställningar</h1>
+
+              <div className={styles.filter_bar}>
+                {typePills.map(p => (
+                  <button key={p.key} type="button"
+                    className={`${styles.filter_pill} ${incomingTypeFilter === p.key ? styles['filter_pill--active'] : ''}`}
+                    onClick={() => setIncomingTypeFilter(p.key)}>{p.label}</button>
                 ))}
               </div>
-            )}
-          </div>
-        )}
+              <div className={styles.filter_bar}>
+                {statusPills.map(p => (
+                  <button key={p.key} type="button"
+                    className={`${styles.filter_pill} ${incomingStatusFilter === p.key ? styles['filter_pill--active'] : ''}`}
+                    onClick={() => setIncomingStatusFilter(p.key)}>{p.label}</button>
+                ))}
+              </div>
+
+              {incomingOrders.length === 0 ? (
+                <div className={styles.profile__empty}><Inbox size={32} /><p>Inga beställningar ännu.</p></div>
+              ) : filteredIncoming.length === 0 ? (
+                <div className={styles.profile__empty}><p>Inga beställningar matchar valt filter.</p></div>
+              ) : (
+                <div className={styles.profile__list}>
+                  {filteredIncoming.map(order => (
+                    <Link href={`/order/${order.id}`} key={order.id} className={`${styles.profile__item} card`}>
+                      <div className={styles.profile__item_icon}>{order.project_status === 'completed' ? <CheckCircle size={18} /> : order.status === 'pending' ? <Clock size={18} /> : order.status === 'accepted' ? '🔄' : <XCircle size={18} />}</div>
+                      <div className={styles.profile__item_info}>
+                        <strong>{order.service_title}</strong>
+                        <span>Från: {order.buyer_name} · {order.buyer_email}</span>
+                        <p className={styles.profile__item_message}>{order.message}</p>
+                      </div>
+                      <span className={`${styles.profile__item_tag} ${statusTag(order)}`}>{statusLabel(order)}</span>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+          )
+        })()}
 
         {/* PLACERADE BESTÄLLNINGAR */}
         {activeSection === 'placerade-bestallningar' && (() => {
