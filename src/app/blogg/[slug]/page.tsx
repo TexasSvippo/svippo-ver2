@@ -46,15 +46,7 @@ export default async function BloggPostPage({ params }: Props) {
 
   return (
     <div className={styles.post}>
-
-      {/* Hero image */}
-      {post.mainImage?.asset?.url && (
-        <div className={styles.post__hero}>
-          <img src={post.mainImage.asset.url} alt={post.title} className={styles.post__hero_img} />
-        </div>
-      )}
-
-      <div className={`container ${styles.post__inner}`}>
+      <div className={styles.post__inner}>
 
         {/* Breadcrumbs */}
         <nav className={styles.post__bc}>
@@ -66,23 +58,47 @@ export default async function BloggPostPage({ params }: Props) {
         </nav>
 
         <article className={styles.post__article}>
-          {post.category && <span className={styles.post__badge}>{post.category}</span>}
+
+          {/* 1. Kategori-badge */}
+          {post.category && (
+            <span className={styles.post__badge}>{post.category}</span>
+          )}
+
+          {/* 2. H1 */}
           <h1 className={styles.post__title}>{post.title}</h1>
+
+          {/* 3. Ingress/excerpt */}
+          {post.excerpt && (
+            <p className={styles.post__excerpt}>{post.excerpt}</p>
+          )}
+
+          {/* 4. Publiceringsdatum */}
           {post.publishedAt && (
             <p className={styles.post__date}>{formatDate(post.publishedAt)}</p>
           )}
 
+          {/* 5. Huvudbild */}
+          {post.mainImage?.asset?.url && (
+            <img
+              src={post.mainImage.asset.url}
+              alt={post.title}
+              className={styles.post__image}
+            />
+          )}
+
+          {/* 6. Brödtext */}
           {post.body && (
             <div className={styles.post__body}>
               <PortableText value={post.body} />
             </div>
           )}
 
+          {/* 7. Tillbaka-länk */}
           <Link href="/blogg" className={styles.post__back}>
             ← Tillbaka till blogg
           </Link>
-        </article>
 
+        </article>
       </div>
     </div>
   )
