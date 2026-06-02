@@ -49,6 +49,7 @@ export default function CreateServicePage() {
   const [saving, setSaving] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
   const [savedServiceId, setSavedServiceId] = useState<string | null>(null)
+  const [showRefsStep, setShowRefsStep] = useState(false)
   const [newQuestion, setNewQuestion] = useState({
     label: '',
     type: 'text' as 'text' | 'select' | 'textarea',
@@ -200,9 +201,12 @@ export default function CreateServicePage() {
           reviews: 0,
           created_at: new Date().toISOString(),
         }).select('id').single()
-        if (insertData?.id) setSavedServiceId(insertData.id)
+        if (insertData?.id) {
+          setSavedServiceId(insertData.id)
+          setShowRefsStep(true)
+          return
+        }
       }
-
 
       setShowSuccess(true)
     } catch (err) {
@@ -210,6 +214,42 @@ export default function CreateServicePage() {
     } finally {
       setSaving(false)
     }
+  }
+
+  // ── References step (shown after new service is published) ──────────────────
+  if (showRefsStep && savedServiceId) {
+    return (
+      <div className={styles.create}>
+        <div className={`container ${styles.create__inner}`}>
+          <div className={`${styles.create__card} card`}>
+            <div className={styles.create__content}>
+              <div className={styles.create__success_emoji}>🎉</div>
+              <h1 className={styles.create__title}>Tjänsten är publicerad!</h1>
+              <p className={styles.create__subtitle}>
+                Lägg till referensbilder för att visa upp ditt arbete och öka dina chanser att få uppdrag.
+              </p>
+              <ReferenceImageUploader serviceId={savedServiceId} userId={user.id} />
+              <div className={styles.create__nav} style={{ marginTop: 24, borderTop: '1px solid var(--color-border)', paddingTop: 20 }}>
+                <button
+                  className="btn btn-primary"
+                  onClick={() => router.push(`/service/${savedServiceId}`)}
+                  type="button"
+                >
+                  Gå till mitt inlägg →
+                </button>
+                <button
+                  className="btn btn-outline"
+                  onClick={() => router.push('/profile')}
+                  type="button"
+                >
+                  Hoppa över
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -570,27 +610,16 @@ export default function CreateServicePage() {
         </div>
       </div>
 
-      {/* Success popup */}
+      {/* Success popup – only shown in edit mode */}
       {showSuccess && (
         <div className={styles.create__overlay}>
-          <div className={styles.create__success_modal} style={{ maxWidth: 560, width: '100%', maxHeight: '90vh', overflowY: 'auto' }}>
+          <div className={styles.create__success_modal}>
             <div className={styles.create__success_emoji}>🎉</div>
-            <h2 className={styles.create__success_title}>Vad kul att du kommit igång!</h2>
-            <p className={styles.create__success_text}>Ditt inlägg är nu publicerat och synligt för alla på Svippo. Lycka till!</p>
-
-            {/* Reference image uploader – valfritt steg */}
-            {savedServiceId && (
-              <div style={{ marginTop: 24, textAlign: 'left' }}>
-                <p style={{ fontSize: 14, color: 'var(--color-gray)', marginBottom: 12 }}>
-                  Lägg till referensbilder för att visa upp ditt arbete (valfritt, max 5 st):
-                </p>
-                <ReferenceImageUploader serviceId={savedServiceId} userId={user.id} />
-              </div>
-            )}
-
-            <div className={styles.create__success_actions} style={{ marginTop: 24 }}>
-              <button className="btn btn-primary" onClick={() => router.push('/profile')}>Till din profil</button>
-              <button className="btn btn-outline" onClick={() => router.push('/services')}>Se tjänster</button>
+            <h2 className={styles.create__success_title}>Inlägget är uppdaterat!</h2>
+            <p className={styles.create__success_text}>Dina ändringar är sparade och synliga på Svippo.</p>
+            <div className={styles.create__success_actions}>
+              <button className="btn btn-primary" onClick={() => router.push(`/service/${editId}`)}>Se inlägget</button>
+              <button className="btn btn-outline" onClick={() => router.push('/profile')}>Till din profil</button>
             </div>
           </div>
         </div>
