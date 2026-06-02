@@ -605,7 +605,10 @@ export default function CreateServicePage() {
                 ].map(row => (
                   <div key={row.label} className={styles.create__review_row}>
                     <span className={styles.create__review_label}>{row.label}</span>
-                    <span>{row.value}</span>
+                    {row.label === 'Beskrivning'
+                      ? <div dangerouslySetInnerHTML={{ __html: row.value }} style={{ fontSize: 14, lineHeight: 1.6 }} />
+                      : <span>{row.value}</span>
+                    }
                   </div>
                 ))}
               </div>
