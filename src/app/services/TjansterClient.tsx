@@ -27,7 +27,12 @@ type Service = {
   reviews: number
 }
 
-type Props = { services: Service[] }
+type Props = {
+  services: Service[]
+  page: number
+  totalCount: number
+  pageSize: number
+}
 
 const WORD_LIMIT = 20
 
@@ -76,7 +81,7 @@ function getBadgeLabel(t: string) {
 
 const REPORT_REASONS = ['Felaktig information', 'Olämpligt innehåll', 'Spam', 'Annat']
 
-export default function TjansterClient({ services }: Props) {
+export default function TjansterClient({ services, page, totalCount, pageSize }: Props) {
   const searchParams = useSearchParams()
   const router = useRouter()
   const { user } = useAuth()
@@ -423,6 +428,45 @@ export default function TjansterClient({ services }: Props) {
                 })}
               </div>
             )}
+          {/* Paginering */}
+          {(() => {
+            const totalPages = Math.ceil(totalCount / pageSize)
+            if (totalPages <= 1) return null
+
+            const goToPage = (p: number) => {
+              const params = new URLSearchParams()
+              if (search) params.set('search', search)
+              if (selectedCategory) params.set('kategori', selectedCategory)
+              if (selectedSubcategory) params.set('underkategori', selectedSubcategory)
+              if (p > 1) params.set('page', String(p))
+              router.push(`/services${params.toString() ? `?${params.toString()}` : ''}`)
+              window.scrollTo({ top: 0, behavior: 'smooth' })
+            }
+
+            return (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, padding: '12px 0' }}>
+                <button
+                  className={`${styles.tjanster__sub_pill} ${page <= 1 ? '' : ''}`}
+                  onClick={() => goToPage(page - 1)}
+                  disabled={page <= 1}
+                  style={{ opacity: page <= 1 ? 0.4 : 1 }}
+                >
+                  ← Föregående
+                </button>
+                <span style={{ fontSize: 14, color: 'var(--color-gray)', fontWeight: 500 }}>
+                  Sida {page} av {totalPages}
+                </span>
+                <button
+                  className={styles.tjanster__sub_pill}
+                  onClick={() => goToPage(page + 1)}
+                  disabled={page >= totalPages}
+                  style={{ opacity: page >= totalPages ? 0.4 : 1 }}
+                >
+                  Nästa →
+                </button>
+              </div>
+            )
+          })()}
           </div>
 
           {/* Filter-panel */}
