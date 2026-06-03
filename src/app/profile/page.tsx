@@ -457,6 +457,7 @@ export default function ProfilePage() {
               notifications={notifications}
               userId={user.id}
               onDismissNotif={dismissNotif}
+              onNavigate={setActiveSection}
             />
 
           </div>

@@ -39,6 +39,7 @@ type Props = {
   notifications: Notif[]
   userId: string
   onDismissNotif: (id: string) => void
+  onNavigate: (section: string) => void
 }
 
 const GREETINGS = [
@@ -61,7 +62,7 @@ function orderStatus(status: string, projectStatus: string) {
 export default function DashboardOversikt({
   displayName, avatarUrl, dbAccountType, svippareStatus, canCreateService,
   services, incomingOrders, placedOrders, myRequests, interests,
-  notifications, userId, onDismissNotif,
+  notifications, userId, onDismissNotif, onNavigate,
 }: Props) {
   const router = useRouter()
   const [tips, setTips] = useState<BlogPost[]>([])
@@ -199,7 +200,7 @@ export default function DashboardOversikt({
         <div className={styles.dash__section}>
           <div className={styles.dash__section_head}>
             <span className={styles.dash__section_title}><Briefcase size={18} color="#05334A" />Aktiva tjänster</span>
-            <Link href="/profile" className={styles.dash__see_all}>Se alla</Link>
+            <button type="button" className={styles.dash__see_all} onClick={() => onNavigate('mina-tjanster')}>Se alla</button>
           </div>
           {services.length === 0 ? (
             <div className={styles.dash__empty}>
@@ -235,7 +236,7 @@ export default function DashboardOversikt({
         <div className={styles.dash__section}>
           <div className={styles.dash__section_head}>
             <span className={styles.dash__section_title}><FileText size={18} color="#05334A" />Mina förfrågningar</span>
-            <Link href="/requests?mine=true" className={styles.dash__see_all}>Se alla</Link>
+            <button type="button" className={styles.dash__see_all} onClick={() => onNavigate('mina-forfragningar')}>Se alla</button>
           </div>
           {myRequests.length === 0 ? (
             <div className={styles.dash__empty}>Du har inga förfrågningar ännu.</div>
@@ -275,7 +276,7 @@ export default function DashboardOversikt({
               {isProvider ? <ShoppingBag size={18} color="#05334A" /> : <ShoppingCart size={18} color="#05334A" />}
               {isProvider ? 'Inkommna beställningar' : 'Placerade beställningar'}
             </span>
-            <Link href={isProvider ? '/orders' : '/profile'} className={styles.dash__see_all}>Se alla</Link>
+            <button type="button" className={styles.dash__see_all} onClick={() => onNavigate(isProvider ? 'inkomna-bestallningar' : 'placerade-bestallningar')}>Se alla</button>
           </div>
           {isProvider ? (
             incomingOrders.length === 0 ? (
@@ -322,7 +323,7 @@ export default function DashboardOversikt({
         <div className={styles.dash__section}>
           <div className={styles.dash__section_head}>
             <span className={styles.dash__section_title}><Star size={18} color="#05334A" />Intresseanmälningar</span>
-            <Link href="/profile" className={styles.dash__see_all}>Se alla</Link>
+            <button type="button" className={styles.dash__see_all} onClick={() => onNavigate('intresseanmalningar')}>Se alla</button>
           </div>
           {interests.length === 0 ? (
             <div className={styles.dash__empty}>Inga intresseanmälningar ännu.</div>
