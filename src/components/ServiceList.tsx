@@ -60,7 +60,7 @@ export default function ServiceList() {
           .limit(6),
         supabase
           .from('requests')
-          .select('*, users(avatar_url)')
+          .select('*')
           .order('created_at', { ascending: false })
           .limit(6),
       ])
@@ -70,10 +70,18 @@ export default function ServiceList() {
         return { ...rest, avatar_url: users?.avatar_url ?? null }
       })
 
-      const fetchedRequests = (requestsRes.data ?? []).map((r: Request & { users?: { avatar_url: string | null } | null }) => {
-        const { users, ...rest } = r
-        return { ...rest, avatar_url: users?.avatar_url ?? null }
-      })
+      // Fetch request avatars separately to avoid users-join RLS issue
+      const reqList = requestsRes.data ?? []
+      const reqUserIds = [...new Set(reqList.map((r: { user_id?: string }) => r.user_id).filter(Boolean))]
+      const { data: reqUsersData } = reqUserIds.length > 0
+        ? await supabase.from('users').select('id, avatar_url').in('id', reqUserIds)
+        : { data: [] }
+      const reqAvatarMap = Object.fromEntries((reqUsersData ?? []).map((u: { id: string; avatar_url: string | null }) => [u.id, u.avatar_url]))
+
+      const fetchedRequests = reqList.map((r: Request & { user_id?: string }) => ({
+        ...r,
+        avatar_url: r.user_id ? (reqAvatarMap[r.user_id] ?? null) : null,
+      }))
 
       setServices(fetchedServices)
       setRequests(fetchedRequests)
