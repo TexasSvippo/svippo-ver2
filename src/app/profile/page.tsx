@@ -118,6 +118,7 @@ export default function ProfilePage() {
 
   const [karriarOrders, setKarriarOrders] = useState<KarriarOrder[]>([])
   const [karriarReviews, setKarriarReviews] = useState<{ rating: number }[]>([])
+  const [profileReviews, setProfileReviews] = useState<{ id: string; rating: number; comment: string; reviewer_name: string; service_title: string; created_at: string }[]>([])
   const [showAchievementPopup, setShowAchievementPopup] = useState(false)
   const [achievementTitle, setAchievementTitle] = useState('')
   const [isAdmin, setIsAdmin] = useState(false)
@@ -191,6 +192,15 @@ export default function ProfilePage() {
 
       const { data: roleData } = await supabase.from('users').select('role').eq('id', user.id).single()
       setIsAdmin(roleData?.role === 'admin')
+
+      // Hämta alla recensioner riktade till inloggad användare
+      const { data: revData } = await supabase
+        .from('reviews')
+        .select('id, rating, comment, reviewer_name, service_title, created_at')
+        .eq('reviewee_id', user.id)
+        .order('created_at', { ascending: false })
+      console.log('[profileReviews]', revData)
+      setProfileReviews(revData ?? [])
     }
     fetchAll()
   }, [user])
@@ -1166,7 +1176,30 @@ export default function ProfilePage() {
         {activeSection === 'recensioner' && (
           <div className={styles.profile__section}>
             <h1 className={styles.profile__section_title}>Recensioner & betyg</h1>
-            <p style={{ color: 'var(--color-gray)' }}>Recensioner visas här när du har fått dem.</p>
+            {profileReviews.length === 0 ? (
+              <div className={styles.profile__empty}><Star size={32} /><p>Inga recensioner ännu. De visas här när du fått dem.</p></div>
+            ) : (
+              <div className={styles.profile__list}>
+                {profileReviews.map(r => (
+                  <div key={r.id} className={`${styles.profile__item} card`} style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 8 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        {Array.from({ length: 5 }, (_, i) => (
+                          <Star key={i} size={14} fill={i < r.rating ? '#EF9F27' : '#D3D1C7'} color={i < r.rating ? '#EF9F27' : '#D3D1C7'} />
+                        ))}
+                        <strong style={{ fontSize: 14, marginLeft: 4 }}>{r.rating}/5</strong>
+                      </div>
+                      <span style={{ fontSize: 12, color: 'var(--color-gray)' }}>
+                        {new Date(r.created_at).toLocaleDateString('sv-SE', { year: 'numeric', month: 'long', day: 'numeric' })}
+                      </span>
+                    </div>
+                    {r.service_title && <span style={{ fontSize: 12, color: 'var(--color-primary)', fontWeight: 600 }}>{r.service_title}</span>}
+                    <p style={{ fontSize: 14, color: 'var(--color-dark)', margin: 0, lineHeight: 1.6 }}>{r.comment || '(ingen kommentar)'}</p>
+                    <span style={{ fontSize: 13, color: 'var(--color-gray)' }}>— {r.reviewer_name}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
