@@ -8,7 +8,7 @@ import useAuth from '@/hooks/useAuth'
 import { useNotifications } from '@/hooks/useNotifications'
 import { categories } from '@/data/categories'
 import styles from './profile.module.scss'
-import { Home, Wrench, Bell, Inbox, Users, Eye, Send, Star, Trophy, Settings, Zap, Pencil, Trash2, CheckCircle, Clock, XCircle, MessageCircle, ClipboardList, Wallet, Package } from 'lucide-react'
+import { Home, Wrench, Bell, Inbox, Users, Eye, Send, Star, Trophy, Settings, Zap, Pencil, Trash2, CheckCircle, Clock, XCircle, MessageCircle, ClipboardList, Wallet, Package, Tag, MapPin, Globe } from 'lucide-react'
 import type { ReactNode } from 'react'
 import DashboardOversikt from './DashboardOversikt'
 
@@ -454,22 +454,61 @@ export default function ProfilePage() {
             ) : (
               <div className={styles.profile__list}>
                 {services.map(s => (
-                  <div key={s.id} className={`${styles.profile__item} card`}>
-                    <div className={styles.profile__item_icon}><Wrench size={18} /></div>
-                    <Link href={`/service/${s.id}`} className={styles.profile__item_info}>
-                      <strong>{s.title}</strong>
-                      <span>{s.subcategory} · {s.location}</span>
+                  <div key={s.id} className={styles.service_card_new}>
+                    {/* Icon circle */}
+                    <div className={styles.service_card_new__icon}>
+                      <Wrench size={18} />
+                    </div>
+
+                    {/* Main info – clickable */}
+                    <Link href={`/service/${s.id}`} className={styles.service_card_new__info}>
+                      <strong className={styles.service_card_new__title}>{s.title}</strong>
+                      <div className={styles.service_card_new__meta}>
+                        <span className={styles.service_card_new__meta_item}>
+                          <Tag size={12} /> {s.subcategory}
+                        </span>
+                        <span className={styles.service_card_new__meta_item}>
+                          {s.location === 'Online'
+                            ? <><Globe size={12} /> Online</>
+                            : <><MapPin size={12} /> {s.location}</>}
+                        </span>
+                      </div>
                     </Link>
-                    <div className={styles.profile__item_right}>
-                      <strong>{s.price_type === 'offert' ? 'Offert' : `${s.price} kr`}</strong>
-                      <span className={`${styles.profile__item_tag} ${styles['item_tag--blue']}`}>{s.price_type}</span>
-                      <div className={styles.profile__item_actions}>
-                        <button className={`btn btn-outline ${styles.profile__edit_btn}`} onClick={() => router.push(`/create-service?edit=${s.id}`)}><Pencil size={15} /></button>
-                        <button className={`btn btn-outline ${styles.profile__delete_btn}`} onClick={async () => {
-                          if (!confirm('Är du säker på att du vill ta bort denna tjänst?')) return
-                          await supabase.from('services').delete().eq('id', s.id)
-                          setServices(prev => prev.filter(x => x.id !== s.id))
-                        }}><Trash2 size={15} /></button>
+
+                    {/* Price + actions */}
+                    <div className={styles.service_card_new__right}>
+                      <div className={styles.service_card_new__price_block}>
+                        <strong className={styles.service_card_new__price}>
+                          {s.price_type === 'offert' ? 'Offert' : `${s.price} kr`}
+                        </strong>
+                        <span className={styles.service_card_new__price_type}>
+                          {s.price_type === 'timpris' ? 'per timme'
+                            : s.price_type === 'fastpris' ? 'fast pris'
+                            : 'på förfrågan'}
+                        </span>
+                      </div>
+
+                      <div className={styles.service_card_new__divider} />
+
+                      <div className={styles.service_card_new__actions}>
+                        <button
+                          className={styles.service_card_new__edit_btn}
+                          onClick={() => router.push(`/create-service?edit=${s.id}`)}
+                          title="Redigera"
+                        >
+                          <Pencil size={15} />
+                        </button>
+                        <button
+                          className={styles.service_card_new__delete_btn}
+                          title="Ta bort"
+                          onClick={async () => {
+                            if (!confirm('Är du säker på att du vill ta bort denna tjänst?')) return
+                            await supabase.from('services').delete().eq('id', s.id)
+                            setServices(prev => prev.filter(x => x.id !== s.id))
+                          }}
+                        >
+                          <Trash2 size={15} />
+                        </button>
                       </div>
                     </div>
                   </div>
