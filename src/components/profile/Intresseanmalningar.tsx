@@ -100,6 +100,19 @@ export default function Intresseanmalningar({ userId }: Props) {
       // Update accepted interest in local state immediately after DB write
       setIncomingInterests(prev => prev.map(i => i.id === interest.id ? { ...i, status: 'accepted' } : i))
 
+      const { data: existingOrder } = await supabase
+        .from('orders')
+        .select('id')
+        .eq('from_request', true)
+        .eq('service_id', interest.request_id)
+        .maybeSingle()
+
+      if (existingOrder) {
+        alert('Du har redan valt en utförare för denna förfrågan.')
+        setInterestAcceptingId(null)
+        return
+      }
+
       const { data: userData } = await supabase.from('users').select('name, email').eq('id', userId).single()
 
       const { data: order } = await supabase.from('orders').insert({
