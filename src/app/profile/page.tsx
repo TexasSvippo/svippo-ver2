@@ -587,10 +587,10 @@ export default function ProfilePage() {
                     const isRequest = !!raw.from_request
 
                     // Left border color
-                    const borderCls = isCancelled || ps === 'completed' || order.status === 'rejected'
+                    const borderCls = isCancelled
+                      ? styles['placed_card--cancelled']
+                      : ps === 'completed' || order.status === 'rejected'
                       ? styles['placed_card--done']
-                      : order.status === 'pending'
-                      ? styles['placed_card--action']
                       : styles['placed_card--ongoing']
 
                     // Friendly status
@@ -606,7 +606,6 @@ export default function ProfilePage() {
                       isCancelled || order.status === 'rejected' ? styles['placed_card__status_text--done'] :
                       ps === 'completed' ? styles['placed_card__status_text--done'] :
                       ps === 'delivered' ? styles['placed_card__status_text--action'] :
-                      order.status === 'pending' ? styles['placed_card__status_text--action'] :
                       styles['placed_card__status_text--ongoing']
 
                     return (
@@ -635,11 +634,18 @@ export default function ProfilePage() {
 
                           if (order.status === 'pending') return (
                             <div className={styles.placed_card__actions}>
-                              <button type="button" className={styles.placed_card__btn_primary}
+                              <button type="button"
+                                className={styles.placed_card__btn_primary}
+                                style={{ background: '#22c55e' }}
+                                onMouseEnter={e => (e.currentTarget.style.background = '#16a34a')}
+                                onMouseLeave={e => (e.currentTarget.style.background = '#22c55e')}
                                 onClick={e => { e.stopPropagation(); router.push(`/order/${order.id}`) }}>
                                 Acceptera uppdrag
                               </button>
-                              <button type="button" className={styles.placed_card__btn_ghost}
+                              <button type="button"
+                                style={{ padding: '5px 12px', borderRadius: 'var(--radius-full)', border: '0.5px solid #F09595', background: '#FCEBEB', color: '#A32D2D', fontSize: 12, fontWeight: 500, fontFamily: 'var(--font-body)', cursor: 'pointer', transition: 'background 0.15s' }}
+                                onMouseEnter={e => (e.currentTarget.style.background = '#F7C1C1')}
+                                onMouseLeave={e => (e.currentTarget.style.background = '#FCEBEB')}
                                 onClick={async e => {
                                   e.stopPropagation()
                                   if (!confirm('Neka denna beställning?')) return
