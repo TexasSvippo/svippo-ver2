@@ -40,6 +40,7 @@ export default function RequestDetailClient({ request }: Props) {
   const [price, setPrice] = useState('')
   const [saving, setSaving] = useState(false)
   const [success, setSuccess] = useState(false)
+  const [alreadySubmitted, setAlreadySubmitted] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [userProfile, setUserProfile] = useState<{ name: string, email: string, phone: string } | null>(null)
   const [interestsCount, setInterestsCount] = useState(0)
@@ -57,6 +58,19 @@ export default function RequestDetailClient({ request }: Props) {
     }
     fetchProfile()
   }, [user])
+
+  // Kolla om inloggad användare redan anmält intresse för denna förfrågan
+  useEffect(() => {
+    if (!user || user.id === request.user_id) return
+    supabase
+      .from('interests')
+      .select('id', { count: 'exact', head: true })
+      .eq('request_id', request.id)
+      .eq('svippar_id', user.id)
+      .then(({ count }) => {
+        if ((count ?? 0) > 0) setAlreadySubmitted(true)
+      })
+  }, [user, request.id, request.user_id])
 
   // Hämta antal intresseanmälningar (för ägarens varning vid borttagning)
   useEffect(() => {
@@ -269,9 +283,9 @@ export default function RequestDetailClient({ request }: Props) {
 
               {!isOwner && (
                 <>
-                  {success ? (
+                  {(success || alreadySubmitted) ? (
                     <div className={styles.success_box} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-                      <CheckCircle size={16} /> Din intresseanmälan är skickad!
+                      <CheckCircle size={16} /> {alreadySubmitted && !success ? 'Du har redan anmält ditt intresse för detta uppdrag.' : 'Din intresseanmälan är skickad!'}
                     </div>
                   ) : (
                     <button
