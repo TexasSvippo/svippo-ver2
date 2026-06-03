@@ -183,15 +183,8 @@ export default function Navbar() {
               aria-label="Öppna meny"
               aria-expanded={menuOpen}
             >
-              <Menu size={20} />
-              {!loading && user && (
-                <span className={styles.navbar__pill_avatar}>
-                  {avatarUrl
-                    ? <Image src={avatarUrl} alt="Profil" width={32} height={32} className={styles.navbar__avatar_img} />
-                    : <span className={styles.navbar__pill_initial}>{user.email?.charAt(0).toUpperCase()}</span>
-                  }
-                </span>
-              )}
+              <Menu size={18} />
+              <span>Meny</span>
             </button>
             {menuOpen && (
               <div className={styles.navbar__dropdown}>
