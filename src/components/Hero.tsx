@@ -112,8 +112,11 @@ export default function Hero() {
   }, [search, activeTab])
 
   const handleSubmit = () => {
-    if (!search.trim()) return
     const path = activeTab === 'services' ? '/services' : '/requests'
+    if (!search.trim()) {
+      router.push(path)
+      return
+    }
     router.push(`${path}?search=${encodeURIComponent(search.trim())}`)
     setShowDropdown(false)
   }
