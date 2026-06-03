@@ -9,6 +9,7 @@ import { useNotifications } from '@/hooks/useNotifications'
 import { categories } from '@/data/categories'
 import styles from './profile.module.scss'
 import { Home, Wrench, Bell, Inbox, Users, Eye, Send, Star, Trophy, Settings, Zap, Pencil, Trash2, CheckCircle, Clock, XCircle, MessageCircle, ClipboardList, Wallet, Package, Tag, MapPin, Globe } from 'lucide-react'
+import { renderStars } from '@/utils/renderStars'
 import type { ReactNode } from 'react'
 import DashboardOversikt from './DashboardOversikt'
 
@@ -1184,9 +1185,7 @@ export default function ProfilePage() {
                   <div key={r.id} className={`${styles.profile__item} card`} style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 8 }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        {Array.from({ length: 5 }, (_, i) => (
-                          <Star key={i} size={14} fill={i < r.rating ? '#EF9F27' : '#D3D1C7'} color={i < r.rating ? '#EF9F27' : '#D3D1C7'} />
-                        ))}
+                        {renderStars(r.rating, 14)}
                         <strong style={{ fontSize: 14, marginLeft: 4 }}>{r.rating}/5</strong>
                       </div>
                       <span style={{ fontSize: 12, color: 'var(--color-gray)' }}>

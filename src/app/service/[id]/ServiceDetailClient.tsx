@@ -9,6 +9,7 @@ import { supabase } from '@/lib/supabase'
 import styles from './servicedetail.module.scss'
 import refStyles from './references.module.scss'
 import { CheckCircle, Star, User, Wallet, Pencil, Trash2, Lock, MessageCircle, Shield, ChevronLeft, ChevronRight } from 'lucide-react'
+import { renderStars } from '@/utils/renderStars'
 
 type CustomQuestion = {
   id: string
@@ -318,7 +319,7 @@ export default function ServiceDetailClient({ service, reviews, avgRating, refer
                     <div className={styles.review_header}>
                       <strong className={styles.review_name}>{r.reviewer_name}</strong>
                       <span className={styles.review_stars} style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
-                        {Array.from({ length: r.rating }, (_, i) => <Star key={i} size={13} fill="currentColor" />)}
+                        {renderStars(r.rating, 13)}
                       </span>
                     </div>
                     {r.comment && <p className={styles.review_comment}>{r.comment}</p>}

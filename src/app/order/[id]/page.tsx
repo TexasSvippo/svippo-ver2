@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabase'
 import useAuth from '@/hooks/useAuth'
 import styles from '@/styles/orderdetail.module.scss'
 import { Package, Clock, CheckCircle, XCircle, Link as LinkIcon, ClipboardList, Star, User, Mail, Smartphone, MessageCircle, Zap, BarChart2, Wallet, Lock, ArrowLeft } from 'lucide-react'
+import { renderStars } from '@/utils/renderStars'
 
 type ProjectStatus = 'not_started' | 'in_progress' | 'almost_done' | 'completed'
 type ServiceType = 'typ1' | 'typ2' | 'typ3'
@@ -385,7 +386,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                     <div key={r.id} className={styles.buyer_review}>
                       <div className={styles.buyer_review__header}>
                         <span className={styles.buyer_review__service}>{r.service_title}</span>
-                        <span className={styles.buyer_review__stars}>{Array.from({ length: r.rating }, (_, i) => <Star key={i} size={14} fill="currentColor" />)}</span>
+                        <span className={styles.buyer_review__stars}>{renderStars(r.rating, 14)}</span>
                       </div>
                       {r.comment && <p className={styles.buyer_review__comment}>{r.comment}</p>}
                       <span className={styles.buyer_review__date}>{new Date(r.created_at).toLocaleDateString('sv-SE')}</span>

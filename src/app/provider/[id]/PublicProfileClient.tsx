@@ -8,6 +8,7 @@ import { supabase } from '@/lib/supabase'
 import useAuth from '@/hooks/useAuth'
 import styles from './publicprofile.module.scss'
 import { Link as LinkIcon, MapPin, Star, MessageCircle, CheckCircle, Zap, ClipboardList, Lightbulb, Briefcase, Globe, Smartphone, Mail, User } from 'lucide-react'
+import { renderStars } from '@/utils/renderStars'
 import type { ReactNode } from 'react'
 
 type UserProfile = {
@@ -517,7 +518,7 @@ export default function PublicProfileClient({
                     style={{ display: 'flex', alignItems: 'center', gap: '2px' }}
                     onClick={() => setRatingFilter(ratingFilter === star ? null : star)}
                   >
-                    {Array.from({ length: star }, (_, i) => <Star key={i} size={14} fill="currentColor" />)}
+                    {renderStars(star, 14)}
                   </button>
                 ))}
               </div>
@@ -536,7 +537,7 @@ export default function PublicProfileClient({
                   <div key={r.id} className={`${styles.pubprofile__review} card`}>
                     <div className={styles.pubprofile__review_header}>
                       <strong>{r.reviewer_name}</strong>
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>{Array.from({ length: r.rating }, (_, i) => <Star key={i} size={14} fill="currentColor" />)}</span>
+                      {renderStars(r.rating, 14)}
                     </div>
                     <p>{r.comment}</p>
                     <span className={styles.pubprofile__review_date}>
