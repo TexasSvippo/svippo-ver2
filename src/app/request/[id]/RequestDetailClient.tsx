@@ -24,6 +24,7 @@ type Request = {
   image_url: string
   deadline?: string
   created_at: string
+  avatar_url?: string | null
 }
 
 type Props = {
@@ -229,8 +230,10 @@ export default function RequestDetailClient({ request }: Props) {
 
             <div className={`${serviceStyles.seller} sidebarCard`}>
               <div className={serviceStyles.seller_header}>
-                <div className={`${serviceStyles.seller_avatar} ${styles.avatar__orange}`}>
-                  {request.user_name?.charAt(0).toUpperCase() || '?'}
+                <div className={`${serviceStyles.seller_avatar} ${request.avatar_url ? '' : styles.avatar__orange}`}>
+                  {request.avatar_url
+                    ? <img src={request.avatar_url} alt={request.user_name} className={serviceStyles.seller_avatar_img} />
+                    : request.user_name?.charAt(0).toUpperCase() || '?'}
                 </div>
                 <div className={serviceStyles.seller_info}>
                   <strong className={serviceStyles.seller_name}>{request.user_name}</strong>

@@ -21,6 +21,7 @@ type Request = {
   user_id: string
   image_url: string
   created_at: string
+  avatar_url?: string | null
 }
 
 type Props = {
@@ -268,7 +269,11 @@ export default function ForfragningarClient({ requests }: Props) {
                   <p className={styles.request_card__description}>{r.description}</p>
                   <div className={styles.request_card__footer}>
                     <div className={styles.request_card__user}>
-                      <div className={styles.request_card__avatar}>{r.user_name?.charAt(0).toUpperCase()}</div>
+                      <div className={styles.request_card__avatar} style={r.avatar_url ? { background: 'transparent', overflow: 'hidden' } : {}}>
+                        {r.avatar_url
+                          ? <img src={r.avatar_url} alt={r.user_name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                          : r.user_name?.charAt(0).toUpperCase()}
+                      </div>
                       <span>{r.user_name}</span>
                     </div>
                     <div className={styles.request_card__budget}>

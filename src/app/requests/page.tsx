@@ -7,11 +7,16 @@ export const metadata = {
 }
 
 export default async function ForfragningarPage() {
-  const { data: requests } = await supabase
+  const { data: requestsRaw } = await supabase
     .from('requests')
-    .select('*')
+    .select('*, users(avatar_url)')
     .or('status.eq.open,status.is.null')
     .order('created_at', { ascending: false })
 
-  return <ForfragningarClient requests={requests ?? []} />
+  const requests = (requestsRaw ?? []).map((r: any) => ({
+    ...r,
+    avatar_url: r.users?.avatar_url ?? null,
+  }))
+
+  return <ForfragningarClient requests={requests} />
 }
