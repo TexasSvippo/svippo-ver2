@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import AdCard from './AdCard'
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
@@ -29,6 +30,7 @@ type Request = {
   location: string
   user_name: string
   created_at: string
+  avatar_url?: string | null
 }
 
 function StarRating({ rating }: { rating: number }) {
@@ -58,7 +60,7 @@ export default function ServiceList() {
           .limit(6),
         supabase
           .from('requests')
-          .select('*')
+          .select('*, users(avatar_url)')
           .order('created_at', { ascending: false })
           .limit(6),
       ])
@@ -68,8 +70,13 @@ export default function ServiceList() {
         return { ...rest, avatar_url: users?.avatar_url ?? null }
       })
 
+      const fetchedRequests = (requestsRes.data ?? []).map((r: Request & { users?: { avatar_url: string | null } | null }) => {
+        const { users, ...rest } = r
+        return { ...rest, avatar_url: users?.avatar_url ?? null }
+      })
+
       setServices(fetchedServices)
-      setRequests(requestsRes.data ?? [])
+      setRequests(fetchedRequests)
       setLoading(false)
     }
 
@@ -169,9 +176,12 @@ export default function ServiceList() {
                   requests.map((r) => (
                     <Link href={`/request/${r.id}`} key={r.id} className={`${styles.service_card} card`}>
                       <div className={styles.service_card__avatar}>
-                        <div className={`${styles.service_card__avatar_placeholder} ${styles['service_card__avatar_placeholder--orange']}`}>
-                          {r.user_name?.charAt(0).toUpperCase() || '?'}
-                        </div>
+                        {r.avatar_url
+                          ? <Image src={r.avatar_url} alt={r.user_name} width={52} height={52} className={styles.service_card__avatar_img} />
+                          : <div className={`${styles.service_card__avatar_placeholder} ${styles['service_card__avatar_placeholder--orange']}`}>
+                              {r.user_name?.charAt(0).toUpperCase() || '?'}
+                            </div>
+                        }
                       </div>
                       <div className={styles.service_card__info}>
                         <div className={styles.service_card__meta}>
