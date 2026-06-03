@@ -1060,40 +1060,28 @@ export default function ProfilePage() {
         {activeSection === 'karriar' && (
           <div className={styles.profile__section}>
             <h1 className={styles.profile__section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Trophy size={22} /> Min karriär</h1>
+            <p className={styles.karriar_subtitle}>Din utveckling som Svippare – statistik, milstolpar och utförda uppdrag</p>
 
             {/* Stats */}
             <div className={styles.profile__stats} style={{ marginBottom: '24px' }}>
-              <div className={`${styles.profile__stat_card} ${styles['profile__stat_card--blue']}`}>
-                <div className={styles.stat_icon_wrap}><CheckCircle size={20} /></div>
-                <div className={styles.stat_info}>
-                  <strong>{karriarOrders.length}</strong>
-                  <span>Utförda uppdrag</span>
-                </div>
+              <div className={`${styles.karriar_stat_card} ${styles['karriar_stat_card--blue']}`}>
+                <div className={`${styles.karriar_stat_icon} ${styles['karriar_stat_icon--blue']}`}><CheckCircle size={16} /></div>
+                <div className={styles.karriar_stat_info}><strong>{karriarOrders.length}</strong><span>Utförda uppdrag</span></div>
               </div>
-              <div className={`${styles.profile__stat_card} ${styles['profile__stat_card--orange']}`}>
-                <div className={styles.stat_icon_wrap}>👥</div>
-                <div className={styles.stat_info}>
-                  <strong>{new Set(karriarOrders.map(o => o.buyer_name)).size}</strong>
-                  <span>Nöjda kunder</span>
-                </div>
+              <div className={`${styles.karriar_stat_card} ${styles['karriar_stat_card--coral']}`}>
+                <div className={`${styles.karriar_stat_icon} ${styles['karriar_stat_icon--coral']}`}><Users size={16} /></div>
+                <div className={styles.karriar_stat_info}><strong>{new Set(karriarOrders.map(o => o.buyer_name)).size}</strong><span>Nöjda kunder</span></div>
               </div>
-              <div className={`${styles.profile__stat_card} ${styles['profile__stat_card--green']}`}>
-                <div className={styles.stat_icon_wrap}><Star size={20} /></div>
-                <div className={styles.stat_info}>
-                  <strong>
-                    {karriarReviews.length > 0
-                      ? (karriarReviews.reduce((sum, r) => sum + r.rating, 0) / karriarReviews.length).toFixed(1)
-                      : '–'}
-                  </strong>
+              <div className={`${styles.karriar_stat_card} ${styles['karriar_stat_card--amber']}`}>
+                <div className={`${styles.karriar_stat_icon} ${styles['karriar_stat_icon--amber']}`}><Star size={16} /></div>
+                <div className={styles.karriar_stat_info}>
+                  <strong>{karriarReviews.length > 0 ? (karriarReviews.reduce((sum, r) => sum + r.rating, 0) / karriarReviews.length).toFixed(1) : '–'}</strong>
                   <span>Snittbetyg</span>
                 </div>
               </div>
-              <div className={`${styles.profile__stat_card} ${styles['profile__stat_card--purple']}`}>
-                <div className={styles.stat_icon_wrap}><MessageCircle size={20} /></div>
-                <div className={styles.stat_info}>
-                  <strong>{karriarReviews.length}</strong>
-                  <span>Recensioner</span>
-                </div>
+              <div className={`${styles.karriar_stat_card} ${styles['karriar_stat_card--green']}`}>
+                <div className={`${styles.karriar_stat_icon} ${styles['karriar_stat_icon--green']}`}><MessageCircle size={16} /></div>
+                <div className={styles.karriar_stat_info}><strong>{karriarReviews.length}</strong><span>Recensioner</span></div>
               </div>
             </div>
 
@@ -1102,52 +1090,60 @@ export default function ProfilePage() {
               <div className={styles.profile__block_header}>
                 <div className={styles.profile__block_title}><span>🎯</span><h2>Milstolpar</h2></div>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '12px', padding: '16px 0' }}>
-                {[
-                  { icon: '🥉', label: 'Första uppdraget', desc: 'Slutfört 1 uppdrag', target: 1 },
-                  { icon: '🥈', label: 'På gång!', desc: 'Slutfört 5 uppdrag', target: 5 },
-                  { icon: '🥇', label: 'Proffs', desc: 'Slutfört 10 uppdrag', target: 10 },
-                  { icon: '💎', label: 'Veteran', desc: 'Slutfört 25 uppdrag', target: 25 },
+              {(() => {
+                const avgRating = karriarReviews.length > 0
+                  ? karriarReviews.reduce((sum, r) => sum + r.rating, 0) / karriarReviews.length : 0
+                const milestones = [
+                  { icon: '🥉', label: 'Första uppdraget', desc: 'Slutfört 1 uppdrag',    target: 1 },
+                  { icon: '🥈', label: 'På gång!',         desc: 'Slutfört 5 uppdrag',    target: 5 },
+                  { icon: '🥇', label: 'Proffs',           desc: 'Slutfört 10 uppdrag',   target: 10 },
+                  { icon: '💎', label: 'Veteran',          desc: 'Slutfört 25 uppdrag',   target: 25 },
                   { icon: <Trophy size={32} />, label: 'Legend', desc: 'Slutfört 50 uppdrag', target: 50 },
-                  { icon: <Star size={32} />, label: 'Första stjärnan', desc: 'Fått 1 recension', target: 1, type: 'reviews' },
-                  { icon: '🌟', label: 'Högt betyg', desc: 'Snittbetyg över 4.5', target: 4.5, type: 'rating' },
-                ].map(milestone => {
-                  const avgRating = karriarReviews.length > 0
-                    ? karriarReviews.reduce((sum, r) => sum + r.rating, 0) / karriarReviews.length
-                    : 0
-                  const achieved =
-                    milestone.type === 'reviews' ? karriarReviews.length >= milestone.target :
-                    milestone.type === 'rating' ? avgRating >= milestone.target :
-                    karriarOrders.length >= milestone.target
+                  { icon: <Star size={32} />, label: 'Första stjärnan', desc: 'Fått 1 recension', target: 1, type: 'reviews' as const },
+                  { icon: '🌟', label: 'Högt betyg', desc: 'Snittbetyg över 4.5', target: 4.5, type: 'rating' as const },
+                ]
+                const isAchieved = (m: typeof milestones[0]) =>
+                  m.type === 'reviews' ? karriarReviews.length >= m.target :
+                  m.type === 'rating'  ? avgRating >= m.target :
+                  karriarOrders.length >= m.target
+                const getRemaining = (m: typeof milestones[0]) => {
+                  if (m.type === 'reviews') return Math.max(0, m.target - karriarReviews.length)
+                  if (m.type === 'rating')  return null
+                  return Math.max(0, m.target - karriarOrders.length)
+                }
+                const firstUnachievedIdx = milestones.findIndex(m => !isAchieved(m))
 
-                  return (
-                    <div
-                      key={milestone.label}
-                      style={{
-                        padding: '16px',
-                        borderRadius: 'var(--radius-md)',
-                        background: achieved ? 'linear-gradient(135deg, #f0f8ff, #e8f4fd)' : 'var(--color-bg)',
-                        border: `1.5px solid ${achieved ? 'var(--color-primary)' : 'var(--color-border)'}`,
-                        opacity: achieved ? 1 : 0.5,
-                        textAlign: 'center',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        gap: '6px',
-                      }}
-                    >
-                      <span style={{ fontSize: '32px', filter: achieved ? 'none' : 'grayscale(100%)' }}>
-                        {milestone.icon}
-                      </span>
-                      <strong style={{ fontSize: '13px', color: 'var(--color-dark)' }}>{milestone.label}</strong>
-                      <span style={{ fontSize: '12px', color: 'var(--color-gray)' }}>{milestone.desc}</span>
-                      {achieved && (
-                        <span style={{ fontSize: '11px', color: 'var(--color-primary)', fontWeight: 600 }}>✓ Uppnådd!</span>
-                      )}
-                    </div>
-                  )
-                })}
-              </div>
+                return (
+                  <div className={styles.milestone_grid}>
+                    {milestones.map((milestone, idx) => {
+                      const achieved = isAchieved(milestone)
+                      const isNext = idx === firstUnachievedIdx
+                      const cardCls = achieved ? styles['milestone_card--achieved'] : isNext ? styles['milestone_card--next'] : styles['milestone_card--locked']
+                      const remaining = getRemaining(milestone)
+
+                      return (
+                        <div key={milestone.label} className={`${styles.milestone_card} ${cardCls}`}>
+                          <span style={{ fontSize: '32px', filter: achieved || isNext ? 'none' : 'grayscale(100%)' }}>
+                            {milestone.icon}
+                          </span>
+                          <strong style={{ fontSize: '13px', color: 'var(--color-dark)' }}>{milestone.label}</strong>
+                          <span style={{ fontSize: '12px', color: 'var(--color-gray)' }}>{milestone.desc}</span>
+                          {achieved && (
+                            <span className={`${styles.milestone_badge} ${styles['milestone_badge--achieved']}`}>
+                              <CheckCircle size={11} /> Uppnådd
+                            </span>
+                          )}
+                          {!achieved && isNext && remaining !== null && (
+                            <span className={`${styles.milestone_badge} ${styles['milestone_badge--next']}`}>
+                              {remaining} kvar
+                            </span>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+                )
+              })()}
             </div>
 
             {/* Senaste uppdrag */}
@@ -1162,12 +1158,12 @@ export default function ProfilePage() {
               ) : (
                 <div className={styles.profile__block_list}>
                   {karriarOrders.map(order => (
-                    <Link href={`/order/${order.id}`} key={order.id} className={styles.profile__block_item}>
+                    <Link href={`/order/${order.id}`} key={order.id} className={`${styles.profile__block_item} ${styles.karriar_job_row}`}>
                       <div className={styles.profile__block_item_info}>
                         <strong>{order.service_title}</strong>
                         <span>{order.buyer_name} · {new Date(order.created_at).toLocaleDateString('sv-SE')}</span>
                       </div>
-                      <span className={`${styles.profile__item_tag} ${styles['item_tag--completed']}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}><CheckCircle size={14} /> Utfört</span>
+                      <span className={styles.karriar_job_badge}><CheckCircle size={12} /> Utfört</span>
                     </Link>
                   ))}
                 </div>

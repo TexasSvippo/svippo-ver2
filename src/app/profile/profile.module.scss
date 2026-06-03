@@ -1446,3 +1446,120 @@
 
   &:hover { background: #fdecea; }
 }
+
+// ─── Min karriär – redesign ───────────────────────────────────────────────────
+
+.karriar_subtitle {
+  font-size: 14px;
+  color: var(--color-gray);
+  margin-top: -8px;
+}
+
+// Colored stat cards
+.karriar_stat_card {
+  background: white;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  border-top: 3px solid transparent;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  &--blue  { border-top-color: #378ADD; }
+  &--coral { border-top-color: #ff5733; }
+  &--amber { border-top-color: #EF9F27; }
+  &--green { border-top-color: #22c55e; }
+}
+
+.karriar_stat_icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  &--blue  { background: #E6F1FB; color: #1a5fa8; }
+  &--coral { background: #FAECE7; color: #993C1D; }
+  &--amber { background: #FDF3E0; color: #b45309; }
+  &--green { background: #e6f9f0; color: #1a7a4a; }
+}
+
+.karriar_stat_info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  strong { font-size: 24px; font-weight: 800; color: var(--color-dark); line-height: 1; }
+  span   { font-size: 12px; color: var(--color-gray); font-weight: 500; }
+}
+
+// Milestone grid + cards
+.milestone_grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+  align-items: stretch;
+  padding: 16px 0;
+}
+
+.milestone_card {
+  padding: 16px;
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--color-border);
+  background: var(--color-bg);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-height: 150px;
+
+  &--achieved {
+    background: #f0fdf4;
+    border-color: #22c55e;
+    opacity: 1;
+  }
+
+  &--next {
+    background: #eff6ff;
+    border-color: #378ADD;
+    opacity: 1;
+  }
+
+  &--locked { opacity: 0.45; }
+}
+
+.milestone_badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  margin-top: auto;
+
+  &--achieved { background: #e6f9f0; color: #1a7a4a; }
+  &--next     { background: #e0f0fa; color: #1a5fa8; }
+}
+
+// Job rows
+.karriar_job_row {
+  border-left: 3px solid #378ADD !important;
+  border-radius: 0 var(--radius-md) var(--radius-md) 0 !important;
+}
+
+.karriar_job_badge {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  background: #e6f9f0;
+  color: #1a7a4a;
+}
