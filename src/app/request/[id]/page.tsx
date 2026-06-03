@@ -25,20 +25,21 @@ export async function generateMetadata({ params }: Props) {
 export default async function RequestDetailPage({ params }: Props) {
   const { id } = await params
 
-  const { data: raw, error: rawErr } = await supabase
+  const { data: raw } = await supabase
     .from('requests')
-    .select('*, users(avatar_url)')
+    .select('*')
     .eq('id', id)
     .single()
 
-  console.log('[request/[id]] id:', id)
-  console.log('[request/[id]] data:', JSON.stringify(raw))
-  console.log('[request/[id]] error:', rawErr)
-
   if (!raw) notFound()
 
-  const { users: reqUsers, ...reqRest } = raw as typeof raw & { users: { avatar_url: string | null } | null }
-  const request = { ...reqRest, avatar_url: reqUsers?.avatar_url ?? null }
+  const { data: userData } = await supabase
+    .from('users')
+    .select('avatar_url')
+    .eq('id', raw.user_id)
+    .single()
+
+  const request = { ...raw, avatar_url: userData?.avatar_url ?? null }
 
   return <RequestDetailClient request={request} />
 }
