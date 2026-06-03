@@ -7,19 +7,27 @@ export const metadata = {
 }
 
 export default async function ForfragningarPage() {
-  const { data: requestsRaw, error: reqErr } = await supabase
+  // Step 1: fetch requests without users join
+  const { data: requestsRaw } = await supabase
     .from('requests')
-    .select('*, users(avatar_url)')
+    .select('*')
     .or('status.eq.open,status.is.null')
     .order('created_at', { ascending: false })
 
-  console.log('[requests/page] count:', requestsRaw?.length ?? 0)
-  console.log('[requests/page] error:', reqErr)
-  console.log('[requests/page] first row:', JSON.stringify(requestsRaw?.[0] ?? null))
+  const rawList = requestsRaw ?? []
 
-  const requests = (requestsRaw ?? []).map((r: any) => ({
+  // Step 2: fetch avatars for all user_ids in one query
+  const userIds = [...new Set(rawList.map((r: any) => r.user_id).filter(Boolean))]
+  const { data: usersData } = userIds.length > 0
+    ? await supabase.from('users').select('id, avatar_url').in('id', userIds)
+    : { data: [] }
+
+  const avatarMap = Object.fromEntries((usersData ?? []).map((u: any) => [u.id, u.avatar_url]))
+
+  // Step 3: combine
+  const requests = rawList.map((r: any) => ({
     ...r,
-    avatar_url: r.users?.avatar_url ?? null,
+    avatar_url: avatarMap[r.user_id] ?? null,
   }))
 
   return <ForfragningarClient requests={requests} />
