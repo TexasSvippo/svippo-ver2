@@ -226,7 +226,7 @@ export default function Navbar() {
                 <Link href="/messages" className={styles.navbar__dropdown_item} onClick={() => setMenuOpen(false)}>
                   <MessageCircle size={16} /> Meddelanden
                 </Link>
-                {user && (
+                {user ? (
                   <>
                     <button
                       className={`${styles.navbar__dropdown_item} ${styles.navbar__dropdown_create}`}
@@ -241,6 +241,14 @@ export default function Navbar() {
                       <LogOut size={16} /> Logga ut
                     </button>
                   </>
+                ) : (
+                  <Link
+                    href="/login"
+                    className={`${styles.navbar__dropdown_item} ${styles.navbar__dropdown_login}`}
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    <User size={16} /> Logga in
+                  </Link>
                 )}
               </div>
             )}
