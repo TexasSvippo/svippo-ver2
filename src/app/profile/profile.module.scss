@@ -1323,3 +1323,126 @@
 
   &:hover { background: #fdecea; }
 }
+
+// ─── Mina förfrågningar – ny kortdesign ──────────────────────────────────────
+
+.request_card_new {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: white;
+  border: 1px solid var(--color-border);
+  border-left: 3px solid #ff5733;
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  transition: background 0.15s;
+
+  &:hover { background: var(--color-gray-light); }
+}
+
+.request_card_new__icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: #FAECE7;
+  color: #993C1D;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.request_card_new__info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-decoration: none;
+}
+
+.request_card_new__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-dark);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.request_card_new__meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.request_card_new__meta_item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--color-gray);
+}
+
+.request_card_new__right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.request_card_new__price_block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+}
+
+.request_card_new__price {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-dark);
+  white-space: nowrap;
+}
+
+.request_card_new__divider {
+  width: 1px;
+  height: 32px;
+  background: var(--color-border);
+  flex-shrink: 0;
+}
+
+.request_card_new__actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.request_card_new__edit_btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: var(--radius-sm);
+  color: var(--color-gray);
+  display: flex;
+  align-items: center;
+  transition: color 0.15s, background 0.15s;
+
+  &:hover { color: var(--color-dark); background: var(--color-gray-light); }
+}
+
+.request_card_new__delete_btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: var(--radius-sm);
+  color: #E24B4A;
+  display: flex;
+  align-items: center;
+  transition: background 0.15s;
+
+  &:hover { background: #fdecea; }
+}

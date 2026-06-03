@@ -886,25 +886,60 @@ export default function ProfilePage() {
             ) : (
               <div className={styles.profile__list}>
                 {myRequests.map(r => (
-                  <div key={r.id} className={`${styles.profile__item} card`}>
-                    <div className={styles.profile__item_icon}><Users size={18} /></div>
-                    <Link href={`/request/${r.id}`} className={styles.profile__item_info}>
-                      <strong>{r.title}</strong>
-                      <span>{r.subcategory} · {r.location}</span>
+                  <div key={r.id} className={styles.request_card_new}>
+                    {/* Icon circle */}
+                    <div className={styles.request_card_new__icon}>
+                      <ClipboardList size={18} />
+                    </div>
+
+                    {/* Main info – clickable */}
+                    <Link href={`/request/${r.id}`} className={styles.request_card_new__info}>
+                      <strong className={styles.request_card_new__title}>{r.title}</strong>
+                      <div className={styles.request_card_new__meta}>
+                        <span className={styles.request_card_new__meta_item}>
+                          <Tag size={12} /> {r.subcategory}
+                        </span>
+                        <span className={styles.request_card_new__meta_item}>
+                          {r.location === 'Online'
+                            ? <><Globe size={12} /> Online</>
+                            : <><MapPin size={12} /> {r.location}</>}
+                        </span>
+                      </div>
                     </Link>
-                    <div className={styles.profile__item_right}>
-                      <strong className={styles.profile__item_budget}>{r.budget_type === 'prisforslag' ? 'Prisförslag' : `${r.budget} kr`}</strong>
-                      {r.status === 'assigned'
-                        ? <span className={`${styles.profile__item_tag} ${styles['item_tag--accepted']}`}>Tillsatt</span>
-                        : <span className={`${styles.profile__item_tag} ${styles['item_tag--completed']}`}>Öppen</span>
-                      }
-                      <div className={styles.profile__item_actions}>
-                        <button className={`btn btn-outline ${styles.profile__edit_btn}`} onClick={() => router.push(`/create-request?edit=${r.id}`)}><Pencil size={15} /></button>
-                        <button className={`btn btn-outline ${styles.profile__delete_btn}`} onClick={async () => {
-                          if (!confirm('Är du säker på att du vill ta bort denna förfrågan?')) return
-                          await supabase.from('requests').delete().eq('id', r.id)
-                          setMyRequests(prev => prev.filter(x => x.id !== r.id))
-                        }}><Trash2 size={15} /></button>
+
+                    {/* Budget + status + actions */}
+                    <div className={styles.request_card_new__right}>
+                      <div className={styles.request_card_new__price_block}>
+                        <strong className={styles.request_card_new__price}>
+                          {r.budget_type === 'prisforslag' ? 'Prisförslag' : `${r.budget} kr`}
+                        </strong>
+                        {r.status === 'assigned'
+                          ? <span className={`${styles.profile__item_tag} ${styles['item_tag--accepted']}`}>Tillsatt</span>
+                          : <span className={`${styles.profile__item_tag} ${styles['item_tag--completed']}`}>Öppen</span>
+                        }
+                      </div>
+
+                      <div className={styles.request_card_new__divider} />
+
+                      <div className={styles.request_card_new__actions}>
+                        <button
+                          className={styles.request_card_new__edit_btn}
+                          onClick={() => router.push(`/create-request?edit=${r.id}`)}
+                          title="Redigera"
+                        >
+                          <Pencil size={15} />
+                        </button>
+                        <button
+                          className={styles.request_card_new__delete_btn}
+                          title="Ta bort"
+                          onClick={async () => {
+                            if (!confirm('Är du säker på att du vill ta bort denna förfrågan?')) return
+                            await supabase.from('requests').delete().eq('id', r.id)
+                            setMyRequests(prev => prev.filter(x => x.id !== r.id))
+                          }}
+                        >
+                          <Trash2 size={15} />
+                        </button>
                       </div>
                     </div>
                   </div>
