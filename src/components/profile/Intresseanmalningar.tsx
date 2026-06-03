@@ -97,6 +97,9 @@ export default function Intresseanmalningar({ userId }: Props) {
     try {
       await supabase.from('interests').update({ status: 'accepted' }).eq('id', interest.id)
 
+      // Update accepted interest in local state immediately after DB write
+      setIncomingInterests(prev => prev.map(i => i.id === interest.id ? { ...i, status: 'accepted' } : i))
+
       const { data: userData } = await supabase.from('users').select('name, email').eq('id', userId).single()
 
       const { data: order } = await supabase.from('orders').insert({
@@ -137,7 +140,28 @@ export default function Intresseanmalningar({ userId }: Props) {
         })
       }
 
-      setIncomingInterests(prev => prev.map(i => i.id === interest.id ? { ...i, status: 'accepted' } : i))
+      // Auto-reject all other pending interests on the same request and notify them
+      const otherPending = incomingInterests.filter(i =>
+        i.request_id === interest.request_id && i.id !== interest.id && i.status === 'pending'
+      )
+      if (otherPending.length > 0) {
+        await supabase.from('interests').update({ status: 'rejected' }).eq('request_id', interest.request_id).eq('status', 'pending').neq('id', interest.id)
+        const rejectionNotifs = otherPending.map(other => ({
+          user_id: other.svippar_id,
+          type: 'interest_rejected',
+          actor_name: '',
+          message: `Tack för ditt intresse för "${interest.request_title}" – en annan utförare valdes den här gången.`,
+          action_url: '/requests',
+          read: false, dismissed: false, email_sent: false,
+          created_at: new Date().toISOString(),
+        }))
+        await supabase.from('notifications').insert(rejectionNotifs)
+        setIncomingInterests(prev => prev.map(i =>
+          i.request_id === interest.request_id && i.id !== interest.id && i.status === 'pending'
+            ? { ...i, status: 'rejected' }
+            : i
+        ))
+      }
     } catch (err) {
       console.error(err)
     } finally {
@@ -147,6 +171,9 @@ export default function Intresseanmalningar({ userId }: Props) {
 
   const handleReject = async (interest: IncomingInterest) => {
     await supabase.from('interests').update({ status: 'rejected' }).eq('id', interest.id)
+
+    // Update local state immediately after DB write
+    setIncomingInterests(prev => prev.map(i => i.id === interest.id ? { ...i, status: 'rejected' } : i))
 
     await supabase.from('notifications').insert({
       user_id: interest.svippar_id,
@@ -159,8 +186,6 @@ export default function Intresseanmalningar({ userId }: Props) {
       email_sent: false,
       created_at: new Date().toISOString(),
     })
-
-    setIncomingInterests(prev => prev.map(i => i.id === interest.id ? { ...i, status: 'rejected' } : i))
   }
 
   const uniqueRequests = useMemo(() => {
