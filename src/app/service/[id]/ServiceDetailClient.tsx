@@ -304,7 +304,7 @@ export default function ServiceDetailClient({ service, reviews, avgRating, refer
                 Recensioner
                 {reviews.length > 0 && (
                   <span className={styles.reviews_count} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                    {avgRating !== null && <><Star size={13} /> {avgRating}</>} · {reviews.length} recensioner
+                    {avgRating !== null && <><Star size={13} fill="#EF9F27" color="#EF9F27" /> {avgRating}</>} · {reviews.length} recensioner
                   </span>
                 )}
               </h2>
@@ -378,7 +378,7 @@ export default function ServiceDetailClient({ service, reviews, avgRating, refer
                   {service.user_name}
                 </Link>
                 <span className={styles.seller_rating} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                  <Star size={13} /> {avgRating ?? service.rating ?? '–'} ({reviews.length} recensioner)
+                  {(avgRating ?? service.rating) ? <Star size={13} fill="#EF9F27" color="#EF9F27" /> : null} {avgRating ?? service.rating ?? '–'} ({reviews.length} recensioner)
                 </span>
                 <Link href={`/provider/${service.user_id}`} className={styles.seller_profile_btn}>
                   <User size={13} /> Se profil →

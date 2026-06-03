@@ -32,9 +32,10 @@ type Request = {
 }
 
 function StarRating({ rating }: { rating: number }) {
+  if (!rating) return <span className={styles.star_rating}><strong>–</strong></span>
   return (
     <span className={styles.star_rating} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-      <Star size={14} /><strong>{rating || '–'}</strong>
+      <Star size={14} fill="#EF9F27" color="#EF9F27" /><strong>{rating}</strong>
     </span>
   )
 }

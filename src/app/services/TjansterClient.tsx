@@ -346,7 +346,10 @@ export default function TjansterClient({ services }: Props) {
                           <div className={styles.service_card__meta_row}>
                             <span className={styles.service_card__name}>{s.user_name}</span>
                             <span className={styles.service_card__dot}>·</span>
-                            <span className={styles.star_rating} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}><Star size={14} /> <strong>{s.rating || '–'}</strong></span>
+                            <span className={styles.star_rating} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                              {s.rating ? <Star size={14} fill="#EF9F27" color="#EF9F27" /> : null}
+                              <strong>{s.rating || '–'}</strong>
+                            </span>
                             <span className={styles.service_card__reviews}>({s.reviews})</span>
                             <span className={styles.service_card__dot}>·</span>
                             <span className={styles.service_card__location}>{s.location}</span>
