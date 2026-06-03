@@ -106,6 +106,7 @@ export default function ProfilePage() {
   const [placedTypeFilter, setPlacedTypeFilter] = useState<'all' | 'services' | 'requests'>('all')
   const [placedStatusFilter, setPlacedStatusFilter] = useState<'all' | 'active' | 'action' | 'completed'>('all')
   const [showHistory, setShowHistory] = useState(false)
+  const [reviewedOrderIds, setReviewedOrderIds] = useState<Set<string>>(new Set())
   const [showIncomingHistory, setShowIncomingHistory] = useState(false)
   // Inkomna beställningar – filter state
   const [incomingTypeFilter, setIncomingTypeFilter] = useState<'all' | 'services' | 'requests'>('all')
@@ -156,6 +157,13 @@ export default function ProfilePage() {
       setInterests(interestsRes.data ?? [])
       setNotifications(notifsRes.data ?? [])
       setSubscriptions(subsRes.data ?? [])
+
+      // Hämta vilka orders användaren redan recenserat
+      const { data: myReviews } = await supabase
+        .from('reviews')
+        .select('order_id')
+        .eq('reviewer_id', user.id)
+      setReviewedOrderIds(new Set(myReviews?.map(r => r.order_id) ?? []))
 
       // Hämta certifikat
       if (canCreateService) {
@@ -831,7 +839,9 @@ export default function ProfilePage() {
                         if (order.status === 'pending') return <div className={styles.placed_card__actions}><button type="button" className={styles.placed_card__btn_ghost} onClick={openChat}>Öppna chatt</button><button type="button" className={styles.placed_card__btn_ghost} onClick={cancelOrder}>Avboka</button></div>
                         if (ps === 'delivered') return <div className={styles.placed_card__actions}><Link href={`/my-order/${order.id}`} className={styles.placed_card__btn_primary} onClick={e => e.stopPropagation()}>Granska & godkänn</Link><button type="button" className={styles.placed_card__btn_ghost} onClick={openChat}>Öppna chatt</button><Link href={`/my-order/${order.id}?problem=1`} className={styles.placed_card__btn_ghost} onClick={e => e.stopPropagation()}>Rapportera problem</Link></div>
                         if (order.status === 'accepted' && ps !== 'completed' && ps !== 'delivered') return <div className={styles.placed_card__actions}><button type="button" className={styles.placed_card__btn_ghost} onClick={openChat}>Öppna chatt</button><button type="button" className={styles.placed_card__btn_ghost} onClick={e => { e.stopPropagation(); router.push(`/my-order/${order.id}`) }}>Visa detaljer</button></div>
-                        if (ps === 'completed' && !raw.review_id) return <div className={styles.placed_card__actions}><Link href={`/my-order/${order.id}?action=review`} className={styles.placed_card__btn_primary} onClick={e => e.stopPropagation()}>Lämna recension</Link></div>
+                        if (ps === 'completed') return reviewedOrderIds.has(order.id)
+                          ? <div className={styles.placed_card__actions} style={{ color: '#1a7a4a', fontSize: 13, fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 6 }}><CheckCircle size={14} /> Du har lämnat en recension!</div>
+                          : <div className={styles.placed_card__actions}><Link href={`/my-order/${order.id}?action=review`} className={styles.placed_card__btn_primary} onClick={e => e.stopPropagation()}>Lämna recension</Link></div>
                         return null
                       })()}
                     </div>
