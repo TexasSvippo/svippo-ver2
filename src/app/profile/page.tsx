@@ -210,7 +210,7 @@ export default function ProfilePage() {
   useEffect(() => {
     if (!user || !isCompanyType) return
     const fetchCompanyProfile = async () => {
-      const { data } = await supabase.from('company_profiles').select('*').eq('user_id', user.id).single()
+      const { data } = await supabase.from('company_profiles').select('*').eq('user_id', user.id).maybeSingle()
       if (data) {
         setCompanyProfileExists(true)
         setCompanyBio(data.bio || '')
