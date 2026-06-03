@@ -178,25 +178,20 @@ export default function Navbar() {
           {/* Hamburgare: pill med text (utloggad) / ikon + avatar (inloggad) */}
           <div className={styles.navbar__profile}>
             {!loading && user ? (
-              <>
-                <button
-                  className={styles.navbar__mobile_icon_btn}
-                  onClick={() => setMenuOpen(o => !o)}
-                  aria-label="Öppna meny"
-                  aria-expanded={menuOpen}
-                >
-                  <Menu size={20} />
-                </button>
-                <button
-                  className={`${styles.navbar__avatar} ${styles.navbar__avatar_sm}`}
-                  onClick={() => setMenuOpen(o => !o)}
-                >
+              <button
+                className={styles.navbar__menu_pill}
+                onClick={() => setMenuOpen(o => !o)}
+                aria-label="Öppna meny"
+                aria-expanded={menuOpen}
+              >
+                <Menu size={18} />
+                <span className={styles.navbar__pill_avatar}>
                   {avatarUrl
-                    ? <Image src={avatarUrl} alt="Profil" width={36} height={36} className={styles.navbar__avatar_img} />
-                    : <span>{user.email?.charAt(0).toUpperCase()}</span>
+                    ? <Image src={avatarUrl} alt="Profil" width={32} height={32} className={styles.navbar__avatar_img} />
+                    : <span className={styles.navbar__pill_initial}>{user.email?.charAt(0).toUpperCase()}</span>
                   }
-                </button>
-              </>
+                </span>
+              </button>
             ) : (
               <button
                 className={styles.navbar__menu_pill}

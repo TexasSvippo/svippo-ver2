@@ -271,14 +271,15 @@
   font-size: 14px;
 }
 
-// Pill – hamburgare + "Meny"-text (mobil, alltid samma stil)
+// Pill – hamburgare + avatar (inloggad) eller hamburgare + "Meny" (utloggad)
 .navbar__menu_pill {
   display: flex;
+  flex-direction: row;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   border: 1px solid var(--color-border);
   border-radius: 20px;
-  padding: 6px 14px;
+  padding: 4px 4px 4px 10px;
   cursor: pointer;
   background: white;
   color: var(--color-dark);
@@ -289,7 +290,6 @@
 
   &:hover {
     background: var(--color-gray-light);
-    border-color: var(--color-border);
   }
 }
 
