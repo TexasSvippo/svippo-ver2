@@ -25,11 +25,15 @@ export async function generateMetadata({ params }: Props) {
 export default async function RequestDetailPage({ params }: Props) {
   const { id } = await params
 
-  const { data: raw } = await supabase
+  const { data: raw, error: rawErr } = await supabase
     .from('requests')
     .select('*, users(avatar_url)')
     .eq('id', id)
     .single()
+
+  console.log('[request/[id]] id:', id)
+  console.log('[request/[id]] data:', JSON.stringify(raw))
+  console.log('[request/[id]] error:', rawErr)
 
   if (!raw) notFound()
 
