@@ -41,7 +41,8 @@ function LinkedInIcon({ size = 16 }: { size?: number }) {
 export default function Footer() {
   return (
     <footer className={styles.footer}>
-      <div className={`container ${styles.inner}`}>
+      <div className="container">
+      <div className={styles.inner}>
 
         {/* Brand column */}
         <div className={styles.brand}>
@@ -111,6 +112,7 @@ export default function Footer() {
           </div>
         </div>
 
+      </div>
       </div>
 
       {/* Bottom bar */}
