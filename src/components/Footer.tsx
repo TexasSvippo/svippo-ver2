@@ -77,12 +77,14 @@ export default function Footer() {
         {/* Tjänster */}
         <div className={styles.col}>
           <h4 className={styles.heading}>Tjänster</h4>
-          <Link href="/services/digitala">Digitala tjänster</Link>
-          <Link href="/services/medie-design">Medie och design</Link>
-          <Link href="/services/utbildning">Utbildning</Link>
-          <Link href="/services/hushall">Hushållstjänster</Link>
-          <Link href="/services/bil">Biltjänster</Link>
-          <Link href="/services/skonhet">Skönhet och hälsa</Link>
+          <Link href="/services?kategori=digitala-tjanster">Digitala tjänster</Link>
+          <Link href="/services?kategori=medie-design">Medie &amp; design</Link>
+          <Link href="/services?kategori=utbildning">Utbildning</Link>
+          <Link href="/services?kategori=hushall">Hushållstjänster</Link>
+          <Link href="/services?kategori=bil">Biltjänster</Link>
+          <Link href="/services?kategori=skonhet-halsa">Skönhet &amp; hälsa</Link>
+          <Link href="/services?kategori=bygg-hantverk">Bygg &amp; hantverk</Link>
+          <Link href="/services?kategori=frakt-flytt">Frakt &amp; flytt</Link>
         </div>
 
         {/* Svippo hjälp */}

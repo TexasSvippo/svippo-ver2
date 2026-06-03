@@ -8,7 +8,7 @@
   display: grid;
   grid-template-columns: 1.8fr 1fr 1.3fr 1fr 1.1fr;
   gap: 48px;
-  padding-bottom: 56px;
+  padding-bottom: 80px;
 }
 
 // Brand column
@@ -19,8 +19,9 @@
 }
 
 .logo {
-  height: 28px;
+  height: 42px;
   width: auto;
+  display: block;
 }
 
 .tagline {
@@ -62,7 +63,7 @@
   gap: 10px;
 
   a {
-    font-size: 14px;
+    font-size: 15px;
     color: rgba(255, 255, 255, 0.55);
     text-decoration: none;
     line-height: 1.45;
@@ -75,7 +76,7 @@
 }
 
 .heading {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   color: rgba(255, 255, 255, 0.3);
   text-transform: uppercase;
@@ -89,7 +90,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 14px;
+  font-size: 15px;
   color: rgba(255, 255, 255, 0.55);
   text-decoration: none;
   transition: color 0.2s;
@@ -110,7 +111,7 @@
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   color: rgba(255, 255, 255, 0.3);
   text-transform: uppercase;
@@ -118,7 +119,7 @@
 }
 
 .opening_hours {
-  font-size: 14px;
+  font-size: 15px;
   color: rgba(255, 255, 255, 0.55);
   padding-left: 18px;
 }
