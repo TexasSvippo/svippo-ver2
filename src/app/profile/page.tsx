@@ -12,6 +12,7 @@ import { Home, Wrench, Bell, Inbox, Users, Eye, Send, Star, Trophy, Settings, Za
 import { renderStars } from '@/utils/renderStars'
 import type { ReactNode } from 'react'
 import DashboardOversikt from './DashboardOversikt'
+import Intresseanmalningar from '@/components/profile/Intresseanmalningar'
 
 type Section =
   | 'oversikt'
@@ -976,9 +977,12 @@ export default function ProfilePage() {
           </div>
         )}
 
-        {/* INTRESSEANMÄLNINGAR – redirect */}
+        {/* INTRESSEANMÄLNINGAR */}
         {activeSection === 'intresseanmalningar' && (
-          <RedirectToIntresseanmalningar router={router} />
+          <div className={styles.profile__section}>
+            <h1 className={styles.profile__section_title}>Intresseanmälningar</h1>
+            <Intresseanmalningar userId={user.id} />
+          </div>
         )}
 
         {/* MINA BEVAKNINGAR */}

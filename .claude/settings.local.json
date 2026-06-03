@@ -9,7 +9,9 @@
       "Bash(cat >> *)",
       "Bash(npm install *)",
       "Bash(npx tsc *)",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)"
     ],
     "additionalDirectories": [
       "C:\\Users\\TexasForslund\\OneDrive - GT Konsult i Sverige AB\\Dokument\\svippo\\src\\app\\provider\\[id]",

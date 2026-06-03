@@ -84,6 +84,29 @@
   text-align: center;
 }
 
+// Avbokat-banner
+.cancelled_banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px 18px;
+  background: #fff1ee;
+  border: 1.5px solid #ff5733;
+  border-radius: var(--radius-md);
+  color: #cc3300;
+
+  strong { font-size: 14px; font-weight: 700; display: block; margin-bottom: 2px; }
+  p { font-size: 13px; margin: 0; color: #993322; }
+}
+
+.cancelled_info {
+  font-size: 13px;
+  color: var(--color-gray);
+  font-style: italic;
+  text-align: center;
+  padding: 4px 0;
+}
+
 // Avvikelseflöde
 .dispute_banner {
   display: flex;

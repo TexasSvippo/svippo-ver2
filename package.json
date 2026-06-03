@@ -9,10 +9,18 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@portabletext/react": "^6.2.0",
+    "@sanity/client": "^7.22.1",
+    "@sanity/image-url": "^2.1.1",
+    "@sanity/vision": "^5.28.0",
     "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.99.2",
+    "@tiptap/pm": "^3.24.0",
+    "@tiptap/react": "^3.24.0",
+    "@tiptap/starter-kit": "^3.24.0",
     "lucide-react": "^1.8.0",
     "next": "^16.2.3",
+    "next-sanity": "^13.0.8",
     "react": "19.2.3",
     "react-dom": "19.2.3"
   },

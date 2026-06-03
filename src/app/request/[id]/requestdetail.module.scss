@@ -75,6 +75,11 @@
 .edit_btn {
   color: var(--color-primary) !important;
   border-color: var(--color-primary) !important;
+
+    &:hover:not(:disabled) {
+    background: var(--color-primary) !important;
+    color: white !important;
+  }
 }
 
 .delete_btn {
