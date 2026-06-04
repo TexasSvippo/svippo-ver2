@@ -93,7 +93,7 @@
 
   // Explicit order for each section
   .breadcrumb {
-    order: 1;
+    order: 0;
     margin-bottom: 0; // gap handles spacing
     span:last-child { max-width: 55vw; }
   }
