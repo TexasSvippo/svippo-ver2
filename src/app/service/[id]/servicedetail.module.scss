@@ -400,16 +400,6 @@
   }
 }
 
-.reviews_card {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  padding: 20px 24px;
-  background: white;
-  border: 0.5px solid var(--color-border);
-  border-radius: var(--radius-lg);
-}
-
 .reviews {
   display: flex;
   flex-direction: column;
