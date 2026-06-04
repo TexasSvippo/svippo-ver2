@@ -76,78 +76,61 @@
 }
 
 @media (max-width: 768px) {
+  // Page becomes the flex column for mobile ordering
   .page {
     padding: 1rem;
-  }
-
-  .breadcrumb span:last-child {
-    max-width: 55vw;
-  }
-
-  .layout {
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
     gap: 1.25rem;
     overflow-x: hidden;
-    max-width: 100%;
   }
 
-  .main {
-    display: contents;
-  }
+  // Flatten hierarchy so every section is a direct flex child of .page
+  .layout      { display: contents; }
+  .main        { display: contents; }
+  .main_primary   { display: contents; }
+  .main_secondary { display: contents; }
 
-  .main_primary {
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
+  // Explicit order for each section
+  .breadcrumb {
     order: 1;
-    min-width: 0;
-    overflow: hidden;
-    word-break: break-word;
-    overflow-wrap: break-word;
-  }
-
-  .sidebar {
-    position: static !important;
-    order: 2;
-    width: 100%;
-  }
-
-  .main_secondary {
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
-    order: 3;
-    min-width: 0;
-    overflow: hidden;
-    word-break: break-word;
-    overflow-wrap: break-word;
-  }
-
-  .title {
-    font-size: 1.5rem !important;
+    margin-bottom: 0; // gap handles spacing
+    span:last-child { max-width: 55vw; }
   }
 
   .main_header {
+    order: 1;
     display: flex;
   }
 
-  .main_body_header {
-    display: none;
+  .main_body_header { display: none; }
+
+  .tabs { order: 2; }
+
+  :global(#om-tjansten) { order: 3; }
+
+  .sidebar {
+    order: 4;
+    position: static !important;
+    width: 100%;
   }
 
-  // SvippoSafe / certs: hide in sidebar, show in .main_bottom
-  .sidebar_only {
-    display: none;
-  }
+  :global(#referenser) { order: 5; }
+  :global(#omdomen)    { order: 6; }
+  :global(#om-oss)     { order: 7; }
 
   .main_bottom {
+    order: 8;
     display: flex;
   }
 
-  // Request page: sidebar appears after .main (both at order 1, DOM order wins)
-  .sidebar_after {
-    order: 1;
-  }
+  // Desktop-only sidebar elements hidden on mobile
+  .sidebar_only { display: none; }
+
+  .title { font-size: 1.5rem !important; }
+
+  // Request detail: sidebar after main content (requestdetail.module.scss manages this)
+  .sidebar_after { order: 1; }
 }
 
 // ─── Primary / secondary content wrappers (transparent on desktop) ───────────
