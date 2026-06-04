@@ -312,16 +312,16 @@ export default function ServiceDetailClient({ service, reviews, avgRating, refer
                   {references.map(ref => (
                     <div
                       key={ref.id}
-                      className={refStyles.refs__card}
+                      className={`${refStyles.refs__card} ${styles.ref_card}`}
                       onClick={() => setActiveRef(ref)}
                       role="button"
                       tabIndex={0}
                       onKeyDown={e => e.key === 'Enter' && setActiveRef(ref)}
                     >
-                      <div className={refStyles.refs__card_img_wrap}>
+                      <div className={`${refStyles.refs__card_img_wrap} ${styles.ref_card_img_wrap}`}>
                         <img src={ref.image_url} alt={ref.title} className={refStyles.refs__card_img} />
                       </div>
-                      <span className={refStyles.refs__card_label}>{ref.title}</span>
+                      <span className={`${refStyles.refs__card_label} ${styles.ref_card_label}`}>{ref.title}</span>
                     </div>
                   ))}
                 </div>
