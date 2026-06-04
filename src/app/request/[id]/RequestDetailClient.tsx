@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation'
 import useAuth from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
 import styles from './requestdetail.module.scss'
-import serviceStyles from '../../service/[id]/servicedetail.module.scss'
 import { MapPin, CheckCircle, Users, MessageCircle, Shield, ClipboardList, Pencil, Trash2, Lock } from 'lucide-react'
 
 type Request = {
@@ -203,10 +202,10 @@ export default function RequestDetailClient({ request }: Props) {
   const isOwner = user?.id === request.user_id
 
   return (
-    <div className={serviceStyles.page}>
+    <div className={styles.page}>
 
         {/* Brödsmulor */}
-        <div className={serviceStyles.breadcrumb}>
+        <div className={styles.breadcrumb}>
           <Link href="/">Hem</Link>
           <span>·</span>
           <Link href="/requests">Förfrågningar</Link>
@@ -214,16 +213,16 @@ export default function RequestDetailClient({ request }: Props) {
           <span>{request.title}</span>
         </div>
 
-        <div className={serviceStyles.layout}>
+        <div className={styles.layout}>
 
           {/* Vänster */}
-          <div className={serviceStyles.main}>
-            <div className={serviceStyles.badges}>
-              <span className={`${serviceStyles.badge} ${styles.badge__orange}`}>{request.subcategory}</span>
-              <span className={`${serviceStyles.badge} ${styles.badge__location}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}><MapPin size={14} /> {request.location}</span>
+          <div className={styles.main}>
+            <div className={styles.badges}>
+              <span className={`${styles.badge} ${styles.badge__orange}`}>{request.subcategory}</span>
+              <span className={`${styles.badge} ${styles.badge__location}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}><MapPin size={14} /> {request.location}</span>
             </div>
 
-            <h1 className={serviceStyles.title}>{request.title}</h1>
+            <h1 className={styles.title}>{request.title}</h1>
 
             {request.image_url && (
               <img
@@ -233,25 +232,25 @@ export default function RequestDetailClient({ request }: Props) {
               />
             )}
 
-            <div className={serviceStyles.section}>
-              <h2 className={serviceStyles.section_title}>Om förfrågan</h2>
-              <p className={serviceStyles.description}>{request.description}</p>
+            <div className={styles.section}>
+              <h2 className={styles.section_title}>Om förfrågan</h2>
+              <p className={styles.description}>{request.description}</p>
             </div>
           </div>
 
           {/* Höger – sidebar (order: after main on mobile via sidebar_after) */}
-          <div className={`${serviceStyles.sidebar} ${serviceStyles.sidebar_after}`}>
+          <div className={`${styles.sidebar} ${styles.sidebar_after}`}>
 
-            <div className={`${serviceStyles.seller} sidebarCard`}>
-              <div className={serviceStyles.seller_header}>
-                <div className={`${serviceStyles.seller_avatar} ${request.avatar_url ? '' : styles.avatar__orange}`}>
+            <div className={`${styles.seller} sidebarCard`}>
+              <div className={styles.seller_header}>
+                <div className={`${styles.seller_avatar} ${request.avatar_url ? '' : styles.avatar__orange}`}>
                   {request.avatar_url
-                    ? <img src={request.avatar_url} alt={request.user_name} className={serviceStyles.seller_avatar_img} />
+                    ? <img src={request.avatar_url} alt={request.user_name} className={styles.seller_avatar_img} />
                     : request.user_name?.charAt(0).toUpperCase() || '?'}
                 </div>
-                <div className={serviceStyles.seller_info}>
-                  <strong className={serviceStyles.seller_name}>{request.user_name}</strong>
-                  <span className={serviceStyles.seller_rating}>
+                <div className={styles.seller_info}>
+                  <strong className={styles.seller_name}>{request.user_name}</strong>
+                  <span className={styles.seller_rating}>
                     {new Date(request.created_at).toLocaleDateString('sv-SE', {
                       year: 'numeric', month: 'long', day: 'numeric'
                     })}
@@ -260,18 +259,18 @@ export default function RequestDetailClient({ request }: Props) {
               </div>
 
               {/* Budget */}
-              <div className={serviceStyles.price_box}>
-                <div className={serviceStyles.price_row}>
+              <div className={styles.price_box}>
+                <div className={styles.price_row}>
                   <span>Budget</span>
                   <strong className={styles.budget_price}>
                     {request.budget_type === 'prisforslag' ? 'Prisförslag' : `${request.budget} kr`}
                   </strong>
                 </div>
-                <div className={serviceStyles.price_row}>
+                <div className={styles.price_row}>
                   <span>Plats</span>
                   <span>{request.location}</span>
                 </div>
-                <div className={serviceStyles.price_row}>
+                <div className={styles.price_row}>
                   <span>Deadline</span>
                   <span>
                     {!request.deadline || request.deadline === 'ingen'
@@ -289,7 +288,7 @@ export default function RequestDetailClient({ request }: Props) {
                     </div>
                   ) : (
                     <button
-                      className={`btn btn-orange ${serviceStyles.order_btn}`}
+                      className={`btn btn-orange ${styles.order_btn}`}
                       onClick={() => {
                         if (!user) { setShowLoginPrompt(true); return }
                         if (accountType === 'bestellare') { setShowUpgradePrompt(true); return }
@@ -301,7 +300,7 @@ export default function RequestDetailClient({ request }: Props) {
                   )}
                   {user && accountType !== 'bestellare' && (
                     <button
-                      className={`btn btn-outline ${serviceStyles.question_btn}`}
+                      className={`btn btn-outline ${styles.question_btn}`}
                       onClick={handleContact}
                     >
                       <MessageCircle size={16} /> Kontakta beställaren
@@ -312,7 +311,7 @@ export default function RequestDetailClient({ request }: Props) {
             </div>
 
             {/* SvippoSafe */}
-            <div className={`${serviceStyles.safe} sidebarCard`}>
+            <div className={`${styles.safe} sidebarCard`}>
               <Shield size={20} />
               <div>
                 <strong>Känn dig trygg med SvippoSafe</strong>
