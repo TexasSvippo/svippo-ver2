@@ -51,11 +51,11 @@ export default async function ServiceDetailPage({ params }: Props) {
 
   if (!service) notFound()
 
-  const { data: providerData } = await supabaseAdmin
-    .from('users')
-    .select('bio')
-    .eq('id', service.user_id)
-    .single()
+  const [{ data: svippareProfile }, { data: companyProfile }] = await Promise.all([
+    supabaseAdmin.from('svippare_profiles').select('bio').eq('user_id', service.user_id).maybeSingle(),
+    supabaseAdmin.from('company_profiles').select('bio').eq('user_id', service.user_id).maybeSingle(),
+  ])
+  const providerBio = svippareProfile?.bio ?? companyProfile?.bio ?? null
 
   const avgRating = reviews && reviews.length > 0
     ? Math.round(reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length * 10) / 10
@@ -67,7 +67,7 @@ export default async function ServiceDetailPage({ params }: Props) {
       reviews={reviews ?? []}
       avgRating={avgRating}
       references={references ?? []}
-      bio={providerData?.bio ?? null}
+      bio={providerBio}
     />
   )
 }
