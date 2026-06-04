@@ -129,7 +129,7 @@
   }
 
   .sidebar.sidebar_desktop { display: none; }
-  .sidebar_mobile  { display: block; width: 100%; }
+  .sidebar_mobile  { display: block !important; width: 100%; }
 }
 
 // ─── Main column ──────────────────────────────────────────────────────────────
