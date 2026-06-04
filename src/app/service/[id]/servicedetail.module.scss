@@ -184,6 +184,24 @@
   margin: 0;
 }
 
+// ─── Meta row (location + rating) ─────────────────────────────────────────────
+.meta_row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.meta_item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 15px;
+  color: var(--color-gray);
+  font-weight: 400;
+  line-height: 1.4;
+}
+
 // ─── Section ──────────────────────────────────────────────────────────────────
 .section {
   display: flex;
@@ -228,6 +246,7 @@
 .description--collapsed {
   display: -webkit-box;
   -webkit-line-clamp: 4;
+  line-clamp: 4;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }

@@ -8,7 +8,7 @@ import useAuth from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
 import styles from './servicedetail.module.scss'
 import refStyles from './references.module.scss'
-import { CheckCircle, Star, User, Wallet, Pencil, Trash2, Lock, MessageCircle, Shield, ChevronLeft, ChevronRight, Flag } from 'lucide-react'
+import { CheckCircle, Star, User, Wallet, Pencil, Trash2, Lock, MessageCircle, Shield, ChevronLeft, ChevronRight, Flag, MapPin } from 'lucide-react'
 import { renderStars } from '@/utils/renderStars'
 
 type CustomQuestion = {
@@ -209,6 +209,16 @@ export default function ServiceDetailClient({ service, reviews, avgRating, refer
           )}
         </div>
         <h1 className={styles.title}>{service.title}</h1>
+        <div className={styles.meta_row}>
+          <span className={styles.meta_item}>
+            <MapPin size={14} /> från {service.location}
+          </span>
+          {(avgRating ?? service.rating) ? (
+            <span className={styles.meta_item}>
+              <Star size={14} fill="#EF9F27" color="#EF9F27" /> {avgRating ?? service.rating} {reviews.length} omdömen
+            </span>
+          ) : null}
+        </div>
       </div>
 
       <div className={styles.layout}>
@@ -232,6 +242,16 @@ export default function ServiceDetailClient({ service, reviews, avgRating, refer
               )}
             </div>
             <h1 className={styles.title}>{service.title}</h1>
+            <div className={styles.meta_row}>
+              <span className={styles.meta_item}>
+                <MapPin size={14} /> från {service.location}
+              </span>
+              {(avgRating ?? service.rating) ? (
+                <span className={styles.meta_item}>
+                  <Star size={14} fill="#EF9F27" color="#EF9F27" /> {avgRating ?? service.rating} {reviews.length} omdömen
+                </span>
+              ) : null}
+            </div>
           </div>
 
           {/* Tab navigation */}
