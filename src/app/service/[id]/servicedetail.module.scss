@@ -76,67 +76,58 @@
 }
 
 @media (max-width: 768px) {
-  // Page becomes the flex column for mobile ordering
   .page {
     padding: 1rem;
-    display: flex;
-    flex-direction: column;
+  }
+
+  .breadcrumb span:last-child {
+    max-width: 55vw;
+  }
+
+  .layout {
+    grid-template-columns: 1fr;
     gap: 1.25rem;
     overflow-x: hidden;
+    max-width: 100%;
   }
-
-  // Flatten hierarchy so every section is a direct flex child of .page
-  .layout      { display: contents; }
-  .main        { display: contents; }
-  .main_primary   { display: contents; }
-  .main_secondary { display: contents; }
-
-  // Explicit order for each section
-  .breadcrumb {
-    order: 0;
-    margin-bottom: 0; // gap handles spacing
-    span:last-child { max-width: 55vw; }
-  }
-
-  .main_header {
-    order: 1;
-    display: flex;
-  }
-
-  .main_body_header { display: none; }
-
-  .tabs { order: 2; }
-
-  :global(#om-tjansten) { order: 3; }
 
   .sidebar {
-    order: 4;
     position: static !important;
+    order: -1;
     width: 100%;
   }
 
-  :global(#referenser) { order: 5; }
-  :global(#omdomen)    { order: 6; }
-  :global(#om-oss)     { order: 7; }
+  .main {
+    order: 1;
+    width: 100%;
+    overflow: hidden;
+  }
 
-  .main_bottom {
-    order: 8;
+  .title {
+    font-size: 1.5rem !important;
+  }
+
+  .main_header {
     display: flex;
   }
 
-  // Desktop-only sidebar elements hidden on mobile
-  .sidebar_only { display: none; }
+  .main_body_header {
+    display: none;
+  }
 
-  .title { font-size: 1.5rem !important; }
+  // SvippoSafe / certs: hide in sidebar, show in .main_bottom
+  .sidebar_only {
+    display: none;
+  }
 
-  // Request detail: sidebar after main content (requestdetail.module.scss manages this)
-  .sidebar_after { order: 1; }
-}
+  .main_bottom {
+    display: flex;
+  }
 
-// ─── Primary / secondary content wrappers (transparent on desktop) ───────────
-.main_primary,
-.main_secondary {
-  display: contents;
+  // Request page: sidebar appears after .main (both at order 1, DOM order wins)
+  .sidebar_after {
+    order: 1;
+  }
 }
 
 // ─── Main column ──────────────────────────────────────────────────────────────
@@ -188,7 +179,7 @@
   font-family: var(--font-heading);
   font-size: 2rem;
   font-weight: 800;
-  color: #000000;
+  color: #05334A;
   line-height: 1.2;
   margin: 0;
 }
@@ -231,7 +222,7 @@
   font-family: 'Inter', sans-serif;
   font-size: 1rem;
   line-height: 1.7;
-  color: #2C2C2C;
+  color: var(--color-dark);
   margin: 0;
   word-break: break-word;
   overflow-wrap: break-word;
@@ -263,8 +254,8 @@
 .read_more_btn {
   background: none;
   border: none;
-  color: black;
-  font-size: 16px;
+  color: var(--color-primary);
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   padding: 0;
@@ -311,7 +302,7 @@
 
 .tab {
   flex-shrink: 0;
-  padding: 14px 16px;
+  padding: 10px 16px;
   background: none;
   border: none;
   border-bottom: 2px solid transparent;
@@ -359,12 +350,6 @@
 
 // ─── Reviews ──────────────────────────────────────────────────────────────────
 
-.reviews_card {
-  border: 1.5px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 1.25rem;
-}
-
 .reviews_summary {
   display: flex;
   align-items: baseline;
@@ -389,8 +374,6 @@
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  padding-top: 10px;
-  padding-bottom: 20px;
 }
 
 .review_pill {
@@ -597,7 +580,7 @@
   background: white;
   font-size: 14px;
   font-weight: 500;
-  color: #0e0f10;
+  color: var(--color-gray);
   text-decoration: none;
   transition: border-color 0.15s, color 0.15s;
 
@@ -749,7 +732,7 @@
   padding: 20px;
   background: white;
   border: 1.5px solid var(--color-border);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
 }
 
 .om_oss_header {

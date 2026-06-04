@@ -262,9 +262,6 @@ export default function ServiceDetailClient({ service, reviews, avgRating, refer
             </div>
           </div>
 
-          {/* Primary content – renders before sidebar on mobile */}
-          <div className={styles.main_primary}>
-
           {/* Tab navigation */}
           <div className={styles.tabs}>
             {[
@@ -300,11 +297,6 @@ export default function ServiceDetailClient({ service, reviews, avgRating, refer
               </button>
             )}
           </div>
-
-          </div>{/* /main_primary */}
-
-          {/* Secondary content – renders after sidebar on mobile */}
-          <div className={styles.main_secondary}>
 
           {/* Utförda projekt (references slideshow) */}
           {references.length > 0 && (
@@ -482,8 +474,6 @@ export default function ServiceDetailClient({ service, reviews, avgRating, refer
               </div>
             )}
           </div>
-
-          </div>{/* /main_secondary */}
 
         </div>
 
