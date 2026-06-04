@@ -358,6 +358,7 @@ export default function ServiceDetailClient({ service, reviews, avgRating, refer
           <div id="omdomen" className={styles.section}>
             <h2 className={styles.section_title}>Recensioner</h2>
 
+            <div className={styles.reviews_card}>
             {reviews.length === 0 ? (
               <p className={styles.no_reviews}>Inga recensioner ännu.</p>
             ) : (
@@ -426,6 +427,7 @@ export default function ServiceDetailClient({ service, reviews, avgRating, refer
                 )}
               </>
             )}
+            </div>
           </div>
 
           {/* Om oss */}
