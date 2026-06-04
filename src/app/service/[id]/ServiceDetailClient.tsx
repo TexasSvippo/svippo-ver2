@@ -113,6 +113,13 @@ export default function ServiceDetailClient({ service, reviews, avgRating, refer
 
   const [activeTab, setActiveTab] = useState<string>('om-tjansten')
 
+  // ── Reviews filter + pagination ───────────────────────────────────────────
+  const [ratingFilter, setRatingFilter] = useState<number | null>(null)
+  const [visibleCount, setVisibleCount] = useState(5)
+  const filteredReviews = ratingFilter === null ? reviews : reviews.filter(r => r.rating === ratingFilter)
+  const visibleReviews = filteredReviews.slice(0, visibleCount)
+  const hasMoreReviews = filteredReviews.length > visibleCount
+
   const scrollToSection = (id: string) => {
     const el = document.getElementById(id)
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -348,36 +355,75 @@ export default function ServiceDetailClient({ service, reviews, avgRating, refer
 
           {/* Recensioner */}
           <div id="omdomen" className={styles.section}>
-            <div className={styles.reviews_header}>
-              <h2 className={styles.section_title}>
-                Recensioner
-                {reviews.length > 0 && (
-                  <span className={styles.reviews_count} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                    {avgRating !== null && <><Star size={13} fill="#EF9F27" color="#EF9F27" /> {avgRating}</>} · {reviews.length} recensioner
-                  </span>
-                )}
-              </h2>
-            </div>
+            <h2 className={styles.section_title}>Recensioner</h2>
 
             {reviews.length === 0 ? (
               <p className={styles.no_reviews}>Inga recensioner ännu.</p>
             ) : (
-              <div className={styles.reviews}>
-                {reviews.map(r => (
-                  <div key={r.id} className={`${styles.review} card`}>
-                    <div className={styles.review_header}>
-                      <strong className={styles.review_name}>{r.reviewer_name}</strong>
-                      <span className={styles.review_stars} style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
-                        {renderStars(r.rating, 13)}
-                      </span>
-                    </div>
-                    {r.comment && <p className={styles.review_comment}>{r.comment}</p>}
-                    <span className={styles.review_date}>
-                      {new Date(r.created_at).toLocaleDateString('sv-SE')}
-                    </span>
-                  </div>
-                ))}
-              </div>
+              <>
+                {/* Summary: big rating + count */}
+                <div className={styles.reviews_summary}>
+                  <span className={styles.reviews_big_rating}>{avgRating ?? service.rating ?? '–'}</span>
+                  <span className={styles.reviews_count_label}>{reviews.length} omdömen</span>
+                </div>
+
+                {/* Filter pills */}
+                <div className={styles.reviews_pills}>
+                  <button
+                    type="button"
+                    className={`${styles.review_pill} ${ratingFilter === null ? styles['review_pill--active'] : ''}`}
+                    onClick={() => { setRatingFilter(null); setVisibleCount(5) }}
+                  >
+                    Alla
+                  </button>
+                  {[5, 4, 3, 2, 1].map(n => (
+                    <button
+                      key={n}
+                      type="button"
+                      className={`${styles.review_pill} ${ratingFilter === n ? styles['review_pill--active'] : ''}`}
+                      onClick={() => { setRatingFilter(n); setVisibleCount(5) }}
+                    >
+                      <Star size={12} fill="#EF9F27" color="#EF9F27" /> {n}/5
+                    </button>
+                  ))}
+                </div>
+
+                {/* Review list */}
+                <div className={styles.reviews}>
+                  {filteredReviews.length === 0 ? (
+                    <p className={styles.no_reviews}>Inga omdömen med det betyget.</p>
+                  ) : (
+                    visibleReviews.map((r, i) => (
+                      <div key={r.id}>
+                        {i > 0 && <div className={styles.review_divider} />}
+                        <div className={styles.review}>
+                          <div className={styles.review_header}>
+                            <div className={styles.review_avatar}>
+                              {r.reviewer_name?.charAt(0).toUpperCase() || '?'}
+                            </div>
+                            <div className={styles.review_meta}>
+                              <strong className={styles.review_name}>{r.reviewer_name}</strong>
+                              <div className={styles.review_stars}>{renderStars(r.rating, 13)}</div>
+                            </div>
+                          </div>
+                          {r.comment && <p className={styles.review_comment}>{r.comment}</p>}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                {/* Load more */}
+                {hasMoreReviews && (
+                  <button
+                    type="button"
+                    className={styles.reviews_load_more}
+                    onClick={() => setVisibleCount(c => c + 5)}
+                  >
+                    Se fler
+                  </button>
+                )}
+              </>
             )}
           </div>
 
