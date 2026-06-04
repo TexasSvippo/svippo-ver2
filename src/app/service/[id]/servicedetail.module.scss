@@ -128,6 +128,9 @@
   .sidebar_after {
     order: 1;
   }
+
+  .sidebar_desktop { display: none; }
+  .sidebar_mobile  { display: block; width: 100%; }
 }
 
 // ─── Main column ──────────────────────────────────────────────────────────────
@@ -485,6 +488,12 @@
     color: var(--color-primary);
   }
 }
+
+// ─── Desktop / mobile sidebar visibility ─────────────────────────────────────
+// sidebar_desktop rule is placed BEFORE .sidebar so that .sidebar's display:flex
+// wins on desktop via cascade order (last rule wins at equal specificity).
+.sidebar_desktop { display: block; }
+.sidebar_mobile  { display: none; }
 
 // ─── Sidebar ──────────────────────────────────────────────────────────────────
 .sidebar {

@@ -298,6 +298,113 @@ export default function ServiceDetailClient({ service, reviews, avgRating, refer
             )}
           </div>
 
+          {/* Mobile sidebar – appears between Om tjänsten and Utförda projekt on mobile */}
+          <div className={styles.sidebar_mobile}>
+
+            <div className={`${styles.seller} sidebarCard`}>
+
+              <div className={styles.seller_header}>
+                <div className={styles.seller_avatar}>
+                  {service.avatar_url
+                    ? <img src={service.avatar_url} alt={service.user_name} className={styles.seller_avatar_img} />
+                    : service.user_name?.charAt(0).toUpperCase() || '?'
+                  }
+                </div>
+                <div className={styles.seller_info}>
+                  <Link href={`/provider/${service.user_id}`} className={styles.seller_name}>
+                    {service.user_name}
+                  </Link>
+                  <span className={styles.seller_rating} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                    {(avgRating ?? service.rating) ? <Star size={13} fill="#EF9F27" color="#EF9F27" /> : null} {avgRating ?? service.rating ?? '–'} ({reviews.length} recensioner)
+                  </span>
+                </div>
+              </div>
+
+              <div className={styles.price_box}>
+                <div className={styles.price_row}>
+                  <span>Pristyp</span>
+                  <span className={styles.price_type_label}>{service.price_type}</span>
+                </div>
+                {service.price_type !== 'offert' && (
+                  <div className={styles.price_row}>
+                    <span>Pris</span>
+                    <strong className={styles.price}>{service.price} kr</strong>
+                  </div>
+                )}
+                <div className={styles.price_row}>
+                  <span>Plats</span>
+                  <span>{service.location}</span>
+                </div>
+                {service.offers_rut && (
+                  <div className={styles.rut_info}>
+                    <Wallet size={16} />
+                    <div>
+                      <strong>RUT-avdrag tillämpas</strong>
+                      <p>Du betalar ca 50% av priset efter skattereduktion. Max 75 000 kr/år.</p>
+                    </div>
+                  </div>
+                )}
+                {service.offers_rot && (
+                  <div className={styles.rut_info}>
+                    <Wallet size={16} />
+                    <div>
+                      <strong>ROT-avdrag tillämpas</strong>
+                      <p>Du betalar ca 70% av priset efter skattereduktion. Max 50 000 kr/år.</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {isOwner ? (
+                <div className={styles.own_service}>
+                  <div className={styles.own_service_info}>
+                    <Pencil size={16} />
+                    <div>
+                      <strong>Detta är din tjänst</strong>
+                      <p>Du kan inte beställa din egen tjänst.</p>
+                    </div>
+                  </div>
+                  <div className={styles.owner_actions}>
+                    <button
+                      className={`btn btn-outline ${styles.edit_btn}`}
+                      onClick={() => router.push(`/create-service?edit=${service.id}`)}
+                    >
+                      <Pencil size={14} /> Redigera
+                    </button>
+                    <button
+                      className={`btn btn-outline ${styles.delete_btn}`}
+                      onClick={handleDelete}
+                      disabled={deleting || inProgressCount > 0}
+                      title={inProgressCount > 0 ? 'Projektet pågår – kan inte tas bort' : ''}
+                    >
+                      {deleting ? 'Tar bort...' : inProgressCount > 0 ? <><Lock size={14} /> Pågår</> : <><Trash2 size={14} /> Ta bort</>}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <button
+                    className={`btn btn-primary ${styles.order_btn}`}
+                    onClick={() => user ? setShowOrder(true) : setShowLoginPrompt(true)}
+                  >
+                    Beställ
+                  </button>
+                  <button
+                    className={`btn btn-outline ${styles.question_btn}`}
+                    onClick={handleContact}
+                  >
+                    <MessageCircle size={15} /> Kontakta Svipparen
+                  </button>
+                  <div className={styles.seller_divider} />
+                  <Link href={`/provider/${service.user_id}`} className={styles.seller_profile_full_btn}>
+                    <User size={15} /> Se profil
+                  </Link>
+                </>
+              )}
+            </div>
+
+          </div>{/* /sidebar_mobile */}
+
           {/* Utförda projekt (references slideshow) */}
           {references.length > 0 && (
             <div id="referenser" className={`${styles.section} ${refStyles.refs}`}>
@@ -478,7 +585,7 @@ export default function ServiceDetailClient({ service, reviews, avgRating, refer
         </div>
 
         {/* ── RIGHT: sidebar ──────────────────────────────────────────────── */}
-        <div className={styles.sidebar}>
+        <div className={`${styles.sidebar} ${styles.sidebar_desktop}`}>
 
           {/* Seller + price + order */}
           <div className={`${styles.seller} sidebarCard`}>
