@@ -563,6 +563,33 @@
   &:hover { opacity: 0.75; }
 }
 
+.seller_divider {
+  height: 0.5px;
+  background: var(--color-border);
+}
+
+.seller_profile_full_btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 16px;
+  border: 1.5px solid var(--color-border);
+  border-radius: 999px;
+  background: white;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-gray);
+  text-decoration: none;
+  transition: border-color 0.15s, color 0.15s;
+
+  &:hover {
+    border-color: var(--color-dark);
+    color: var(--color-dark);
+  }
+}
+
 // ─── Price box ────────────────────────────────────────────────────────────────
 .price_box {
   display: flex;

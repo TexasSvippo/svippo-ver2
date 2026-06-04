@@ -480,9 +480,6 @@ export default function ServiceDetailClient({ service, reviews, avgRating, refer
                 <span className={styles.seller_rating} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                   {(avgRating ?? service.rating) ? <Star size={13} fill="#EF9F27" color="#EF9F27" /> : null} {avgRating ?? service.rating ?? '–'} ({reviews.length} recensioner)
                 </span>
-                <Link href={`/provider/${service.user_id}`} className={styles.seller_profile_btn}>
-                  <User size={13} /> Se profil →
-                </Link>
               </div>
             </div>
 
@@ -563,6 +560,10 @@ export default function ServiceDetailClient({ service, reviews, avgRating, refer
                 >
                   <MessageCircle size={15} /> Kontakta Svipparen
                 </button>
+                <div className={styles.seller_divider} />
+                <Link href={`/provider/${service.user_id}`} className={styles.seller_profile_full_btn}>
+                  <User size={15} /> Se profil
+                </Link>
               </>
             )}
           </div>
