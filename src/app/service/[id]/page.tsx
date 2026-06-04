@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase'
+import { supabaseAdmin } from '@/lib/supabaseAdmin'
 import { notFound } from 'next/navigation'
 import ServiceDetailClient from './ServiceDetailClient'
 
@@ -50,7 +51,7 @@ export default async function ServiceDetailPage({ params }: Props) {
 
   if (!service) notFound()
 
-  const { data: providerData } = await supabase
+  const { data: providerData } = await supabaseAdmin
     .from('users')
     .select('bio')
     .eq('id', service.user_id)
