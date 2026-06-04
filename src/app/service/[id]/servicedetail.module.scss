@@ -245,6 +245,65 @@
   &:hover { text-decoration: underline; }
 }
 
+// ─── Tab navigation ───────────────────────────────────────────────────────────
+.tabs {
+  display: flex;
+  align-items: center;
+  border-bottom: 0.5px solid var(--color-border);
+  gap: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+}
+
+.tab {
+  flex-shrink: 0;
+  padding: 10px 16px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-gray);
+  cursor: pointer;
+  font-family: var(--font-body);
+  white-space: nowrap;
+  margin-bottom: -1px;
+  transition: color 0.15s, border-color 0.15s;
+
+  &:hover { color: var(--color-dark); }
+
+  &--active {
+    color: #185FA5;
+    border-bottom-color: #378ADD;
+    font-weight: 600;
+  }
+}
+
+.tab_report {
+  margin-left: auto;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  background: none;
+  border: 1px solid rgba(180, 30, 30, 0.2);
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 500;
+  color: #b91c1c;
+  opacity: 0.65;
+  cursor: pointer;
+  font-family: var(--font-body);
+  transition: opacity 0.15s, background 0.15s;
+
+  &:hover {
+    opacity: 1;
+    background: rgba(185, 28, 28, 0.05);
+  }
+}
+
 // ─── Reviews ──────────────────────────────────────────────────────────────────
 .reviews_header {
   display: flex;

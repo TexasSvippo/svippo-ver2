@@ -8,7 +8,7 @@ import useAuth from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
 import styles from './servicedetail.module.scss'
 import refStyles from './references.module.scss'
-import { CheckCircle, Star, User, Wallet, Pencil, Trash2, Lock, MessageCircle, Shield, ChevronLeft, ChevronRight } from 'lucide-react'
+import { CheckCircle, Star, User, Wallet, Pencil, Trash2, Lock, MessageCircle, Shield, ChevronLeft, ChevronRight, Flag } from 'lucide-react'
 import { renderStars } from '@/utils/renderStars'
 
 type CustomQuestion = {
@@ -110,6 +110,13 @@ export default function ServiceDetailClient({ service, reviews, avgRating, refer
   const [activeOrdersCount, setActiveOrdersCount] = useState(0)
   const [inProgressCount, setInProgressCount] = useState(0)
   const [matchingCerts, setMatchingCerts] = useState<{ id: string; name: string; file_url: string }[]>([])
+
+  const [activeTab, setActiveTab] = useState<string>('om-tjansten')
+
+  const scrollToSection = (id: string) => {
+    const el = document.getElementById(id)
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
 
   const isOwner = user?.id === service.user_id
   const shouldAutoOpen = searchParams.get('order') === 'true' && !isOwner
@@ -227,8 +234,30 @@ export default function ServiceDetailClient({ service, reviews, avgRating, refer
             <h1 className={styles.title}>{service.title}</h1>
           </div>
 
+          {/* Tab navigation */}
+          <div className={styles.tabs}>
+            {[
+              { id: 'om-tjansten', label: 'Om tjänsten' },
+              { id: 'referenser',  label: 'Referenser'  },
+              { id: 'omdomen',     label: 'Omdömen'     },
+              { id: 'om-oss',      label: 'Om oss'      },
+            ].map(tab => (
+              <button
+                key={tab.id}
+                type="button"
+                className={`${styles.tab} ${activeTab === tab.id ? styles['tab--active'] : ''}`}
+                onClick={() => { setActiveTab(tab.id); scrollToSection(tab.id) }}
+              >
+                {tab.label}
+              </button>
+            ))}
+            <button type="button" className={styles.tab_report}>
+              <Flag size={13} /> Rapportera
+            </button>
+          </div>
+
           {/* Om tjänsten */}
-          <div className={styles.section}>
+          <div id="om-tjansten" className={styles.section}>
             <h2 className={styles.section_title}>Om tjänsten</h2>
             <div
               className={`${styles.description} ${descLong && !expanded ? styles['description--collapsed'] : ''}`}
@@ -243,7 +272,7 @@ export default function ServiceDetailClient({ service, reviews, avgRating, refer
 
           {/* Utförda projekt (references slideshow) */}
           {references.length > 0 && (
-            <div className={`${styles.section} ${refStyles.refs}`}>
+            <div id="referenser" className={`${styles.section} ${refStyles.refs}`}>
               <div className={refStyles.refs__head}>
                 <h2 className={`${styles.section_title} ${refStyles.refs__title}`}>Utförda projekt</h2>
                 {references.length > 1 && (
@@ -298,7 +327,7 @@ export default function ServiceDetailClient({ service, reviews, avgRating, refer
           )}
 
           {/* Recensioner */}
-          <div className={styles.section}>
+          <div id="omdomen" className={styles.section}>
             <div className={styles.reviews_header}>
               <h2 className={styles.section_title}>
                 Recensioner
@@ -330,6 +359,11 @@ export default function ServiceDetailClient({ service, reviews, avgRating, refer
                 ))}
               </div>
             )}
+          </div>
+
+          {/* Om oss – placeholder */}
+          <div id="om-oss" className={styles.section}>
+            <h2 className={styles.section_title}>Om oss</h2>
           </div>
 
           {/* SvippoSafe + certs – mobile only (shown in sidebar on desktop) */}
