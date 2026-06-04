@@ -93,7 +93,6 @@
 
   .sidebar {
     position: static !important;
-    order: -1;
     width: 100%;
   }
 
@@ -129,7 +128,7 @@
     order: 1;
   }
 
-  .sidebar_desktop { display: none; }
+  .sidebar.sidebar_desktop { display: none; }
   .sidebar_mobile  { display: block; width: 100%; }
 }
 
