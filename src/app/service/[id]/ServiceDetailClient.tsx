@@ -62,9 +62,10 @@ type Props = {
   reviews: Review[]
   avgRating: number | null
   references?: ServiceReference[]
+  bio?: string | null
 }
 
-export default function ServiceDetailClient({ service, reviews, avgRating, references = [] }: Props) {
+export default function ServiceDetailClient({ service, reviews, avgRating, references = [], bio }: Props) {
   const { user } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -427,10 +428,24 @@ export default function ServiceDetailClient({ service, reviews, avgRating, refer
             )}
           </div>
 
-          {/* Om oss – placeholder */}
-          <div id="om-oss" className={styles.section}>
-            <h2 className={styles.section_title}>Om oss</h2>
-          </div>
+          {/* Om oss */}
+          {bio && bio.trim() && (
+            <div id="om-oss" className={styles.section}>
+              <h2 className={styles.section_title}>Om oss</h2>
+              <div className={styles.om_oss_card}>
+                <div className={styles.om_oss_header}>
+                  <div className={styles.om_oss_avatar}>
+                    {service.avatar_url
+                      ? <img src={service.avatar_url} alt={service.user_name} className={styles.seller_avatar_img} />
+                      : service.user_name?.charAt(0).toUpperCase() || '?'
+                    }
+                  </div>
+                  <strong className={styles.om_oss_name}>{service.user_name}</strong>
+                </div>
+                <p className={styles.om_oss_bio}>{bio}</p>
+              </div>
+            </div>
+          )}
 
           {/* SvippoSafe + certs – mobile only (shown in sidebar on desktop) */}
           <div className={styles.main_bottom}>

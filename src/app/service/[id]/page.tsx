@@ -50,6 +50,12 @@ export default async function ServiceDetailPage({ params }: Props) {
 
   if (!service) notFound()
 
+  const { data: providerData } = await supabase
+    .from('users')
+    .select('bio')
+    .eq('id', service.user_id)
+    .single()
+
   const avgRating = reviews && reviews.length > 0
     ? Math.round(reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length * 10) / 10
     : null
@@ -60,6 +66,7 @@ export default async function ServiceDetailPage({ params }: Props) {
       reviews={reviews ?? []}
       avgRating={avgRating}
       references={references ?? []}
+      bio={providerData?.bio ?? null}
     />
   )
 }

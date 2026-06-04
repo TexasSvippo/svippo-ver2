@@ -723,3 +723,56 @@
     &:hover { text-decoration: underline; }
   }
 }
+
+// ─── Om oss card ──────────────────────────────────────────────────────────────
+.om_oss_card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px;
+  background: white;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.om_oss_header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.om_oss_avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: white;
+  font-size: 18px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+  }
+}
+
+.om_oss_name {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-dark);
+}
+
+.om_oss_bio {
+  font-size: 15px;
+  color: var(--color-dark);
+  line-height: 1.7;
+  margin: 0;
+  white-space: pre-line;
+}
