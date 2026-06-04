@@ -211,9 +211,9 @@
 
 .section_title {
   font-family: 'Inter', sans-serif;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #05334A;
+  font-size: 22px;
+  font-weight: 700;
+  color: #03141d;
   margin: 0;
 }
 
@@ -775,4 +775,12 @@
   line-height: 1.7;
   margin: 0;
   white-space: pre-line;
+}
+
+.om_oss_placeholder {
+  font-size: 14px;
+  color: var(--color-gray);
+  line-height: 1.6;
+  margin: 0;
+  font-style: italic;
 }
