@@ -1,0 +1,135 @@
+// ─── Page wrapper ─────────────────────────────────────────────────────────────
+.page {
+  min-height: calc(100vh - 68px);
+  background: #F8F4EF;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+}
+
+// ─── Left column ──────────────────────────────────────────────────────────────
+.left {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 48px;
+  max-width: 520px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+// ─── Cards ────────────────────────────────────────────────────────────────────
+.card {
+  background: white;
+  border-radius: 16px;
+  border: 1px solid var(--color-border);
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+// ─── Login card header ────────────────────────────────────────────────────────
+.title {
+  font-family: var(--font-heading);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-dark);
+  margin: 0;
+}
+
+.subtitle {
+  font-size: 15px;
+  color: var(--color-gray);
+  line-height: 1.5;
+  margin: -8px 0 0;
+}
+
+// ─── Forgot password link ─────────────────────────────────────────────────────
+.forgot_link {
+  font-size: 14px;
+  color: #378ADD;
+  font-weight: 500;
+  text-decoration: none;
+  align-self: flex-start;
+  margin-top: -8px;
+
+  &:hover { text-decoration: underline; }
+}
+
+// ─── Register CTA card ────────────────────────────────────────────────────────
+.register_card {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 24px;
+}
+
+.register_card_text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.register_card_heading {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-dark);
+}
+
+.register_card_sub {
+  font-size: 13px;
+  color: var(--color-gray);
+  margin: 0;
+}
+
+.register_card_btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1.5px solid var(--color-border);
+  color: var(--color-dark);
+  text-decoration: none;
+  flex-shrink: 0;
+  transition: background 0.15s, border-color 0.15s;
+
+  &:hover {
+    background: var(--color-gray-light);
+    border-color: var(--color-dark);
+  }
+}
+
+// ─── Right column ─────────────────────────────────────────────────────────────
+.right {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  height: 100%;
+}
+
+.illustration {
+  max-height: 500px;
+  width: 100%;
+  object-fit: contain;
+}
+
+// ─── Mobile ───────────────────────────────────────────────────────────────────
+@media (max-width: 900px) {
+  .page {
+    grid-template-columns: 1fr;
+  }
+
+  .right {
+    display: none;
+  }
+
+  .left {
+    padding: 32px 20px;
+    max-width: 100%;
+  }
+}

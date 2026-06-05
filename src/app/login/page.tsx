@@ -5,7 +5,9 @@ import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import useAuth from '@/hooks/useAuth'
-import styles from '@/styles/auth.module.scss'
+import { ArrowRight } from 'lucide-react'
+import authStyles from '@/styles/auth.module.scss'
+import styles from './login.module.scss'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -27,7 +29,7 @@ export default function LoginPage() {
 
     const { error } = await supabase.auth.signInWithPassword({ email, password })
 
-if (error) {
+    if (error) {
       if (error.message.includes('Invalid login credentials')) {
         setError('Fel e-post eller lösenord.')
       } else if (error.message.includes('Email not confirmed')) {
@@ -44,58 +46,82 @@ if (error) {
   }
 
   return (
-    <div className={styles.auth}>
-      <div className={styles.auth__card}>
+    <div className={styles.page}>
 
-        <div className={styles.auth__header}>
-          <h1 className={styles.auth__title}>Logga in</h1>
-          <p className={styles.auth__subtitle}>Välkommen tillbaka!</p>
+      {/* Left column */}
+      <div className={styles.left}>
+
+        {/* Card 1 – Login form */}
+        <div className={styles.card}>
+          <h1 className={styles.title}>Logga in</h1>
+          <p className={styles.subtitle}>Välkommen tillbaka! Logga in för att fortsätta svippa.</p>
+
+          <form onSubmit={handleSubmit} className={authStyles.auth__form}>
+
+            <div className={authStyles.auth__field}>
+              <label className={authStyles.auth__label}>E-post</label>
+              <input
+                className={authStyles.auth__input}
+                placeholder="din@email.com"
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className={authStyles.auth__field}>
+              <label className={authStyles.auth__label}>Lösenord</label>
+              <input
+                className={authStyles.auth__input}
+                placeholder="lösenord"
+                type="password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                required
+              />
+            </div>
+
+            <Link href="/forgot-password" className={styles.forgot_link}>
+              Har du glömt ditt lösenord?
+            </Link>
+
+            {error && <div className={authStyles.auth__error_box}>{error}</div>}
+
+            <button
+              type="submit"
+              className={`btn btn-primary ${authStyles.auth__submit}`}
+              disabled={loading}
+            >
+              {loading ? 'Loggar in...' : 'Logga in'}
+            </button>
+
+          </form>
         </div>
 
-        <form onSubmit={handleSubmit} className={styles.auth__form}>
-
-          <div className={styles.auth__field}>
-            <label className={styles.auth__label}>E-post</label>
-            <input
-              className={styles.auth__input}
-              placeholder="din@email.se"
-              type="email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              required
-            />
+        {/* Card 2 – Register CTA */}
+        <div className={`${styles.card} ${styles.register_card}`}>
+          <div className={styles.register_card_text}>
+            <span className={styles.register_card_heading}>Har du inte ett konto?</span>
+            <p className={styles.register_card_sub}>Skapa ett konto och börja svippa idag</p>
           </div>
-
-          <div className={styles.auth__field}>
-            <label className={styles.auth__label}>Lösenord</label>
-            <input
-              className={styles.auth__input}
-              placeholder="Ditt lösenord"
-              type="password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              required
-            />
-          </div>
-
-          {error && <div className={styles.auth__error_box}>{error}</div>}
-
-          <button
-            type="submit"
-            className={`btn btn-primary ${styles.auth__submit}`}
-            disabled={loading}
-          >
-            {loading ? 'Loggar in...' : 'Logga in'}
-          </button>
-
-        </form>
-
-        <p className={styles.auth__switch}>
-          Inget konto?{' '}
-          <Link href="/register" className={styles.auth__switch_link}>Skapa ett här</Link>
-        </p>
+          <Link href="/register" className={styles.register_card_btn} aria-label="Skapa konto">
+            <ArrowRight size={18} />
+          </Link>
+        </div>
 
       </div>
+
+      {/* Right column – illustration */}
+      <div className={styles.right}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/images/login-svg.svg"
+          alt="Svippo illustration"
+          className={styles.illustration}
+        />
+      </div>
+
     </div>
   )
 }
