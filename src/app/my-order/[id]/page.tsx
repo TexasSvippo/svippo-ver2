@@ -7,7 +7,7 @@ import { supabase } from '@/lib/supabase'
 import useAuth from '@/hooks/useAuth'
 import styles from './Myorderdetail.module.scss'
 import orderStyles from '@/styles/orderdetail.module.scss'
-import { Clock, CheckCircle, XCircle, Link as LinkIcon, ClipboardList, FileText, MessageCircle, BarChart2, Package, Wrench, User, Shield, Star, ArrowLeft } from 'lucide-react'
+import { Clock, CheckCircle, XCircle, Link as LinkIcon, ClipboardList, FileText, MessageCircle, BarChart2, Package, Wrench, User, Shield, Star, ArrowLeft, Tag } from 'lucide-react'
 
 type ProjectStatus = 'not_started' | 'in_progress' | 'almost_done' | 'completed'
 
@@ -34,6 +34,23 @@ type Order = {
   delivered_at?: string | null
   chat_enabled?: boolean
   email_triggers?: Record<string, boolean>
+  created_at: string
+  price_type: string | null
+  active_price: number | null
+  price_status: string | null
+  conversation_id: string | null
+}
+
+type PriceProposal = {
+  id: string
+  order_id: string
+  proposed_by: string
+  amount: number
+  currency: string
+  note: string | null
+  status: string
+  responded_by: string | null
+  responded_at: string | null
   created_at: string
 }
 
@@ -76,6 +93,8 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
 
   // Typ 3 – bekräftelse
   const [confirmingDelivery, setConfirmingDelivery] = useState(false)
+  const [proposals, setProposals] = useState<PriceProposal[]>([])
+  const [proposalActing, setProposalActing] = useState(false)
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -93,11 +112,46 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
             .single()
           setAlreadyReviewed(!!existing)
         }
+
+        const { data: proposalsData } = await supabase
+          .from('price_proposals')
+          .select('*')
+          .eq('order_id', id)
+          .order('created_at', { ascending: false })
+        setProposals(proposalsData ?? [])
       }
       setLoading(false)
     }
     fetchOrder()
   }, [user])
+
+  const handleProposalAction = async (proposalId: string, action: 'approve' | 'reject') => {
+    if (!order) return
+    setProposalActing(true)
+    try {
+      const res = await fetch(`/api/price-proposals/${proposalId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action }),
+      })
+      if (res.ok) {
+        const { data: updatedOrder } = await supabase
+          .from('orders')
+          .select('*')
+          .eq('id', order.id)
+          .single()
+        if (updatedOrder) setOrder(updatedOrder)
+        const { data } = await supabase
+          .from('price_proposals')
+          .select('*')
+          .eq('order_id', order.id)
+          .order('created_at', { ascending: false })
+        setProposals(data ?? [])
+      }
+    } finally {
+      setProposalActing(false)
+    }
+  }
 
   const handleReview = async () => {
     if (!order || !user) return
@@ -220,6 +274,8 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
     router.push('/profile')
     return null
   }
+
+  const pendingProposal = proposals.find(p => p.status === 'pending') ?? null
 
   const projectStatus = order.project_status || 'not_started'
   const currentStepIndex = STATUS_STEPS.findIndex(s => s.key === projectStatus)
@@ -402,6 +458,67 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
                 <Link href={`/messages?orderId=${order.id}`} className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
                   <MessageCircle size={16} /> Öppna chatten
                 </Link>
+              </div>
+            )}
+
+            {/* Prisförslag */}
+            {!isCancelled && order.status === 'accepted' && (
+              <div className={`${styles.price_card} card`}>
+                <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px', fontFamily: 'var(--font-heading)', fontSize: '18px', fontWeight: 700, color: 'var(--color-dark)', margin: 0 }}>
+                  <Tag size={18} /> Prisförslag
+                </h2>
+
+                {order.active_price != null && (
+                  <div className={styles.price_active}>
+                    <CheckCircle size={16} /> Godkänt pris: {order.active_price} kr
+                  </div>
+                )}
+
+                {order.price_status === 'proposal_pending' && pendingProposal && (
+                  <div className={styles.price_pending_card}>
+                    <div className={styles.price_pending_amount}>{pendingProposal.amount} kr</div>
+                    {pendingProposal.note && <p className={styles.price_pending_note}>{pendingProposal.note}</p>}
+                    <div className={styles.price_pending_actions}>
+                      <button
+                        className="btn btn-primary"
+                        onClick={() => handleProposalAction(pendingProposal.id, 'approve')}
+                        disabled={proposalActing}
+                        style={{ flex: 1, justifyContent: 'center' }}
+                      >
+                        {proposalActing ? '...' : <><CheckCircle size={16} /> Godkänn</>}
+                      </button>
+                      <button
+                        className={`btn btn-outline ${styles.price_reject_btn}`}
+                        onClick={() => handleProposalAction(pendingProposal.id, 'reject')}
+                        disabled={proposalActing}
+                        style={{ flex: 1, justifyContent: 'center' }}
+                      >
+                        <XCircle size={16} /> Avböj
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {order.price_status === 'no_price' && (
+                  <p className={styles.price_awaiting}>Inväntar prisförslag från utföraren.</p>
+                )}
+
+                {proposals.length > 0 && (
+                  <div className={styles.price_history}>
+                    {proposals.map(p => (
+                      <div key={p.id} className={styles.price_history_item}>
+                        <div className={styles.price_history_row}>
+                          <strong>{p.amount} kr</strong>
+                          <span className={`${styles.price_status_badge} ${p.status === 'approved' ? styles['price_status_badge--approved'] : p.status === 'rejected' ? styles['price_status_badge--rejected'] : styles['price_status_badge--pending']}`}>
+                            {p.status === 'approved' ? 'Godkänt' : p.status === 'rejected' ? 'Avböjt' : 'Väntar'}
+                          </span>
+                        </div>
+                        {p.note && <p className={styles.price_history_note}>{p.note}</p>}
+                        <span className={styles.price_history_date}>{new Date(p.created_at).toLocaleDateString('sv-SE')}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 

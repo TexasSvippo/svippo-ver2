@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import useAuth from '@/hooks/useAuth'
 import styles from '@/styles/orderdetail.module.scss'
-import { Package, Clock, CheckCircle, XCircle, Link as LinkIcon, ClipboardList, Star, User, Mail, Smartphone, MessageCircle, Zap, BarChart2, Wallet, Lock, ArrowLeft } from 'lucide-react'
+import { Package, Clock, CheckCircle, XCircle, Link as LinkIcon, ClipboardList, Star, User, Mail, Smartphone, MessageCircle, Zap, BarChart2, Wallet, Lock, ArrowLeft, Tag } from 'lucide-react'
 import { renderStars } from '@/utils/renderStars'
 
 type ProjectStatus = 'not_started' | 'in_progress' | 'almost_done' | 'completed'
@@ -31,6 +31,23 @@ type Order = {
   service_type: ServiceType
   subcategory?: string
   delivered_at?: string | null
+  created_at: string
+  price_type: string | null
+  active_price: number | null
+  price_status: string | null
+  conversation_id: string | null
+}
+
+type PriceProposal = {
+  id: string
+  order_id: string
+  proposed_by: string
+  amount: number
+  currency: string
+  note: string | null
+  status: string
+  responded_by: string | null
+  responded_at: string | null
   created_at: string
 }
 
@@ -59,6 +76,11 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
   const [buyerReviews, setBuyerReviews] = useState<Review[]>([])
   const [buyerAvatarUrl, setBuyerAvatarUrl] = useState<string | null>(null)
   const [hasReviewed, setHasReviewed] = useState(false)
+  const [proposals, setProposals] = useState<PriceProposal[]>([])
+  const [showPriceForm, setShowPriceForm] = useState(false)
+  const [priceAmount, setPriceAmount] = useState('')
+  const [priceNote, setPriceNote] = useState('')
+  const [priceSubmitting, setPriceSubmitting] = useState(false)
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -89,6 +111,13 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
           .eq('role', 'seller')
           .single()
         if (existingReview) setHasReviewed(true)
+
+        const { data: proposalsData } = await supabase
+          .from('price_proposals')
+          .select('*')
+          .eq('order_id', id)
+          .order('created_at', { ascending: false })
+        setProposals(proposalsData ?? [])
       }
       setLoading(false)
     }
@@ -189,6 +218,36 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
     await supabase.from('orders').update({ payment_status: status }).eq('id', order.id)
     setOrder(prev => prev ? { ...prev, payment_status: status } : prev)
     setUpdating(false)
+  }
+
+  const handleSubmitProposal = async () => {
+    if (!order || !priceAmount) return
+    setPriceSubmitting(true)
+    try {
+      const res = await fetch('/api/price-proposals', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          order_id: order.id,
+          amount: Number(priceAmount),
+          note: priceNote || undefined,
+        }),
+      })
+      if (res.ok) {
+        const { data } = await supabase
+          .from('price_proposals')
+          .select('*')
+          .eq('order_id', order.id)
+          .order('created_at', { ascending: false })
+        setProposals(data ?? [])
+        setOrder(prev => prev ? { ...prev, price_status: 'proposal_pending' } : prev)
+        setShowPriceForm(false)
+        setPriceAmount('')
+        setPriceNote('')
+      }
+    } finally {
+      setPriceSubmitting(false)
+    }
   }
 
   const handleReview = async () => {
@@ -495,6 +554,73 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                     )
                   })}
                 </div>
+              </div>
+            )}
+
+            {order.status === 'accepted' && isSeller && (
+              <div className={`${styles.price_card} card`}>
+                <h2 className={styles.section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Tag size={18} /> Prisförslag</h2>
+
+                {order.active_price != null && (
+                  <div className={styles.price_active}>
+                    <CheckCircle size={16} /> Godkänt pris: {order.active_price} kr
+                  </div>
+                )}
+
+                {order.price_status === 'proposal_pending' && (
+                  <div className={styles.price_pending_badge}>
+                    <Clock size={14} /> Väntar på köparens godkännande
+                  </div>
+                )}
+
+                {(order.price_status === 'no_price' || order.price_status === 'price_rejected') && (
+                  showPriceForm ? (
+                    <div className={styles.price_form}>
+                      <input
+                        className={styles.price_form_input}
+                        type="number"
+                        placeholder="Belopp (kr)"
+                        min={1}
+                        value={priceAmount}
+                        onChange={e => setPriceAmount(e.target.value)}
+                      />
+                      <input
+                        className={styles.price_form_input}
+                        type="text"
+                        placeholder="Kommentar (valfritt)"
+                        value={priceNote}
+                        onChange={e => setPriceNote(e.target.value)}
+                      />
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button className="btn btn-outline" onClick={() => { setShowPriceForm(false); setPriceAmount(''); setPriceNote('') }}>Avbryt</button>
+                        <button className="btn btn-primary" onClick={handleSubmitProposal} disabled={!priceAmount || priceSubmitting}>
+                          {priceSubmitting ? 'Skickar...' : 'Skicka förslag'}
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }} onClick={() => setShowPriceForm(true)}>
+                      <Tag size={16} /> Föreslå pris
+                    </button>
+                  )
+                )}
+
+                {proposals.length > 0 && (
+                  <div className={styles.price_history}>
+                    {proposals.map(p => (
+                      <div key={p.id} className={styles.price_history_item}>
+                        <div className={styles.price_history_row}>
+                          <strong>{p.amount} kr</strong>
+                          <span className={`${styles.price_status_badge} ${p.status === 'approved' ? styles['price_status_badge--approved'] : p.status === 'rejected' ? styles['price_status_badge--rejected'] : styles['price_status_badge--pending']}`}>
+                            {p.status === 'approved' ? 'Godkänt' : p.status === 'rejected' ? 'Avböjt' : 'Väntar'}
+                          </span>
+                        </div>
+                        {p.note && <p className={styles.price_history_note}>{p.note}</p>}
+                        <span className={styles.price_history_date}>{new Date(p.created_at).toLocaleDateString('sv-SE')}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 
