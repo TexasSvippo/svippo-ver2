@@ -22,7 +22,7 @@
 .card {
   background: white;
   border-radius: 16px;
-  border: 1px solid var(--color-border);
+  border: 0.5px solid var(--color-border);
   padding: 32px;
   display: flex;
   flex-direction: column;
@@ -73,13 +73,13 @@
 }
 
 .register_card_heading {
-  font-size: 15px;
-  font-weight: 700;
+  font-size: 16px;
+  font-weight: 500;
   color: var(--color-dark);
 }
 
 .register_card_sub {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--color-gray);
   margin: 0;
 }
@@ -101,6 +101,24 @@
     background: var(--color-gray-light);
     border-color: var(--color-dark);
   }
+}
+
+// ─── Login button ─────────────────────────────────────────────────────────────
+.login_btn {
+  width: 100%;
+  padding: 14px;
+  font-size: 16px;
+  font-weight: 600;
+  font-family: var(--font-body);
+  background: #378ADD;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: opacity 0.15s;
+
+  &:hover:not(:disabled) { opacity: 0.88; }
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
 }
 
 // ─── Right column ─────────────────────────────────────────────────────────────

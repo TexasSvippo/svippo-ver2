@@ -90,7 +90,7 @@ export default function LoginPage() {
 
             <button
               type="submit"
-              className={`btn btn-primary ${authStyles.auth__submit}`}
+              className={styles.login_btn}
               disabled={loading}
             >
               {loading ? 'Loggar in...' : 'Logga in'}
