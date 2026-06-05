@@ -14,9 +14,9 @@
 
 .refs__title {
   font-family: 'inter';
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--color-dark);
+  font-size: 22px;
+  font-weight: 700;
+  color: #03141d;
   margin: 0;
 }
 
@@ -114,12 +114,13 @@
 
 .refs__card_label {
   padding: 8px 12px 10px;
-  font-size: 13px;
+  font-size: 17px;
   font-weight: 600;
-  color: var(--color-dark);
+  color: black;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  letter-spacing: -0.5px;
 }
 
 // ─── Dots ─────────────────────────────────────────────────────────────────────
