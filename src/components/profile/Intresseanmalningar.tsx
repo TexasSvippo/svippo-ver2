@@ -133,7 +133,18 @@ export default function Intresseanmalningar({ userId }: Props) {
         payment_status: 'unpaid',
         from_request: true,
         created_at: new Date().toISOString(),
+        price_type: budgetType,
+        initial_price: budgetType === 'fastpris' && interest.price ? interest.price : null,
+        hourly_rate: budgetType === 'timpris' && interest.price ? interest.price : null,
+        price_status: interest.price ? 'price_approved' : 'no_price',
       }).select().single()
+
+      const { data: requestData } = await supabase
+        .from('requests')
+        .select('budget_type')
+        .eq('id', interest.request_id)
+        .maybeSingle()
+      const budgetType = requestData?.budget_type ?? 'offert'
 
       await supabase.from('requests').update({ status: 'assigned' }).eq('id', interest.request_id)
 
@@ -151,6 +162,22 @@ export default function Intresseanmalningar({ userId }: Props) {
           email_sent: false,
           created_at: new Date().toISOString(),
         })
+      }
+
+      if (order && interest.price) {
+        await supabase.from('price_proposals').insert({
+          order_id: order.id,
+          proposed_by: interest.svippar_id,
+          amount: interest.price,
+          currency: 'SEK',
+          status: 'approved',
+          responded_by: userId,
+          responded_at: new Date().toISOString(),
+        })
+        await supabase.from('orders').update({
+          active_price: interest.price,
+          price_status: 'price_approved',
+        }).eq('id', order.id)
       }
 
       // Auto-reject all other pending interests on the same request and notify them
