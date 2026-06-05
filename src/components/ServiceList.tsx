@@ -99,13 +99,13 @@ export default function ServiceList() {
         <div className={styles.servicelist__header}>
           <div className={styles.servicelist__tabs}>
             <button
-              className={`${styles.servicelist__tab} ${activeTab === 'services' ? styles['servicelist__tab--active'] : ''}`}
+              className={`${styles.servicelist__tab} ${activeTab === 'services' ? `${styles['servicelist__tab--active']} ${styles['servicelist__tab--active-services']}` : ''}`}
               onClick={() => setActiveTab('services')}
             >
               Tjänster
             </button>
             <button
-              className={`${styles.servicelist__tab} ${activeTab === 'requests' ? styles['servicelist__tab--active'] : ''}`}
+              className={`${styles.servicelist__tab} ${activeTab === 'requests' ? `${styles['servicelist__tab--active']} ${styles['servicelist__tab--active-requests']}` : ''}`}
               onClick={() => setActiveTab('requests')}
             >
               Förfrågningar
