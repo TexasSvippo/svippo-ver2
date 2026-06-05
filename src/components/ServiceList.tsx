@@ -197,7 +197,7 @@ export default function ServiceList() {
                           <span className={styles.service_card__distance}>· {r.location}</span>
                         </div>
                         <p className={styles.service_card__title}>{r.title}</p>
-                        <span className={styles.service_card__category}>{r.subcategory}</span>
+                        <span className={`${styles.service_card__category} ${styles['service_card__category--request']}`}>{r.subcategory}</span>
                       </div>
                       <div className={styles.service_card__price}>
                         <span className={styles.service_card__price_type}>
