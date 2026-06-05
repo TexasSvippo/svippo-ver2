@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import useAuth from '@/hooks/useAuth'
-import styles from './myorderdetail.module.scss'
+import styles from './Myorderdetail.module.scss'
 import orderStyles from '@/styles/orderdetail.module.scss'
 import { Clock, CheckCircle, XCircle, Link as LinkIcon, ClipboardList, FileText, MessageCircle, BarChart2, Package, Wrench, User, Shield, Star, ArrowLeft } from 'lucide-react'
 
