@@ -180,10 +180,12 @@
 
   &--active {
     background: white;
-    color: var(--color-dark);
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.10);
     font-weight: 600;
   }
+
+  &--active-services  { color: #378ADD; }
+  &--active-requests  { color: #ff5733; }
 }
 
 // ─── Search ───────────────────────────────────────────────────────────────────

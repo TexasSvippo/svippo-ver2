@@ -169,14 +169,14 @@ export default function Hero() {
         <div className={styles.hero__tabs}>
           <button
             type="button"
-            className={`${styles.hero__tab} ${activeTab === 'services' ? styles['hero__tab--active'] : ''}`}
+            className={`${styles.hero__tab} ${activeTab === 'services' ? `${styles['hero__tab--active']} ${styles['hero__tab--active-services']}` : ''}`}
             onClick={() => switchTab('services')}
           >
             Hitta tjänster
           </button>
           <button
             type="button"
-            className={`${styles.hero__tab} ${activeTab === 'requests' ? styles['hero__tab--active'] : ''}`}
+            className={`${styles.hero__tab} ${activeTab === 'requests' ? `${styles['hero__tab--active']} ${styles['hero__tab--active-requests']}` : ''}`}
             onClick={() => switchTab('requests')}
           >
             Hitta uppdrag
