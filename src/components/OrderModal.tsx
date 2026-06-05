@@ -171,6 +171,10 @@ export default function OrderModal({
         project_status: 'not_started',
         payment_status: 'unpaid',
         created_at: new Date().toISOString(),
+        price_type: priceType,
+        initial_price: priceType === 'fastpris' ? price : null,
+        hourly_rate: priceType === 'timpris' ? price : null,
+        price_status: priceType === 'fastpris' ? 'price_approved' : 'no_price',
       }).select().single()
 
       if (order) {
@@ -187,6 +191,22 @@ export default function OrderModal({
           email_sent: false,
           created_at: new Date().toISOString(),
         })
+      }
+
+      if (order && priceType === 'fastpris' && price) {
+        await supabase.from('price_proposals').insert({
+          order_id: order.id,
+          proposed_by: sellerId,
+          amount: price,
+          currency: 'SEK',
+          status: 'approved',
+          responded_by: user.id,
+          responded_at: new Date().toISOString(),
+        })
+        await supabase.from('orders').update({
+          active_price: price,
+          price_status: 'price_approved',
+        }).eq('id', order.id)
       }
 
       setSuccess(true)
