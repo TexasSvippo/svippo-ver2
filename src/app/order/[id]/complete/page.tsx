@@ -16,7 +16,7 @@ type Order = {
   buyer_id: string
   buyer_name: string
   status: 'pending' | 'accepted' | 'rejected'
-  project_status: 'not_started' | 'in_progress' | 'almost_done' | 'completed'
+  project_status: 'not_started' | 'in_progress' | 'almost_done' | 'awaiting_confirmation' | 'completed'
   service_type: 'typ1' | 'typ2' | 'typ3'
   price_type: string | null
   active_price: number | null
@@ -58,7 +58,8 @@ export default function CompleteOrderPage({ params }: { params: Promise<{ id: st
         !user ||
         user.id !== data.seller_id ||
         data.status !== 'accepted' ||
-        data.project_status === 'completed'
+        data.project_status === 'completed' ||
+        data.project_status === 'awaiting_confirmation'
       ) {
         router.replace(`/order/${id}`)
         return
@@ -115,18 +116,18 @@ export default function CompleteOrderPage({ params }: { params: Promise<{ id: st
       if (isTyp3) {
         await supabase.from('orders').update({ delivered_at: now }).eq('id', order.id)
       } else {
-        await supabase.from('orders').update({ project_status: 'completed' }).eq('id', order.id)
+        await supabase.from('orders').update({ project_status: 'awaiting_confirmation' }).eq('id', order.id)
       }
 
       await supabase.from('notifications').insert({
         user_id: order.buyer_id,
-        type: isTyp3 ? 'delivery_marked' : 'project_completed',
+        type: isTyp3 ? 'delivery_marked' : 'awaiting_confirmation',
         order_id: order.id,
         service_title: order.service_title,
         actor_name: order.seller_name,
         message: isTyp3
           ? `${order.seller_name} har markerat uppdraget som levererat. Om du inte hör av dig inom 24 timmar bekräftas uppdraget automatiskt.`
-          : `${order.seller_name} har markerat projektet "${order.service_title}" som slutfört!`,
+          : `${order.seller_name} har markerat uppdraget "${order.service_title}" som klart – bekräfta när du är redo.`,
         action_url: `/my-order/${order.id}`,
         read: false,
         dismissed: false,

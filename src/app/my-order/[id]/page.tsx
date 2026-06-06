@@ -9,7 +9,7 @@ import styles from './Myorderdetail.module.scss'
 import orderStyles from '@/styles/orderdetail.module.scss'
 import { Clock, CheckCircle, XCircle, Link as LinkIcon, ClipboardList, FileText, MessageCircle, BarChart2, Package, Wrench, User, Shield, Star, ArrowLeft, Tag } from 'lucide-react'
 
-type ProjectStatus = 'not_started' | 'in_progress' | 'almost_done' | 'completed'
+type ProjectStatus = 'not_started' | 'in_progress' | 'almost_done' | 'awaiting_confirmation' | 'completed'
 
 type Order = {
   id: string
@@ -236,6 +236,36 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
     }
   }
 
+  // Non-typ3 – Beställaren bekräftar att uppdraget är slutfört
+  const handleConfirmCompletion = async () => {
+    if (!order) return
+    setConfirmingDelivery(true)
+    try {
+      await supabase.from('orders').update({ project_status: 'completed' }).eq('id', order.id)
+
+      await supabase.from('notifications').insert({
+        user_id: order.seller_id,
+        type: 'project_completed',
+        order_id: order.id,
+        service_title: order.service_title,
+        actor_name: order.buyer_name,
+        message: `${order.buyer_name} har bekräftat att uppdraget "${order.service_title}" är klart! 🎉`,
+        action_url: `/order/${order.id}`,
+        read: false,
+        dismissed: false,
+        email_sent: false,
+        created_at: new Date().toISOString(),
+      })
+
+      setOrder(prev => prev ? { ...prev, project_status: 'completed' } : prev)
+      if (!alreadyReviewed) setShowReviewPopup(true)
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setConfirmingDelivery(false)
+    }
+  }
+
   // Typ 3 – Beställaren bekräftar leverans manuellt
   const handleConfirmDelivery = async () => {
     if (!order) return
@@ -287,19 +317,21 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
   const pendingProposal = proposals.find(p => p.status === 'pending') ?? null
 
   const projectStatus = order.project_status || 'not_started'
-  const currentStepIndex = STATUS_STEPS.findIndex(s => s.key === (projectStatus === 'almost_done' ? 'in_progress' : projectStatus))
+  const currentStepIndex = STATUS_STEPS.findIndex(s => s.key === ((projectStatus === 'almost_done' || projectStatus === 'awaiting_confirmation') ? 'in_progress' : projectStatus))
   const isTyp3 = order.service_type === 'typ3'
   const isDelivered = !!order.delivered_at
   const hasDispute = !!order.dispute_status
   const isCancelled = order.status === 'rejected' || (order.status as string) === 'cancelled' || (order.project_status as string) === 'cancelled'
 
   const dotColor = projectStatus === 'completed' ? 'green'
+    : projectStatus === 'awaiting_confirmation' ? 'blue'
     : isCancelled ? 'gray'
     : order.status === 'accepted' ? 'blue'
     : order.status === 'pending' ? 'gray'
     : 'red'
 
   const statusLabel = projectStatus === 'completed' ? 'Slutfört'
+    : projectStatus === 'awaiting_confirmation' ? 'Inväntar din bekräftelse'
     : isCancelled ? 'Avbrutet'
     : order.status === 'accepted' ? 'Aktivt'
     : order.status === 'pending' ? 'Väntar på svar'
@@ -313,6 +345,7 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
     : null
 
   const buyerNextStep = projectStatus === 'completed' ? 'Uppdraget är avslutat'
+    : projectStatus === 'awaiting_confirmation' ? 'Utföraren är klar – bekräfta uppdraget'
     : order.status === 'pending' ? 'Väntar på svar från utföraren'
     : order.price_status === 'proposal_pending' ? 'Du har ett prisförslag att godkänna'
     : order.price_status === 'price_approved' ? 'Uppdraget pågår'
@@ -341,9 +374,13 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
   if (projectStatus !== 'not_started') {
     const psLabel = projectStatus === 'in_progress' ? 'Pågår'
       : projectStatus === 'almost_done' ? 'Nästan klart'
+      : projectStatus === 'awaiting_confirmation' ? 'Inväntar bekräftelse'
       : projectStatus === 'completed' ? 'Slutfört'
       : projectStatus
     feedEvents.push({ id: 'project-status', icon: <BarChart2 size={14} />, iconType: 'status', text: `Projektstatus uppdaterad till: ${psLabel}`, ts: new Date(t0 + 120000).toISOString() })
+  }
+  if (projectStatus === 'awaiting_confirmation') {
+    feedEvents.push({ id: 'awaiting', icon: <CheckCircle size={14} />, iconType: 'status', text: 'Utföraren har markerat uppdraget som klart', ts: new Date(t0 + 180000).toISOString() })
   }
   if (projectStatus === 'completed') {
     feedEvents.push({ id: 'completed', icon: <CheckCircle size={14} />, iconType: 'completed', text: 'Uppdraget markerades som klart av utföraren', ts: new Date(t0 + 180000).toISOString() })
@@ -494,10 +531,14 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
                   </div>
                 )}
 
-                {order.status === 'accepted' && projectStatus === 'completed' && !alreadyReviewed && !reviewSuccess && (
+                {order.status === 'accepted' && projectStatus === 'awaiting_confirmation' && (
                   <div className={`${orderStyles.tab_actions} staticcard`}>
-                    <button className="btn btn-primary" onClick={() => setShowReviewPopup(true)}>
-                      <Star size={16} /> Bekräfta slutfört
+                    <button
+                      className="btn btn-primary"
+                      onClick={handleConfirmCompletion}
+                      disabled={confirmingDelivery}
+                    >
+                      {confirmingDelivery ? 'Bekräftar...' : <><CheckCircle size={16} /> Bekräfta slutfört</>}
                     </button>
                     <button className="btn btn-outline" onClick={() => setShowDisputeForm(true)}>
                       ⚠️ Rapportera problem

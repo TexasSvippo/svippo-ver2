@@ -9,7 +9,7 @@ import styles from '@/styles/orderdetail.module.scss'
 import { Package, Clock, CheckCircle, XCircle, Link as LinkIcon, ClipboardList, Star, User, Mail, Smartphone, MessageCircle, Zap, BarChart2, Wallet, Lock, ArrowLeft, Tag, Upload } from 'lucide-react'
 import { renderStars } from '@/utils/renderStars'
 
-type ProjectStatus = 'not_started' | 'in_progress' | 'almost_done' | 'completed'
+type ProjectStatus = 'not_started' | 'in_progress' | 'almost_done' | 'awaiting_confirmation' | 'completed'
 type ServiceType = 'typ1' | 'typ2' | 'typ3'
 
 type Order = {
@@ -313,17 +313,19 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
   ]
 
   const stepOrder = ['not_started', 'in_progress', 'completed']
-  const currentIdx = projectStatus === 'almost_done'
+  const currentIdx = (projectStatus === 'almost_done' || projectStatus === 'awaiting_confirmation')
     ? 1
     : stepOrder.indexOf(projectStatus)
 
   const dotColor = projectStatus === 'completed' ? 'green'
+    : projectStatus === 'awaiting_confirmation' ? 'blue'
     : isCancelled ? 'gray'
     : order.status === 'accepted' ? 'blue'
     : order.status === 'pending' ? 'gray'
     : 'red'
 
   const statusLabel = projectStatus === 'completed' ? 'Slutfört'
+    : projectStatus === 'awaiting_confirmation' ? 'Inväntar beställarens bekräftelse'
     : isCancelled ? 'Avbrutet'
     : order.status === 'accepted' ? 'Aktivt'
     : order.status === 'pending' ? 'Väntar på svar'
@@ -337,6 +339,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
     : null
 
   const sellerNextStep = projectStatus === 'completed' ? 'Uppdraget är avslutat'
+    : projectStatus === 'awaiting_confirmation' ? 'Inväntar beställarens bekräftelse'
     : order.status === 'pending' ? 'Inväntar ditt godkännande'
     : order.price_status === 'proposal_pending' ? 'Väntar på beställarens godkännande av prisförslag'
     : order.price_status === 'price_approved' ? 'Uppdraget pågår'
@@ -365,9 +368,13 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
   if (projectStatus !== 'not_started') {
     const psLabel = projectStatus === 'in_progress' ? 'Pågår'
       : projectStatus === 'almost_done' ? 'Nästan klart'
+      : projectStatus === 'awaiting_confirmation' ? 'Inväntar bekräftelse'
       : projectStatus === 'completed' ? 'Slutfört'
       : projectStatus
     feedEvents.push({ id: 'project-status', icon: <BarChart2 size={14} />, iconType: 'status', text: `Projektstatus uppdaterad till: ${psLabel}`, ts: new Date(t0 + 120000).toISOString() })
+  }
+  if (projectStatus === 'awaiting_confirmation') {
+    feedEvents.push({ id: 'awaiting', icon: <CheckCircle size={14} />, iconType: 'status', text: 'Uppdraget markerat som klart – inväntar beställarens bekräftelse', ts: new Date(t0 + 180000).toISOString() })
   }
   if (projectStatus === 'completed') {
     feedEvents.push({ id: 'completed', icon: <CheckCircle size={14} />, iconType: 'completed', text: 'Uppdraget markerades som klart', ts: new Date(t0 + 180000).toISOString() })
@@ -496,6 +503,8 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                       <button className="btn btn-primary" disabled>
                         <Upload size={16} /> Ladda upp leverans
                       </button>
+                    ) : projectStatus === 'awaiting_confirmation' ? (
+                      <p className={styles.tab_actions__info}>Inväntar beställarens bekräftelse</p>
                     ) : (
                       <button className="btn btn-primary" onClick={() => router.push(`/order/${order.id}/complete`)}>
                         <CheckCircle size={16} /> Markera som klart
@@ -686,7 +695,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                             handleProjectStatus(step.status)
                           }
                         }}
-                        disabled={updating || projectStatus === 'completed'}
+                        disabled={updating || projectStatus === 'completed' || projectStatus === 'awaiting_confirmation'}
                       >
                         <div className={styles.progress_dot}>{isDone || isCompleted ? '✓' : step.num}</div>
                         <div className={styles.progress_info}>
