@@ -434,7 +434,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
 
             {activeTab === 'aktivitet' && (
               <>
-                <div className={`${styles.orderdetail__header} card`}>
+                <div className={`${styles.orderdetail__header} staticcard`}>
                   <div className={styles.header_top}>
                     <div>
                       <span className={styles.label}>Beställning av</span>
@@ -519,7 +519,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
 
             {activeTab === 'detaljer' && (
               <>
-                <div className={`${styles.orderdetail__header} card`}>
+                <div className={`${styles.orderdetail__header} staticcard`}>
                   <div className={styles.header_top}>
                     <div>
                       <span className={styles.label}>Beställning av</span>
@@ -542,7 +542,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                 </div>
 
                 {serviceType === 'typ1' && (preferredDate || address) && (
-                  <div className={`${styles.orderdetail__type_info} card`}>
+                  <div className={`${styles.orderdetail__type_info} staticcard`}>
                     <h2 className={styles.section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>📅 Datum & plats</h2>
                     <div className={styles.type_info_grid}>
                       {preferredDate && <div className={styles.type_info_item}><span className={styles.type_info_label}>Önskat datum</span><strong>{preferredDate}</strong></div>}
@@ -553,7 +553,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                 )}
 
                 {serviceType === 'typ2' && (desiredDeadline || milestones) && (
-                  <div className={`${styles.orderdetail__type_info} card`}>
+                  <div className={`${styles.orderdetail__type_info} staticcard`}>
                     <h2 className={styles.section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>🗓️ Tidslinje</h2>
                     <div className={styles.type_info_grid}>
                       {desiredDeadline && <div className={styles.type_info_item}><span className={styles.type_info_label}>Önskat slutdatum</span><strong>{desiredDeadline}</strong></div>}
@@ -563,7 +563,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                 )}
 
                 {serviceType === 'typ3' && (pickupAddress || deliveryAddress) && (
-                  <div className={`${styles.orderdetail__type_info} card`}>
+                  <div className={`${styles.orderdetail__type_info} staticcard`}>
                     <h2 className={styles.section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Package size={18} /> Upphämtning & leverans</h2>
                     <div className={styles.type_info_grid}>
                       {pickupAddress && <div className={styles.type_info_item}><span className={styles.type_info_label}>Upphämtning</span><strong>{pickupAddress}</strong></div>}
@@ -574,7 +574,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                   </div>
                 )}
 
-                <div className={`${styles.orderdetail__form} card`}>
+                <div className={`${styles.orderdetail__form} staticcard`}>
                   <h2 className={styles.section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><ClipboardList size={18} /> Ifyllt formulär</h2>
                   <div className={styles.field}>
                     <span className={styles.field_label}>Meddelande</span>
@@ -608,7 +608,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                   )}
                 </div>
 
-                <div className={`${styles.orderdetail__buyer_reviews} card`}>
+                <div className={`${styles.orderdetail__buyer_reviews} staticcard`}>
                   <h2 className={styles.section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Star size={18} /> {order.buyer_name}s recensioner</h2>
                   {buyerReviews.length === 0 ? (
                     <p className={styles.no_reviews}>{order.buyer_name} har inga tidigare recensioner på Svippo än.</p>
@@ -631,7 +631,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
             )}
 
             {activeTab === 'leveranser' && (
-              <div className={`${styles.orderdetail__form} card`} style={{ color: 'var(--color-gray)', fontSize: '14px', fontStyle: 'italic' }}>
+              <div className={`${styles.orderdetail__form} staticcard`} style={{ color: 'var(--color-gray)', fontSize: '14px', fontStyle: 'italic' }}>
                 Leveranser kommer snart
               </div>
             )}
@@ -641,7 +641,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
           {/* Höger */}
           <div className={styles.orderdetail__sidebar}>
 
-            <div className={`${styles.customer_card} card`}>
+            <div className={`${styles.customer_card} staticcard`}>
               <h2 className={styles.section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><User size={18} /> Kundinformation</h2>
               <div className={styles.customer_avatar}>
                 {buyerAvatarUrl
@@ -657,7 +657,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
             </div>
 
             {order.status === 'accepted' && isSeller && (
-              <div className={`${styles.progress_card} card`}>
+              <div className={`${styles.progress_card} staticcard`}>
                 <h2 className={styles.section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><BarChart2 size={18} /> Projektstatus</h2>
                 <p className={styles.progress_hint}>Uppdragets nuvarande fas.</p>
                 <div className={styles.progress_steps}>
@@ -687,7 +687,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
             )}
 
             {order.status === 'accepted' && isSeller && order.project_status !== 'completed' && (
-              <div className={`${styles.price_card} card`}>
+              <div className={`${styles.price_card} staticcard`}>
                 <h2 className={styles.section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Tag size={18} /> Prisförslag</h2>
 
                 {order.active_price != null && (
@@ -752,7 +752,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
             )}
 
             {projectStatus === 'completed' && isSeller && (
-              <div className={`${styles.payment_card} card`}>
+              <div className={`${styles.payment_card} staticcard`}>
                 <h2 className={styles.section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Wallet size={18} /> Betalning</h2>
                 <p className={styles.progress_hint}>Har du tagit betalt av {order.buyer_name}?</p>
                 {order.payment_status === 'paid' ? (
