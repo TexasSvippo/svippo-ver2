@@ -374,115 +374,130 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
               )}
             </div>
 
-            <div className={`${styles.orderdetail__header} card`}>
-              <div className={styles.header_top}>
-                <div>
-                  <span className={styles.label}>Beställning av</span>
-                  <h1 className={styles.title}>{order.service_title}</h1>
-                  <span className={styles.date}>
-                    {new Date(order.created_at).toLocaleDateString('sv-SE', { year: 'numeric', month: 'long', day: 'numeric' })}
-                  </span>
-                </div>
-                <span className={`${styles.status_badge} ${styles[`status--${order.status}`]}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                  {order.status === 'pending' ? <><Clock size={14} /> Väntar</> : order.status === 'accepted' ? <><CheckCircle size={14} /> Godkänd</> : <><XCircle size={14} /> Nekad</>}
-                </span>
-              </div>
-              <Link
-                href={order.from_request ? `/request/${order.service_id}` : `/service/${order.service_id}`}
-                className={styles.service_link}
-                style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-              >
-                <LinkIcon size={16} /> {order.from_request ? 'Visa förfrågan →' : 'Visa tjänsten →'}
-              </Link>
-            </div>
-
-            {/* Typ-specifik info */}
-            {serviceType === 'typ1' && (preferredDate || address) && (
-              <div className={`${styles.orderdetail__type_info} card`}>
-                <h2 className={styles.section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>📅 Datum & plats</h2>
-                <div className={styles.type_info_grid}>
-                  {preferredDate && <div className={styles.type_info_item}><span className={styles.type_info_label}>Önskat datum</span><strong>{preferredDate}</strong></div>}
-                  {preferredTime && <div className={styles.type_info_item}><span className={styles.type_info_label}>Önskad tid</span><strong>{preferredTime}</strong></div>}
-                  {address && <div className={styles.type_info_item}><span className={styles.type_info_label}>Adress</span><strong>{address}</strong></div>}
-                </div>
+            {activeTab === 'aktivitet' && (
+              <div className={`${styles.orderdetail__form} card`} style={{ color: 'var(--color-gray)', fontSize: '14px', fontStyle: 'italic' }}>
+                Aktivitetsfeed kommer snart
               </div>
             )}
 
-            {serviceType === 'typ2' && (desiredDeadline || milestones) && (
-              <div className={`${styles.orderdetail__type_info} card`}>
-                <h2 className={styles.section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>🗓️ Tidslinje</h2>
-                <div className={styles.type_info_grid}>
-                  {desiredDeadline && <div className={styles.type_info_item}><span className={styles.type_info_label}>Önskat slutdatum</span><strong>{desiredDeadline}</strong></div>}
-                  {milestones && <div className={`${styles.type_info_item} ${styles['type_info_item--full']}`}><span className={styles.type_info_label}>Föreslagna milstolpar</span><p className={styles.type_info_text}>{milestones}</p></div>}
-                </div>
-              </div>
-            )}
-
-            {serviceType === 'typ3' && (pickupAddress || deliveryAddress) && (
-              <div className={`${styles.orderdetail__type_info} card`}>
-                <h2 className={styles.section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Package size={18} /> Upphämtning & leverans</h2>
-                <div className={styles.type_info_grid}>
-                  {pickupAddress && <div className={styles.type_info_item}><span className={styles.type_info_label}>Upphämtning</span><strong>{pickupAddress}</strong></div>}
-                  {deliveryAddress && <div className={styles.type_info_item}><span className={styles.type_info_label}>Leverans</span><strong>{deliveryAddress}</strong></div>}
-                  {pickupDate && <div className={styles.type_info_item}><span className={styles.type_info_label}>Datum</span><strong>{pickupDate}</strong></div>}
-                  {pickupTime && <div className={styles.type_info_item}><span className={styles.type_info_label}>Tid</span><strong>{pickupTime}</strong></div>}
-                </div>
-              </div>
-            )}
-
-            <div className={`${styles.orderdetail__form} card`}>
-              <h2 className={styles.section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><ClipboardList size={18} /> Ifyllt formulär</h2>
-              <div className={styles.field}>
-                <span className={styles.field_label}>Meddelande</span>
-                <div className={`${styles.field_value} ${styles.field_message}`}>{order.message}</div>
-              </div>
-              {Object.keys(filteredAnswers).length > 0 && (
-                <div className={styles.field}>
-                  <span className={styles.field_label}>Svar på frågor</span>
-                  <div className={styles.answers}>
-                    {Object.entries(filteredAnswers).map(([key, value]) => (
-                      <div key={key} className={styles.answer_row}>
-                        <span className={styles.answer_key}>{key}</span>
-                        <span className={styles.answer_value}>{value}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-              {order.custom_answers && Object.keys(order.custom_answers).length > 0 && (
-                <div className={styles.field}>
-                  <span className={styles.field_label}>Svar på dina frågor</span>
-                  <div className={styles.answers}>
-                    {Object.entries(order.custom_answers).map(([key, value]) => (
-                      <div key={key} className={styles.answer_row}>
-                        <span className={styles.answer_key}>{key}</span>
-                        <span className={styles.answer_value}>{value}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className={`${styles.orderdetail__buyer_reviews} card`}>
-              <h2 className={styles.section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Star size={18} /> {order.buyer_name}s recensioner</h2>
-              {buyerReviews.length === 0 ? (
-                <p className={styles.no_reviews}>{order.buyer_name} har inga tidigare recensioner på Svippo än.</p>
-              ) : (
-                <div className={styles.buyer_reviews_list}>
-                  {buyerReviews.map(r => (
-                    <div key={r.id} className={styles.buyer_review}>
-                      <div className={styles.buyer_review__header}>
-                        <span className={styles.buyer_review__service}>{r.service_title}</span>
-                        <span className={styles.buyer_review__stars}>{renderStars(r.rating, 14)}</span>
-                      </div>
-                      {r.comment && <p className={styles.buyer_review__comment}>{r.comment}</p>}
-                      <span className={styles.buyer_review__date}>{new Date(r.created_at).toLocaleDateString('sv-SE')}</span>
+            {activeTab === 'detaljer' && (
+              <>
+                <div className={`${styles.orderdetail__header} card`}>
+                  <div className={styles.header_top}>
+                    <div>
+                      <span className={styles.label}>Beställning av</span>
+                      <h1 className={styles.title}>{order.service_title}</h1>
+                      <span className={styles.date}>
+                        {new Date(order.created_at).toLocaleDateString('sv-SE', { year: 'numeric', month: 'long', day: 'numeric' })}
+                      </span>
                     </div>
-                  ))}
+                    <span className={`${styles.status_badge} ${styles[`status--${order.status}`]}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                      {order.status === 'pending' ? <><Clock size={14} /> Väntar</> : order.status === 'accepted' ? <><CheckCircle size={14} /> Godkänd</> : <><XCircle size={14} /> Nekad</>}
+                    </span>
+                  </div>
+                  <Link
+                    href={order.from_request ? `/request/${order.service_id}` : `/service/${order.service_id}`}
+                    className={styles.service_link}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                  >
+                    <LinkIcon size={16} /> {order.from_request ? 'Visa förfrågan →' : 'Visa tjänsten →'}
+                  </Link>
                 </div>
-              )}
-            </div>
+
+                {serviceType === 'typ1' && (preferredDate || address) && (
+                  <div className={`${styles.orderdetail__type_info} card`}>
+                    <h2 className={styles.section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>📅 Datum & plats</h2>
+                    <div className={styles.type_info_grid}>
+                      {preferredDate && <div className={styles.type_info_item}><span className={styles.type_info_label}>Önskat datum</span><strong>{preferredDate}</strong></div>}
+                      {preferredTime && <div className={styles.type_info_item}><span className={styles.type_info_label}>Önskad tid</span><strong>{preferredTime}</strong></div>}
+                      {address && <div className={styles.type_info_item}><span className={styles.type_info_label}>Adress</span><strong>{address}</strong></div>}
+                    </div>
+                  </div>
+                )}
+
+                {serviceType === 'typ2' && (desiredDeadline || milestones) && (
+                  <div className={`${styles.orderdetail__type_info} card`}>
+                    <h2 className={styles.section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>🗓️ Tidslinje</h2>
+                    <div className={styles.type_info_grid}>
+                      {desiredDeadline && <div className={styles.type_info_item}><span className={styles.type_info_label}>Önskat slutdatum</span><strong>{desiredDeadline}</strong></div>}
+                      {milestones && <div className={`${styles.type_info_item} ${styles['type_info_item--full']}`}><span className={styles.type_info_label}>Föreslagna milstolpar</span><p className={styles.type_info_text}>{milestones}</p></div>}
+                    </div>
+                  </div>
+                )}
+
+                {serviceType === 'typ3' && (pickupAddress || deliveryAddress) && (
+                  <div className={`${styles.orderdetail__type_info} card`}>
+                    <h2 className={styles.section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Package size={18} /> Upphämtning & leverans</h2>
+                    <div className={styles.type_info_grid}>
+                      {pickupAddress && <div className={styles.type_info_item}><span className={styles.type_info_label}>Upphämtning</span><strong>{pickupAddress}</strong></div>}
+                      {deliveryAddress && <div className={styles.type_info_item}><span className={styles.type_info_label}>Leverans</span><strong>{deliveryAddress}</strong></div>}
+                      {pickupDate && <div className={styles.type_info_item}><span className={styles.type_info_label}>Datum</span><strong>{pickupDate}</strong></div>}
+                      {pickupTime && <div className={styles.type_info_item}><span className={styles.type_info_label}>Tid</span><strong>{pickupTime}</strong></div>}
+                    </div>
+                  </div>
+                )}
+
+                <div className={`${styles.orderdetail__form} card`}>
+                  <h2 className={styles.section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><ClipboardList size={18} /> Ifyllt formulär</h2>
+                  <div className={styles.field}>
+                    <span className={styles.field_label}>Meddelande</span>
+                    <div className={`${styles.field_value} ${styles.field_message}`}>{order.message}</div>
+                  </div>
+                  {Object.keys(filteredAnswers).length > 0 && (
+                    <div className={styles.field}>
+                      <span className={styles.field_label}>Svar på frågor</span>
+                      <div className={styles.answers}>
+                        {Object.entries(filteredAnswers).map(([key, value]) => (
+                          <div key={key} className={styles.answer_row}>
+                            <span className={styles.answer_key}>{key}</span>
+                            <span className={styles.answer_value}>{value}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {order.custom_answers && Object.keys(order.custom_answers).length > 0 && (
+                    <div className={styles.field}>
+                      <span className={styles.field_label}>Svar på dina frågor</span>
+                      <div className={styles.answers}>
+                        {Object.entries(order.custom_answers).map(([key, value]) => (
+                          <div key={key} className={styles.answer_row}>
+                            <span className={styles.answer_key}>{key}</span>
+                            <span className={styles.answer_value}>{value}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className={`${styles.orderdetail__buyer_reviews} card`}>
+                  <h2 className={styles.section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Star size={18} /> {order.buyer_name}s recensioner</h2>
+                  {buyerReviews.length === 0 ? (
+                    <p className={styles.no_reviews}>{order.buyer_name} har inga tidigare recensioner på Svippo än.</p>
+                  ) : (
+                    <div className={styles.buyer_reviews_list}>
+                      {buyerReviews.map(r => (
+                        <div key={r.id} className={styles.buyer_review}>
+                          <div className={styles.buyer_review__header}>
+                            <span className={styles.buyer_review__service}>{r.service_title}</span>
+                            <span className={styles.buyer_review__stars}>{renderStars(r.rating, 14)}</span>
+                          </div>
+                          {r.comment && <p className={styles.buyer_review__comment}>{r.comment}</p>}
+                          <span className={styles.buyer_review__date}>{new Date(r.created_at).toLocaleDateString('sv-SE')}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+
+            {activeTab === 'leveranser' && (
+              <div className={`${styles.orderdetail__form} card`} style={{ color: 'var(--color-gray)', fontSize: '14px', fontStyle: 'italic' }}>
+                Leveranser kommer snart
+              </div>
+            )}
 
           </div>
 
