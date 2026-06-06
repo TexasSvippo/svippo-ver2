@@ -669,33 +669,6 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
               </div>
             )}
 
-            {(isSeller || (isCancelled && isBuyer)) && (
-              <div className={`${styles.actions_card} card`}>
-                <h2 className={styles.section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Zap size={18} /> Hantera beställning</h2>
-                <div className={`${styles.current_status} ${styles[`status--${order.status}`]}`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-                  {isCancelled
-                    ? isSeller
-                      ? <><XCircle size={14} /> Beställaren avbokade detta uppdrag.</>
-                      : <><XCircle size={14} /> Du avbokade detta uppdrag.</>
-                    : order.status === 'pending'
-                    ? <><Clock size={14} /> Väntar på ditt svar</>
-                    : order.status === 'accepted'
-                    ? <><CheckCircle size={14} /> Du har godkänt denna beställning</>
-                    : <><XCircle size={14} /> Du har nekat denna beställning</>
-                  }
-                </div>
-                {!isCancelled && order.status === 'pending' && (
-                  <div className={styles.action_btns}>
-                    <button className="btn btn-primary" onClick={() => handleStatus('accepted')} disabled={updating}><CheckCircle size={16} /> Godkänn beställning</button>
-                    <button className={`btn btn-outline ${styles.reject_btn}`} onClick={() => handleStatus('rejected')} disabled={updating}><XCircle size={16} /> Neka beställning</button>
-                  </div>
-                )}
-                {!isCancelled && order.status === 'rejected' && (
-                  <button className="btn btn-primary" onClick={() => handleStatus('accepted')} disabled={updating}>Ångra – Godkänn beställning</button>
-                )}
-              </div>
-            )}
-
             {order.status === 'accepted' && isSeller && (
               <div className={`${styles.progress_card} card`}>
                 <h2 className={styles.section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><BarChart2 size={18} /> Projektstatus</h2>
@@ -813,35 +786,6 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                     <button className="btn btn-outline" onClick={() => handlePayment('unpaid')} disabled={updating}><Clock size={16} /> Inte än</button>
                   </div>
                 )}
-              </div>
-            )}
-
-            {projectStatus === 'completed' && isSeller && !hasReviewed && !reviewSuccess && (
-              <div className={`${styles.review_card} card`}>
-                <h2 className={styles.section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Star size={18} /> Lämna en recension</h2>
-                {showReviewForm ? (
-                  <div className={styles.review_form}>
-                    <div style={{ display: 'flex', gap: '8px', fontSize: '24px' }}>
-                      {[1,2,3,4,5].map(n => (
-                        <button key={n} onClick={() => setReviewRating(n)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '24px' }}>
-                          {n <= reviewRating ? <Star size={22} fill="currentColor" /> : <Star size={22} />}
-                        </button>
-                      ))}
-                    </div>
-                    <textarea className="form-textarea" placeholder={`Beskriv din upplevelse med ${order.buyer_name}...`} value={reviewText} onChange={e => setReviewText(e.target.value)} rows={3} />
-                    <button className="btn btn-primary" onClick={handleReview} disabled={!reviewText}>Skicka recension</button>
-                  </div>
-                ) : (
-                  <button className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }} onClick={() => setShowReviewForm(true)}>
-                    <Star size={16} /> Recensera {order.buyer_name}
-                  </button>
-                )}
-              </div>
-            )}
-
-            {(hasReviewed || reviewSuccess) && projectStatus === 'completed' && isSeller && (
-              <div className={`${styles.review_card} card`}>
-                <div className={styles.payment_done} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}><Star size={16} /> Du har lämnat en recension för denna beställning!</div>
               </div>
             )}
 
