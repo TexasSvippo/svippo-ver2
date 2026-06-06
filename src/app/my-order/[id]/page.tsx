@@ -131,6 +131,7 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
     try {
       const res = await fetch(`/api/price-proposals/${proposalId}`, {
         method: 'PATCH',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action }),
       })

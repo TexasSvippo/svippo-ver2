@@ -226,6 +226,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
     try {
       const res = await fetch('/api/price-proposals', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           order_id: order.id,
