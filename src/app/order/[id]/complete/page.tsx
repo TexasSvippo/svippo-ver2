@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import useAuth from '@/hooks/useAuth'
 import styles from './complete.module.scss'
-import { ArrowLeft, CheckCircle, Clock, FileText, Wallet } from 'lucide-react'
+import { AlertCircle, ArrowLeft, CheckCircle, ExternalLink, FileText, User, Wallet } from 'lucide-react'
 
 type Order = {
   id: string
@@ -306,41 +306,94 @@ export default function CompleteOrderPage({ params }: { params: Promise<{ id: st
         {/* Step 2 – Payment guidance */}
         {step === 2 && (
           <div className={`${styles.card} staticcard`}>
-            <h2 className={styles.card__heading}>Betalning</h2>
 
-            {accountType === 'svippare' ? (
+            {accountType === 'svippare' && (
               <>
-                <span className={styles.payment_type}>Privatperson</span>
+                <h2 className={styles.card__heading}>Ta betalt som privatperson</h2>
+                <span className={styles.payment_type}>Svippare</span>
                 <p className={styles.card__sub}>
-                  Som privatperson behöver du deklarera inkomsten. Tänk på följande:
+                  Som privatperson behöver du deklarera inkomsten från uppdraget. Här är vad du behöver veta:
                 </p>
                 <ul className={styles.payment_bullets}>
                   <li>
-                    <Wallet size={16} className={styles.bullet_icon} />
-                    Inkomst från uppdrag räknas som inkomst av tjänst och ska deklareras.
+                    <Wallet size={18} className={styles.bullet_icon} />
+                    Inkomst från uppdrag räknas som inkomst av tjänst och ska deklareras
                   </li>
                   <li>
-                    <FileText size={16} className={styles.bullet_icon} />
-                    Du kan dra av kostnader direkt kopplade till uppdraget.
+                    <FileText size={18} className={styles.bullet_icon} />
+                    Du kan dra av kostnader direkt kopplade till uppdraget
                   </li>
                   <li>
-                    <Clock size={16} className={styles.bullet_icon} />
-                    Svippo hanterar inte skatteavdrag – det är ditt ansvar.
+                    <AlertCircle size={18} className={styles.bullet_icon} />
+                    Svippo hanterar inte skatteavdrag – det är ditt ansvar
                   </li>
                 </ul>
+                <a
+                  href="http://localhost:3000/blogg/sa-tar-du-betalt-som-svippare"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.blog_link_card}
+                >
+                  <div className={styles.blog_link_card__text}>
+                    <span className={styles.blog_link_card__title}>Läs mer om hur du tar betalt</span>
+                    <span className={styles.blog_link_card__sub}>Vi har skrivit en guide för dig som Svippare</span>
+                  </div>
+                  <ExternalLink size={18} className={styles.blog_link_card__icon} />
+                </a>
               </>
-            ) : accountType === 'foretag' || accountType === 'uf-foretag' ? (
+            )}
+
+            {accountType === 'foretag' && (
               <>
-                <span className={styles.payment_type}>
-                  {accountType === 'uf-foretag' ? 'UF-företag' : 'Företag'}
-                </span>
-                <div className={styles.invoice_box}>
-                  <FileText size={18} />
-                  Glöm inte att skicka faktura till beställaren för detta uppdrag.
+                <h2 className={styles.card__heading}>Skicka faktura som företag</h2>
+                <span className={styles.payment_type}>Företag</span>
+                <p className={styles.card__sub}>
+                  Glöm inte att skicka faktura till beställaren via ert faktureringsprogram.
+                </p>
+                <ul className={styles.payment_bullets}>
+                  <li>
+                    <User size={18} className={styles.bullet_icon} />
+                    Ange beställarens kontaktuppgifter som du hittar på ordersidan
+                  </li>
+                  <li>
+                    <CheckCircle size={18} className={styles.bullet_icon} />
+                    Använd det godkända beloppet som fakturabelopp
+                  </li>
+                </ul>
+                <div className={styles.coming_soon_box}>
+                  Vi håller på att ta fram guider för företagare på Svippo. Återkom snart!
                 </div>
               </>
-            ) : (
-              <p className={styles.card__sub}>Kom överens om betalning direkt med beställaren.</p>
+            )}
+
+            {accountType === 'uf-foretag' && (
+              <>
+                <h2 className={styles.card__heading}>Skicka faktura som UF</h2>
+                <span className={styles.payment_type}>UF-företag</span>
+                <p className={styles.card__sub}>
+                  Bra jobbat! Som UF-företag fakturerar ni beställaren direkt.
+                </p>
+                <ul className={styles.payment_bullets}>
+                  <li>
+                    <FileText size={18} className={styles.bullet_icon} />
+                    Använd ert UF-företags fakturamall eller faktureringsprogram
+                  </li>
+                  <li>
+                    <CheckCircle size={18} className={styles.bullet_icon} />
+                    Det godkända beloppet är vad ni ska fakturera
+                  </li>
+                </ul>
+                <div className={styles.coming_soon_box}>
+                  Vi håller på att ta fram guider för UF-företag på Svippo. Återkom snart!
+                </div>
+              </>
+            )}
+
+            {accountType !== 'svippare' && accountType !== 'foretag' && accountType !== 'uf-foretag' && (
+              <>
+                <h2 className={styles.card__heading}>Betalning</h2>
+                <p className={styles.card__sub}>Kom överens om betalning direkt med beställaren.</p>
+              </>
             )}
 
             <div className={styles.actions}>
