@@ -90,6 +90,9 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
   const [disputeSending, setDisputeSending] = useState(false)
   const [disputeSent, setDisputeSent] = useState(false)
 
+  // Recension-popup
+  const [showReviewPopup, setShowReviewPopup] = useState(false)
+
   // Typ 3 – bekräftelse
   const [confirmingDelivery, setConfirmingDelivery] = useState(false)
   const [proposals, setProposals] = useState<PriceProposal[]>([])
@@ -260,6 +263,7 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
       await triggerEmail('delivery_confirmed', order.id)
 
       setOrder(prev => prev ? { ...prev, project_status: 'completed' } : prev)
+      if (!alreadyReviewed) setShowReviewPopup(true)
     } catch (err) {
       console.error(err)
     } finally {
@@ -492,7 +496,7 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
 
                 {order.status === 'accepted' && projectStatus === 'completed' && !alreadyReviewed && !reviewSuccess && (
                   <div className={`${orderStyles.tab_actions} staticcard`}>
-                    <button className="btn btn-primary" onClick={() => setShowReviewForm(true)}>
+                    <button className="btn btn-primary" onClick={() => setShowReviewPopup(true)}>
                       <Star size={16} /> Bekräfta slutfört
                     </button>
                     <button className="btn btn-outline" onClick={() => setShowDisputeForm(true)}>
@@ -791,6 +795,52 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
           </div>
         </div>
       </div>
+
+      {/* Recensions-popup */}
+      {showReviewPopup && !alreadyReviewed && (
+        <div className={styles.review_popup_backdrop}>
+          <div className={styles.review_popup}>
+            <h2 className={styles.review_popup__heading}>Hur var uppdraget?</h2>
+            <p className={styles.review_popup__sub}>
+              Lämna ett omdöme om {order?.seller_name}. Det hjälper andra att hitta bra utförare.
+            </p>
+            <div className={styles.review_popup__stars}>
+              {[1, 2, 3, 4, 5].map(n => (
+                <button
+                  key={n}
+                  className={styles.review_popup__star}
+                  onClick={() => setReviewRating(n)}
+                >
+                  {n <= reviewRating
+                    ? <Star size={32} fill="#EF9F27" color="#EF9F27" />
+                    : <Star size={32} fill="#D3D1C7" color="#D3D1C7" />}
+                </button>
+              ))}
+            </div>
+            <textarea
+              className={`form-textarea ${styles.review_popup__textarea}`}
+              placeholder={`Beskriv din upplevelse med ${order?.seller_name}...`}
+              value={reviewText}
+              onChange={e => setReviewText(e.target.value)}
+              rows={4}
+            />
+            <button
+              className="btn btn-primary"
+              style={{ width: '100%', justifyContent: 'center' }}
+              onClick={async () => { await handleReview(); setShowReviewPopup(false) }}
+              disabled={!reviewText}
+            >
+              <Star size={16} /> Skicka omdöme
+            </button>
+            <button
+              className={styles.review_popup__skip}
+              onClick={() => setShowReviewPopup(false)}
+            >
+              Hoppa över
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Avvikelse-popup för Typ 3 */}
       {showDisputeForm && isTyp3 && (
