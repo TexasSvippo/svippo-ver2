@@ -783,32 +783,6 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
               </div>
             )}
 
-            {projectStatus === 'completed' && !alreadyReviewed && !reviewSuccess && (
-              <div className={`${orderStyles.review_card} card`}>
-                <h2 className={orderStyles.section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Star size={18} /> Lämna en recension</h2>
-                <p className={orderStyles.progress_hint}>Hur var din upplevelse med {order.seller_name}?</p>
-                {showReviewForm ? (
-                  <div className={orderStyles.review_form}>
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                      {[1,2,3,4,5].map(n => (
-                        <button key={n} onClick={() => setReviewRating(n)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px' }}>
-                          {n <= reviewRating
-                            ? <Star size={24} fill="#EF9F27" color="#EF9F27" />
-                            : <Star size={24} fill="#D3D1C7" color="#D3D1C7" />}
-                        </button>
-                      ))}
-                    </div>
-                    <textarea className="form-textarea" placeholder={`Beskriv din upplevelse med ${order.seller_name}...`} value={reviewText} onChange={e => setReviewText(e.target.value)} rows={3} />
-                    <button className="btn btn-primary" onClick={handleReview} disabled={!reviewText}>Skicka recension</button>
-                  </div>
-                ) : (
-                  <button className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }} onClick={() => setShowReviewForm(true)}>
-                    <Star size={16} /> Recensera {order.seller_name}
-                  </button>
-                )}
-              </div>
-            )}
-
             {(alreadyReviewed || reviewSuccess) && (
               <div className={`${orderStyles.review_card} card`}>
                 <div className={orderStyles.payment_done} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}><Star size={16} /> Du har lämnat en recension!</div>
