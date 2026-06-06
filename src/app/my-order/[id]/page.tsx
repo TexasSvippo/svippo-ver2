@@ -95,6 +95,7 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
   const [confirmingDelivery, setConfirmingDelivery] = useState(false)
   const [proposals, setProposals] = useState<PriceProposal[]>([])
   const [proposalActing, setProposalActing] = useState(false)
+  const [activeTab, setActiveTab] = useState<'aktivitet' | 'detaljer' | 'leveranser'>('aktivitet')
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -316,122 +317,160 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
           {/* Vänster */}
           <div className={styles.myorder__main}>
 
-            <div className={`${styles.myorder__header} card`}>
-              <div className={styles.header_top}>
-                <div>
-                  <span className={orderStyles.label}>Din beställning av</span>
-                  <h1 className={orderStyles.title}>{order.service_title}</h1>
-                  <span className={orderStyles.date}>
-                    {new Date(order.created_at).toLocaleDateString('sv-SE', { year: 'numeric', month: 'long', day: 'numeric' })}
-                  </span>
-                </div>
-                <span className={`${orderStyles.status_badge} ${orderStyles[`status--${order.status}`]}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                  {order.status === 'pending' ? <><Clock size={14} /> Väntar på godkännande</> : order.status === 'accepted' ? <><CheckCircle size={14} /> Godkänd</> : <><XCircle size={14} /> Nekad</>}
-                </span>
-              </div>
-              <Link
-                href={order.from_request ? `/request/${order.service_id}` : `/service/${order.service_id}`}
-                className={orderStyles.service_link}
-                style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+            <div className={orderStyles.tabs}>
+              <button
+                className={`${orderStyles.tab} ${activeTab === 'aktivitet' ? orderStyles['tab--active'] : ''}`}
+                onClick={() => setActiveTab('aktivitet')}
               >
-                <LinkIcon size={16} /> {order.from_request ? 'Visa din förfrågan →' : 'Visa tjänsten →'}
-              </Link>
+                Aktivitet
+              </button>
+              <button
+                className={`${orderStyles.tab} ${activeTab === 'detaljer' ? orderStyles['tab--active'] : ''}`}
+                onClick={() => setActiveTab('detaljer')}
+              >
+                Detaljer
+              </button>
+              {!isTyp3 && (
+                <button
+                  className={`${orderStyles.tab} ${activeTab === 'leveranser' ? orderStyles['tab--active'] : ''}`}
+                  onClick={() => setActiveTab('leveranser')}
+                >
+                  Leveranser
+                </button>
+              )}
             </div>
 
-            {isCancelled && (
-              <div className={styles.cancelled_banner}>
-                <XCircle size={22} style={{ flexShrink: 0, marginTop: 2 }} />
-                <div>
-                  <strong>Uppdraget är avbokat</strong>
-                  <p>Det här uppdraget är avbokat och kommer inte att utföras.</p>
-                </div>
+            {activeTab === 'aktivitet' && (
+              <div className={`${styles.myorder__message} card`} style={{ color: 'var(--color-gray)', fontSize: '14px', fontStyle: 'italic' }}>
+                Aktivitetsfeed kommer snart
               </div>
             )}
 
-            <div className={`${styles.myorder__message} card`}>
-              <h2 className={orderStyles.section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><ClipboardList size={18} /> Ditt meddelande</h2>
-              <div className={`${orderStyles.field_value} ${orderStyles.field_message}`}>{order.message}</div>
-            </div>
-
-            {order.answers && Object.keys(order.answers).length > 0 && (
-              <div className={`${styles.myorder__message} card`}>
-                <h2 className={orderStyles.section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><FileText size={18} /> Dina svar</h2>
-                <div className={orderStyles.answers}>
-                  {Object.entries(order.answers).map(([key, value]) => (
-                    <div key={key} className={orderStyles.answer_row}>
-                      <span className={orderStyles.answer_key}>{key}</span>
-                      <span className={orderStyles.answer_value}>{value}</span>
+            {activeTab === 'detaljer' && (
+              <>
+                <div className={`${styles.myorder__header} card`}>
+                  <div className={styles.header_top}>
+                    <div>
+                      <span className={orderStyles.label}>Din beställning av</span>
+                      <h1 className={orderStyles.title}>{order.service_title}</h1>
+                      <span className={orderStyles.date}>
+                        {new Date(order.created_at).toLocaleDateString('sv-SE', { year: 'numeric', month: 'long', day: 'numeric' })}
+                      </span>
                     </div>
-                  ))}
+                    <span className={`${orderStyles.status_badge} ${orderStyles[`status--${order.status}`]}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                      {order.status === 'pending' ? <><Clock size={14} /> Väntar på godkännande</> : order.status === 'accepted' ? <><CheckCircle size={14} /> Godkänd</> : <><XCircle size={14} /> Nekad</>}
+                    </span>
+                  </div>
+                  <Link
+                    href={order.from_request ? `/request/${order.service_id}` : `/service/${order.service_id}`}
+                    className={orderStyles.service_link}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                  >
+                    <LinkIcon size={16} /> {order.from_request ? 'Visa din förfrågan →' : 'Visa tjänsten →'}
+                  </Link>
                 </div>
-              </div>
-            )}
 
-            {order.custom_answers && Object.keys(order.custom_answers).length > 0 && (
-              <div className={`${styles.myorder__message} card`}>
-                <h2 className={orderStyles.section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><MessageCircle size={18} /> Svar på utförarens frågor</h2>
-                <div className={orderStyles.answers}>
-                  {Object.entries(order.custom_answers).map(([key, value]) => (
-                    <div key={key} className={orderStyles.answer_row}>
-                      <span className={orderStyles.answer_key}>{key}</span>
-                      <span className={orderStyles.answer_value}>{value}</span>
+                {isCancelled && (
+                  <div className={styles.cancelled_banner}>
+                    <XCircle size={22} style={{ flexShrink: 0, marginTop: 2 }} />
+                    <div>
+                      <strong>Uppdraget är avbokat</strong>
+                      <p>Det här uppdraget är avbokat och kommer inte att utföras.</p>
                     </div>
-                  ))}
-                </div>
-              </div>
-            )}
+                  </div>
+                )}
 
-            {order.status === 'accepted' && !isTyp3 && (
-              <div className={`${styles.myorder__progress} card`}>
-                <h2 className={orderStyles.section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><BarChart2 size={18} /> Projektstatus</h2>
-                <p className={orderStyles.progress_hint}>Följ hur {order.seller_name} arbetar med ditt projekt.</p>
-                <div className={orderStyles.progress_steps}>
-                  {STATUS_STEPS.map((step, index) => {
-                    const isDone = index < currentStepIndex
-                    const isActive = step.key === projectStatus
-                    return (
-                      <div
-                        key={step.key}
-                        className={`${orderStyles.progress_step} ${styles.readonly_step} ${isActive ? orderStyles['progress_step--active'] : ''} ${isDone ? orderStyles['progress_step--done'] : ''}`}
-                      >
-                        <div className={orderStyles.progress_dot}>{isDone ? '✓' : step.num}</div>
-                        <div className={orderStyles.progress_info}>
-                          <strong>{step.label}</strong>
-                          <span>{step.desc}</span>
+                <div className={`${styles.myorder__message} card`}>
+                  <h2 className={orderStyles.section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><ClipboardList size={18} /> Ditt meddelande</h2>
+                  <div className={`${orderStyles.field_value} ${orderStyles.field_message}`}>{order.message}</div>
+                </div>
+
+                {order.answers && Object.keys(order.answers).length > 0 && (
+                  <div className={`${styles.myorder__message} card`}>
+                    <h2 className={orderStyles.section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><FileText size={18} /> Dina svar</h2>
+                    <div className={orderStyles.answers}>
+                      {Object.entries(order.answers).map(([key, value]) => (
+                        <div key={key} className={orderStyles.answer_row}>
+                          <span className={orderStyles.answer_key}>{key}</span>
+                          <span className={orderStyles.answer_value}>{value}</span>
                         </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {order.custom_answers && Object.keys(order.custom_answers).length > 0 && (
+                  <div className={`${styles.myorder__message} card`}>
+                    <h2 className={orderStyles.section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><MessageCircle size={18} /> Svar på utförarens frågor</h2>
+                    <div className={orderStyles.answers}>
+                      {Object.entries(order.custom_answers).map(([key, value]) => (
+                        <div key={key} className={orderStyles.answer_row}>
+                          <span className={orderStyles.answer_key}>{key}</span>
+                          <span className={orderStyles.answer_value}>{value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {order.status === 'accepted' && !isTyp3 && (
+                  <div className={`${styles.myorder__progress} card`}>
+                    <h2 className={orderStyles.section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><BarChart2 size={18} /> Projektstatus</h2>
+                    <p className={orderStyles.progress_hint}>Följ hur {order.seller_name} arbetar med ditt projekt.</p>
+                    <div className={orderStyles.progress_steps}>
+                      {STATUS_STEPS.map((step, index) => {
+                        const isDone = index < currentStepIndex
+                        const isActive = step.key === projectStatus
+                        return (
+                          <div
+                            key={step.key}
+                            className={`${orderStyles.progress_step} ${styles.readonly_step} ${isActive ? orderStyles['progress_step--active'] : ''} ${isDone ? orderStyles['progress_step--done'] : ''}`}
+                          >
+                            <div className={orderStyles.progress_dot}>{isDone ? '✓' : step.num}</div>
+                            <div className={orderStyles.progress_info}>
+                              <strong>{step.label}</strong>
+                              <span>{step.desc}</span>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {isTyp3 && isDelivered && projectStatus !== 'completed' && (
+                  <div className={`${styles.myorder__delivery} card`}>
+                    <h2 className={orderStyles.section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Package size={18} /> Leverans</h2>
+                    <p className={orderStyles.progress_hint}>
+                      {order.seller_name} har markerat uppdraget som levererat. Stämmer allt?
+                    </p>
+                    <div className={styles.delivery_actions}>
+                      <button
+                        className="btn btn-primary"
+                        onClick={handleConfirmDelivery}
+                        disabled={confirmingDelivery}
+                      >
+                        {confirmingDelivery ? 'Bekräftar...' : <><CheckCircle size={16} /> Ja, allt är okej!</>}
+                      </button>
+                      <button
+                        className="btn btn-outline"
+                        style={{ color: 'var(--color-orange)', borderColor: 'var(--color-orange)' }}
+                        onClick={() => setShowDisputeForm(true)}
+                      >
+                        ⚠️ Något stämmer inte
+                      </button>
+                    </div>
+                    <p className={styles.delivery_auto_hint}>
+                      Om du inte svarar bekräftas uppdraget automatiskt inom 24 timmar.
+                    </p>
+                  </div>
+                )}
+              </>
             )}
 
-            {/* Typ 3 – bekräftelse vid leverans */}
-            {isTyp3 && isDelivered && projectStatus !== 'completed' && (
-              <div className={`${styles.myorder__delivery} card`}>
-                <h2 className={orderStyles.section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Package size={18} /> Leverans</h2>
-                <p className={orderStyles.progress_hint}>
-                  {order.seller_name} har markerat uppdraget som levererat. Stämmer allt?
-                </p>
-                <div className={styles.delivery_actions}>
-                  <button
-                    className="btn btn-primary"
-                    onClick={handleConfirmDelivery}
-                    disabled={confirmingDelivery}
-                  >
-                    {confirmingDelivery ? 'Bekräftar...' : <><CheckCircle size={16} /> Ja, allt är okej!</>}
-                  </button>
-                  <button
-                    className="btn btn-outline"
-                    style={{ color: 'var(--color-orange)', borderColor: 'var(--color-orange)' }}
-                    onClick={() => setShowDisputeForm(true)}
-                  >
-                    ⚠️ Något stämmer inte
-                  </button>
-                </div>
-                <p className={styles.delivery_auto_hint}>
-                  Om du inte svarar bekräftas uppdraget automatiskt inom 24 timmar.
-                </p>
+            {activeTab === 'leveranser' && (
+              <div className={`${styles.myorder__message} card`} style={{ color: 'var(--color-gray)', fontSize: '14px', fontStyle: 'italic' }}>
+                Leveranser kommer snart
               </div>
             )}
 
