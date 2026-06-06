@@ -429,6 +429,56 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
                     ))}
                   </div>
                 </div>
+
+                {order.status === 'pending' && (
+                  <div className={`${orderStyles.tab_actions} staticcard`}>
+                    <p className={orderStyles.tab_actions__info}>Väntar på svar från utföraren</p>
+                  </div>
+                )}
+
+                {order.status === 'accepted' && projectStatus !== 'completed' && (
+                  <div className={`${orderStyles.tab_actions} staticcard`}>
+                    {pendingProposal ? (
+                      <>
+                        <button
+                          className="btn btn-primary"
+                          onClick={() => handleProposalAction(pendingProposal.id, 'approve')}
+                          disabled={proposalActing}
+                        >
+                          <CheckCircle size={16} /> Godkänn prisförslag
+                        </button>
+                        <button
+                          className={`btn btn-outline ${styles.price_reject_btn}`}
+                          onClick={() => handleProposalAction(pendingProposal.id, 'reject')}
+                          disabled={proposalActing}
+                        >
+                          <XCircle size={16} /> Avböj
+                        </button>
+                      </>
+                    ) : isTyp3 && isDelivered ? (
+                      <button
+                        className="btn btn-primary"
+                        onClick={handleConfirmDelivery}
+                        disabled={confirmingDelivery}
+                      >
+                        {confirmingDelivery ? 'Bekräftar...' : <><CheckCircle size={16} /> Bekräfta leverans</>}
+                      </button>
+                    ) : (
+                      <p className={orderStyles.tab_actions__info}>Uppdraget pågår – inväntar utföraren</p>
+                    )}
+                  </div>
+                )}
+
+                {order.status === 'accepted' && projectStatus === 'completed' && !alreadyReviewed && !reviewSuccess && (
+                  <div className={`${orderStyles.tab_actions} staticcard`}>
+                    <button className="btn btn-primary" onClick={() => setShowReviewForm(true)}>
+                      <Star size={16} /> Bekräfta slutfört
+                    </button>
+                    <button className="btn btn-outline" onClick={() => setShowDisputeForm(true)}>
+                      ⚠️ Rapportera problem
+                    </button>
+                  </div>
+                )}
               </>
             )}
 

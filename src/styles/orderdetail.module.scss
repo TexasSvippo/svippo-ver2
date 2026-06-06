@@ -557,6 +557,15 @@
   button, a { width: 100%; justify-content: center; }
 }
 
+.tab_actions__info {
+  font-size: 13px;
+  color: var(--color-gray);
+  font-style: italic;
+  text-align: center;
+  margin: 0;
+  padding: 4px 0;
+}
+
 // Activity feed
 .feed {
   display: flex;
