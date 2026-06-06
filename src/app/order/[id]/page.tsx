@@ -127,8 +127,9 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
   const handleStatus = async (status: 'accepted' | 'rejected') => {
     if (!order) return
     setUpdating(true)
-    await supabase.from('orders').update({ status }).eq('id', order.id)
-    setOrder(prev => prev ? { ...prev, status } : prev)
+    const update = status === 'accepted' ? { status, project_status: 'in_progress' as ProjectStatus } : { status }
+    await supabase.from('orders').update(update).eq('id', order.id)
+    setOrder(prev => prev ? { ...prev, ...update } : prev)
 
     await supabase.from('notifications').insert({
       user_id: order.buyer_id,
