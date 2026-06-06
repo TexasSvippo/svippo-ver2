@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import useAuth from '@/hooks/useAuth'
 import styles from '@/styles/orderdetail.module.scss'
-import { Package, Clock, CheckCircle, XCircle, Link as LinkIcon, ClipboardList, Star, User, Mail, Smartphone, MessageCircle, Zap, BarChart2, Wallet, Lock, ArrowLeft, Tag, Upload } from 'lucide-react'
+import { Package, Clock, CheckCircle, XCircle, Link as LinkIcon, ClipboardList, Star, User, Mail, Smartphone, MessageCircle, Zap, BarChart2, Wallet, Lock, ArrowLeft, Tag } from 'lucide-react'
 import { renderStars } from '@/utils/renderStars'
 
 type ProjectStatus = 'not_started' | 'in_progress' | 'almost_done' | 'awaiting_confirmation' | 'completed'
@@ -497,22 +497,20 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                   </div>
                 )}
 
-                {order.status === 'accepted' && projectStatus !== 'completed' && (
+                {order.status === 'accepted' && projectStatus !== 'completed' && projectStatus !== 'awaiting_confirmation' && (
                   <div className={`${styles.tab_actions} staticcard`}>
-                    {serviceType === 'typ2' ? (
-                      <button className="btn btn-primary" disabled>
-                        <Upload size={16} /> Ladda upp leverans
-                      </button>
-                    ) : projectStatus === 'awaiting_confirmation' ? (
-                      <p className={styles.tab_actions__info}>Inväntar beställarens bekräftelse</p>
-                    ) : (
-                      <button className="btn btn-primary" onClick={() => router.push(`/order/${order.id}/complete`)}>
-                        <CheckCircle size={16} /> Markera som klart
-                      </button>
-                    )}
+                    <button className="btn btn-primary" onClick={() => router.push(`/order/${order.id}/complete`)}>
+                      <CheckCircle size={16} /> Markera som klart
+                    </button>
                     <button className="btn btn-outline" onClick={() => setShowPriceForm(true)}>
                       <Tag size={16} /> Föreslå nytt pris
                     </button>
+                  </div>
+                )}
+
+                {order.status === 'accepted' && projectStatus === 'awaiting_confirmation' && (
+                  <div className={`${styles.tab_actions} staticcard`}>
+                    <p className={styles.tab_actions__info}>Inväntar beställarens bekräftelse</p>
                   </div>
                 )}
               </>
@@ -675,34 +673,27 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
             {order.status === 'accepted' && isSeller && (
               <div className={`${styles.progress_card} card`}>
                 <h2 className={styles.section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><BarChart2 size={18} /> Projektstatus</h2>
-                <p className={styles.progress_hint}>
-                  {isTyp3 ? 'Uppdatera hur uppdraget fortskrider.' : 'Uppdatera hur långt projektet kommit.'}
-                </p>
+                <p className={styles.progress_hint}>Uppdragets nuvarande fas.</p>
                 <div className={styles.progress_steps}>
                   {PROGRESS_STEPS.map((step, idx) => {
-                    const isDone = idx < currentIdx
-                    const isActive = idx === currentIdx
-                    const isCompleted = step.status === 'completed' && projectStatus === 'completed'
+                    const allDone = projectStatus === 'completed'
+                    const displayIdx = (projectStatus === 'awaiting_confirmation' || projectStatus === 'completed') ? 2
+                      : (projectStatus === 'in_progress' || projectStatus === 'almost_done') ? 1 : 0
+                    const isDone = allDone || idx < displayIdx
+                    const isActive = !allDone && idx === displayIdx
+                    const isCompleted = allDone
 
                     return (
-                      <button
+                      <div
                         key={step.status}
                         className={`${styles.progress_step} ${isActive ? styles['progress_step--active'] : ''} ${isDone ? styles['progress_step--done'] : ''} ${isCompleted ? styles['progress_step--completed'] : ''}`}
-                        onClick={() => {
-                          if (step.status === 'completed') {
-                            router.push(`/order/${order.id}/complete`)
-                          } else {
-                            handleProjectStatus(step.status)
-                          }
-                        }}
-                        disabled={updating || projectStatus === 'completed' || projectStatus === 'awaiting_confirmation'}
                       >
                         <div className={styles.progress_dot}>{isDone || isCompleted ? '✓' : step.num}</div>
                         <div className={styles.progress_info}>
                           <strong>{step.label}</strong>
                           <span>{step.desc}</span>
                         </div>
-                      </button>
+                      </div>
                     )
                   })}
                 </div>
