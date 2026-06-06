@@ -57,8 +57,7 @@ type PriceProposal = {
 const STATUS_STEPS = [
   { key: 'not_started', label: 'Ej påbörjat', desc: 'Projektet väntar på att starta', num: 1 },
   { key: 'in_progress', label: 'Pågår', desc: 'Projektet är igång', num: 2 },
-  { key: 'almost_done', label: 'Nästan klart', desc: 'Sista finishen återstår', num: 3 },
-  { key: 'completed', label: 'Slutfört', desc: 'Projektet är klart! 🎉', num: 4 },
+  { key: 'completed', label: 'Markera som klart', desc: 'Slutför uppdraget', num: 3 },
 ]
 
 // [MEJLPLATS] – Triggerlogik för mejlutskick
@@ -284,7 +283,7 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
   const pendingProposal = proposals.find(p => p.status === 'pending') ?? null
 
   const projectStatus = order.project_status || 'not_started'
-  const currentStepIndex = STATUS_STEPS.findIndex(s => s.key === projectStatus)
+  const currentStepIndex = STATUS_STEPS.findIndex(s => s.key === (projectStatus === 'almost_done' ? 'in_progress' : projectStatus))
   const isTyp3 = order.service_type === 'typ3'
   const isDelivered = !!order.delivered_at
   const hasDispute = !!order.dispute_status

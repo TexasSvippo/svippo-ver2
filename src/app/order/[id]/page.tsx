@@ -306,21 +306,15 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
     : {}
 
   // Typ3: sista steget heter "Markera som levererat" och triggar leveransflödet
-  const PROGRESS_STEPS = isTyp3 ? [
-    { status: 'not_started' as ProjectStatus, label: 'Ej påbörjat', desc: 'Uppdraget väntar på att starta', num: 1 },
-    { status: 'in_progress' as ProjectStatus, label: 'Pågår', desc: 'Uppdraget är igång', num: 2 },
-    { status: 'almost_done' as ProjectStatus, label: 'Nästan klart', desc: 'Sista finishen återstår', num: 3 },
-    { status: 'completed' as ProjectStatus, label: 'Markera som levererat', desc: order.delivered_at ? 'Väntar på bekräftelse från beställaren' : 'Klicka när du levererat uppdraget', num: 4 },
-  ] : [
+  const PROGRESS_STEPS = [
     { status: 'not_started' as ProjectStatus, label: 'Ej påbörjat', desc: 'Projektet väntar på att starta', num: 1 },
     { status: 'in_progress' as ProjectStatus, label: 'Pågår', desc: 'Projektet är igång', num: 2 },
-    { status: 'almost_done' as ProjectStatus, label: 'Nästan klart', desc: 'Sista finishen återstår', num: 3 },
-    { status: 'completed' as ProjectStatus, label: 'Slutfört', desc: 'Projektet är klart! 🎉', num: 4 },
+    { status: 'completed' as ProjectStatus, label: 'Markera som klart', desc: 'Slutför uppdraget', num: 3 },
   ]
 
-  const stepOrder = ['not_started', 'in_progress', 'almost_done', 'completed']
-  const currentIdx = isTyp3
-    ? (order.delivered_at ? 3 : stepOrder.indexOf(projectStatus))
+  const stepOrder = ['not_started', 'in_progress', 'completed']
+  const currentIdx = projectStatus === 'almost_done'
+    ? 1
     : stepOrder.indexOf(projectStatus)
 
   const dotColor = projectStatus === 'completed' ? 'green'
@@ -679,25 +673,22 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                   {PROGRESS_STEPS.map((step, idx) => {
                     const isDone = idx < currentIdx
                     const isActive = idx === currentIdx
-                    const isCompleted = !isTyp3 && step.status === 'completed' && projectStatus === 'completed'
-                    const isDelivered = isTyp3 && idx === 3 && !!order.delivered_at
+                    const isCompleted = step.status === 'completed' && projectStatus === 'completed'
 
                     return (
                       <button
                         key={step.status}
-                        className={`${styles.progress_step} ${isActive || isDelivered ? styles['progress_step--active'] : ''} ${isDone ? styles['progress_step--done'] : ''} ${isCompleted ? styles['progress_step--completed'] : ''}`}
+                        className={`${styles.progress_step} ${isActive ? styles['progress_step--active'] : ''} ${isDone ? styles['progress_step--done'] : ''} ${isCompleted ? styles['progress_step--completed'] : ''}`}
                         onClick={() => {
-                          if (isTyp3 && idx === 3) {
-                            if (!order.delivered_at) router.push(`/order/${order.id}/complete`)
-                          } else if (!isTyp3 && step.status === 'completed') {
+                          if (step.status === 'completed') {
                             router.push(`/order/${order.id}/complete`)
                           } else {
                             handleProjectStatus(step.status)
                           }
                         }}
-                        disabled={updating || (!isTyp3 && projectStatus === 'completed') || (isTyp3 && !!order.delivered_at && idx === 3)}
+                        disabled={updating || projectStatus === 'completed'}
                       >
-                        <div className={styles.progress_dot}>{isDone || isCompleted || isDelivered ? '✓' : step.num}</div>
+                        <div className={styles.progress_dot}>{isDone || isCompleted ? '✓' : step.num}</div>
                         <div className={styles.progress_info}>
                           <strong>{step.label}</strong>
                           <span>{step.desc}</span>
