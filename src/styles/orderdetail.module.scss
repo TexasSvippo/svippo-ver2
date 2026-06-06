@@ -492,6 +492,61 @@
   }
 }
 
+// Status summary card
+.status_summary {
+  padding: 20px 24px;
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+}
+
+.status_summary__item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+
+  &:not(:last-child) {
+    padding-right: 24px;
+    margin-right: 24px;
+    border-right: 1px solid var(--color-border);
+  }
+}
+
+.status_summary__label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-gray);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.status_summary__value {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-dark);
+}
+
+.status_dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  &--green { background: #1a7a4a; }
+  &--blue  { background: #378ADD; }
+  &--gray  { background: var(--color-gray); }
+  &--red   { background: #ff5733; }
+}
+
+.status_summary__next {
+  font-size: 13px;
+  color: var(--color-gray);
+  line-height: 1.4;
+}
+
 // Price proposal card
 .price_card {
   padding: 24px;

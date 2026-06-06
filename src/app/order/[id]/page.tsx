@@ -324,6 +324,31 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
     ? (order.delivered_at ? 3 : stepOrder.indexOf(projectStatus))
     : stepOrder.indexOf(projectStatus)
 
+  const dotColor = projectStatus === 'completed' ? 'green'
+    : isCancelled ? 'gray'
+    : order.status === 'accepted' ? 'blue'
+    : order.status === 'pending' ? 'gray'
+    : 'red'
+
+  const statusLabel = projectStatus === 'completed' ? 'Slutfört'
+    : isCancelled ? 'Avbrutet'
+    : order.status === 'accepted' ? 'Aktivt'
+    : order.status === 'pending' ? 'Väntar på svar'
+    : 'Nekat'
+
+  const priceDisplay = order.active_price != null
+    ? `Godkänt pris: ${order.active_price} kr`
+    : order.price_type === 'fastpris' ? 'Fastpris'
+    : order.price_type === 'timpris' ? 'Timpris'
+    : order.price_type === 'offert' ? 'Offert'
+    : null
+
+  const sellerNextStep = projectStatus === 'completed' ? 'Uppdraget är avslutat'
+    : order.status === 'pending' ? 'Inväntar ditt godkännande'
+    : order.price_status === 'proposal_pending' ? 'Väntar på beställarens godkännande av prisförslag'
+    : order.price_status === 'price_approved' ? 'Uppdraget pågår'
+    : 'Skicka ett prisförslag till beställaren'
+
   return (
     <div className={`${styles.orderdetail} ${projectStatus === 'completed' && !isTyp3 ? styles['orderdetail--completed'] : ''}`}>
       <div className={`container ${styles.orderdetail__inner}`}>
@@ -375,9 +400,30 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
             </div>
 
             {activeTab === 'aktivitet' && (
-              <div className={`${styles.orderdetail__form} card`} style={{ color: 'var(--color-gray)', fontSize: '14px', fontStyle: 'italic' }}>
-                Aktivitetsfeed kommer snart
-              </div>
+              <>
+                <div className={`${styles.status_summary} card`}>
+                  <div className={styles.status_summary__item}>
+                    <span className={styles.status_summary__label}>Status</span>
+                    <span className={styles.status_summary__value}>
+                      <span className={`${styles.status_dot} ${styles[`status_dot--${dotColor}`]}`} />
+                      {statusLabel}
+                    </span>
+                  </div>
+                  {priceDisplay && (
+                    <div className={styles.status_summary__item}>
+                      <span className={styles.status_summary__label}>Pris</span>
+                      <span className={styles.status_summary__value}>{priceDisplay}</span>
+                    </div>
+                  )}
+                  <div className={styles.status_summary__item}>
+                    <span className={styles.status_summary__label}>Nästa steg</span>
+                    <span className={styles.status_summary__next}>{sellerNextStep}</span>
+                  </div>
+                </div>
+                <div className={`${styles.orderdetail__form} card`} style={{ color: 'var(--color-gray)', fontSize: '14px', fontStyle: 'italic' }}>
+                  Aktivitetsfeed kommer snart
+                </div>
+              </>
             )}
 
             {activeTab === 'detaljer' && (
