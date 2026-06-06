@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import useAuth from '@/hooks/useAuth'
 import styles from '@/styles/orderdetail.module.scss'
-import { Package, Clock, CheckCircle, XCircle, Link as LinkIcon, ClipboardList, Star, User, MessageCircle, BarChart2, Wallet, ArrowLeft, Tag } from 'lucide-react'
+import { Package, Clock, CheckCircle, XCircle, Link as LinkIcon, ClipboardList, Star, User, MessageCircle, BarChart2, Wallet, ArrowLeft, Tag, Calendar } from 'lucide-react'
 import { renderStars } from '@/utils/renderStars'
 
 type ProjectStatus = 'not_started' | 'in_progress' | 'almost_done' | 'awaiting_confirmation' | 'completed'
@@ -554,7 +554,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
 
                 {serviceType === 'typ2' && (desiredDeadline || milestones) && (
                   <div className={`${styles.orderdetail__type_info} staticcard`}>
-                    <h2 className={styles.section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>🗓️ Tidslinje</h2>
+                    <h2 className={styles.section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Calendar size={18} /> Tidslinje</h2>
                     <div className={styles.type_info_grid}>
                       {desiredDeadline && <div className={styles.type_info_item}><span className={styles.type_info_label}>Önskat slutdatum</span><strong>{desiredDeadline}</strong></div>}
                       {milestones && <div className={`${styles.type_info_item} ${styles['type_info_item--full']}`}><span className={styles.type_info_label}>Föreslagna milstolpar</span><p className={styles.type_info_text}>{milestones}</p></div>}
