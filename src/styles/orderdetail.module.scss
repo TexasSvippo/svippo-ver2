@@ -547,6 +547,16 @@
   line-height: 1.4;
 }
 
+// Tab action buttons
+.tab_actions {
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  button, a { width: 100%; justify-content: center; }
+}
+
 // Activity feed
 .feed {
   display: flex;

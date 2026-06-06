@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import useAuth from '@/hooks/useAuth'
 import styles from '@/styles/orderdetail.module.scss'
-import { Package, Clock, CheckCircle, XCircle, Link as LinkIcon, ClipboardList, Star, User, Mail, Smartphone, MessageCircle, Zap, BarChart2, Wallet, Lock, ArrowLeft, Tag } from 'lucide-react'
+import { Package, Clock, CheckCircle, XCircle, Link as LinkIcon, ClipboardList, Star, User, Mail, Smartphone, MessageCircle, Zap, BarChart2, Wallet, Lock, ArrowLeft, Tag, Upload } from 'lucide-react'
 import { renderStars } from '@/utils/renderStars'
 
 type ProjectStatus = 'not_started' | 'in_progress' | 'almost_done' | 'completed'
@@ -463,6 +463,34 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                     ))}
                   </div>
                 </div>
+
+                {order.status === 'pending' && (
+                  <div className={`${styles.tab_actions} staticcard`}>
+                    <button className="btn btn-primary" onClick={() => handleStatus('accepted')} disabled={updating}>
+                      <CheckCircle size={16} /> Godkänn beställning
+                    </button>
+                    <button className={`btn btn-outline ${styles.reject_btn}`} onClick={() => handleStatus('rejected')} disabled={updating}>
+                      <XCircle size={16} /> Neka beställning
+                    </button>
+                  </div>
+                )}
+
+                {order.status === 'accepted' && projectStatus !== 'completed' && (
+                  <div className={`${styles.tab_actions} staticcard`}>
+                    {serviceType === 'typ2' ? (
+                      <button className="btn btn-primary" disabled>
+                        <Upload size={16} /> Ladda upp leverans
+                      </button>
+                    ) : (
+                      <button className="btn btn-primary" onClick={() => setShowCompleteConfirm(true)} disabled={updating}>
+                        <CheckCircle size={16} /> Markera som klart
+                      </button>
+                    )}
+                    <button className="btn btn-outline" onClick={() => setShowPriceForm(true)}>
+                      <Tag size={16} /> Föreslå nytt pris
+                    </button>
+                  </div>
+                )}
               </>
             )}
 
