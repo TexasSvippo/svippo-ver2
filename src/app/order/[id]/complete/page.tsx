@@ -181,7 +181,7 @@ export default function CompleteOrderPage({ params }: { params: Promise<{ id: st
   if (step === 1) {
     const hasClearedPrice = active_price != null
 
-    if ((price_type === 'fastpris' || price_type === 'offert') && hasClearedPrice) {
+    if (hasClearedPrice && price_type !== 'timpris') {
       step1 = (
         <div className={`${styles.card} staticcard`}>
           <h2 className={styles.card__heading}>Bekräfta slutpriset</h2>
