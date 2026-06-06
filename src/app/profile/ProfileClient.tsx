@@ -26,7 +26,7 @@ type Section =
   | 'karriar'
   | 'installningar'
 
-type Service = { id: string; title: string; subcategory: string; price_type: string; price: number; location: string }
+type Service = { id: string; title: string; subcategory: string; price_type: string; price: number; location: string; status?: string }
 type Order = { id: string; service_title: string; buyer_name: string; buyer_email: string; message: string; status: string; project_status: string }
 type PlacedOrder = { id: string; service_title: string; seller_name: string; message: string; status: string; project_status: string }
 type KarriarOrder = { id: string; service_title: string; buyer_name: string; project_status: string; created_at: string }
@@ -487,7 +487,12 @@ export default function ProfileClient({ initialAccountType }: Props) {
 
                     {/* Main info – clickable */}
                     <Link href={`/service/${s.id}`} className={styles.service_card_new__info}>
-                      <strong className={styles.service_card_new__title}>{s.title}</strong>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <strong className={styles.service_card_new__title}>{s.title}</strong>
+                        {s.status === 'draft' && (
+                          <span style={{ fontSize: 11, fontWeight: 600, color: '#7a5800', background: '#FFF3CD', border: '1px solid #FFE08A', borderRadius: 4, padding: '2px 7px', flexShrink: 0 }}>Utkast</span>
+                        )}
+                      </div>
                       <div className={styles.service_card_new__meta}>
                         <span className={styles.service_card_new__meta_item}>
                           <Tag size={12} /> {s.subcategory}

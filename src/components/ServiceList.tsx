@@ -56,11 +56,13 @@ export default function ServiceList() {
         supabase
           .from('services')
           .select('*, users(avatar_url)')
+          .eq('status', 'active')
           .order('created_at', { ascending: false })
           .limit(6),
         supabase
           .from('requests')
           .select('*')
+          .eq('status', 'open')
           .order('created_at', { ascending: false })
           .limit(6),
       ])

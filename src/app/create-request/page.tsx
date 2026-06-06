@@ -166,6 +166,7 @@ function CreateRequestPage() {
         await supabase.from('requests').insert({
           title: form.title,
           description: form.description,
+          status: 'open',
           category_id: form.category_id,
           subcategory: form.subcategory,
           budget_type: form.budget_type,

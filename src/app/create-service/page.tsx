@@ -182,6 +182,7 @@ export default function CreateServicePage() {
           const { data } = await supabase.from('services').insert({
             title: 'Utkast',
             description: '',
+            status: 'draft',
             category_id: form.category_id,
             subcategory: form.subcategory,
             user_id: user.id,
@@ -231,6 +232,7 @@ export default function CreateServicePage() {
         await supabase.from('services').update({
           title: form.title,
           description: form.description,
+          status: 'active',
           price_type: form.price_type,
           price: form.price_type !== 'offert' ? Number(form.price) : null,
           location: form.location,
@@ -245,6 +247,7 @@ export default function CreateServicePage() {
         const { data: insertData } = await supabase.from('services').insert({
           title: form.title,
           description: form.description,
+          status: 'active',
           category_id: form.category_id,
           subcategory: form.subcategory,
           price_type: form.price_type,

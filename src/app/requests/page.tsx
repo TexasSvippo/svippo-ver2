@@ -11,7 +11,7 @@ export default async function ForfragningarPage() {
   const { data: requestsRaw } = await supabase
     .from('requests')
     .select('*')
-    .or('status.eq.open,status.is.null')
+    .eq('status', 'open')
     .order('created_at', { ascending: false })
 
   const rawList = requestsRaw ?? []
