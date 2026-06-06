@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import useAuth from '@/hooks/useAuth'
 import styles from '@/styles/orderdetail.module.scss'
-import { Package, Clock, CheckCircle, XCircle, Link as LinkIcon, ClipboardList, Star, User, Mail, Smartphone, MessageCircle, Zap, BarChart2, Wallet, Lock, ArrowLeft, Tag } from 'lucide-react'
+import { Package, Clock, CheckCircle, XCircle, Link as LinkIcon, ClipboardList, Star, User, MessageCircle, BarChart2, Wallet, ArrowLeft, Tag } from 'lucide-react'
 import { renderStars } from '@/utils/renderStars'
 
 type ProjectStatus = 'not_started' | 'in_progress' | 'almost_done' | 'awaiting_confirmation' | 'completed'
@@ -651,25 +651,10 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                 }
               </div>
               <strong className={styles.customer_name}>{order.buyer_name}</strong>
-              <div className={styles.customer_details}>
-                <div className={styles.detail_row}><Mail size={16} /><a href={`mailto:${order.buyer_email}`}>{order.buyer_email}</a></div>
-                {order.buyer_phone && <div className={styles.detail_row}><Smartphone size={16} /><a href={`tel:${order.buyer_phone}`}>{order.buyer_phone}</a></div>}
-              </div>
-              <div className={styles.contact_actions}>
-                <a href={`mailto:${order.buyer_email}`} className="btn btn-primary">✉️ Skicka e-post</a>
-                {order.buyer_phone && <a href={`tel:${order.buyer_phone}`} className="btn btn-outline"><Smartphone size={16} /> Ring kunden</a>}
-              </div>
+              <Link href={`/messages?orderId=${order.id}`} className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', marginTop: '12px' }}>
+                <MessageCircle size={16} /> Meddela
+              </Link>
             </div>
-
-            {order.status === 'accepted' && isSeller && (
-              <div className={`${styles.chat_card} card`}>
-                <h2 className={styles.section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><MessageCircle size={18} /> Meddelanden</h2>
-                <p className={styles.progress_hint}>Kommunicera med {order.buyer_name} om uppdraget.</p>
-                <Link href={`/messages?orderId=${order.id}`} className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
-                  <MessageCircle size={16} /> Öppna chatten
-                </Link>
-              </div>
-            )}
 
             {order.status === 'accepted' && isSeller && (
               <div className={`${styles.progress_card} card`}>
