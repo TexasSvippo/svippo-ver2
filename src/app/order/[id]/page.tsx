@@ -66,7 +66,6 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
   const [order, setOrder] = useState<Order | null>(null)
   const [loading, setLoading] = useState(true)
   const [updating, setUpdating] = useState(false)
-  const [showCompleteConfirm, setShowCompleteConfirm] = useState(false)
   const [showSuccessPopup, setShowSuccessPopup] = useState(false)
   const [successType, setSuccessType] = useState<'delivered' | 'completed'>('completed')
   const [reviewSuccess, setReviewSuccess] = useState(false)
@@ -504,7 +503,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                         <Upload size={16} /> Ladda upp leverans
                       </button>
                     ) : (
-                      <button className="btn btn-primary" onClick={() => setShowCompleteConfirm(true)} disabled={updating}>
+                      <button className="btn btn-primary" onClick={() => router.push(`/order/${order.id}/complete`)}>
                         <CheckCircle size={16} /> Markera som klart
                       </button>
                     )}
@@ -716,9 +715,9 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                         className={`${styles.progress_step} ${isActive || isDelivered ? styles['progress_step--active'] : ''} ${isDone ? styles['progress_step--done'] : ''} ${isCompleted ? styles['progress_step--completed'] : ''}`}
                         onClick={() => {
                           if (isTyp3 && idx === 3) {
-                            if (!order.delivered_at) setShowCompleteConfirm(true)
+                            if (!order.delivered_at) router.push(`/order/${order.id}/complete`)
                           } else if (!isTyp3 && step.status === 'completed') {
-                            setShowCompleteConfirm(true)
+                            router.push(`/order/${order.id}/complete`)
                           } else {
                             handleProjectStatus(step.status)
                           }
@@ -849,58 +848,6 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
           </div>
         </div>
       </div>
-
-      {/* Bekräftelsepopup – Typ1/2 slutfört, Typ3 levererat */}
-      {showCompleteConfirm && (
-        <div className="modal-backdrop" onClick={() => setShowCompleteConfirm(false)}>
-          <div className="modal-box" onClick={e => e.stopPropagation()}>
-            <h2 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '8px' }}>
-              {isTyp3 ? 'Markera som levererat? 📦' : 'Är du säker? 🎉'}
-            </h2>
-            <p style={{ color: 'var(--color-gray)', marginBottom: '16px' }}>
-              {isTyp3
-                ? 'Beställaren meddelas och får 24 timmar på sig att bekräfta eller rapportera ett problem.'
-                : 'Detta går inte att ångra. Projektet markeras som slutfört och beställaren meddelas.'}
-            </p>
-            <div className={styles.confirm_checklist}>
-              {isTyp3 ? (
-                <>
-                  <div className={styles.confirm_item} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Package size={14} /> Beställaren meddelas att leveransen är gjord</div>
-                  <div className={styles.confirm_item} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><CheckCircle size={14} /> Beställaren bekräftar eller rapporterar problem</div>
-                  <div className={styles.confirm_item} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>⏱️ Auto-bekräftelse sker efter 24 timmar om inget svar</div>
-                </>
-              ) : (
-                <>
-                  <div className={styles.confirm_item} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><CheckCircle size={14} /> Beställaren meddelas att projektet är klart</div>
-                  <div className={styles.confirm_item} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Star size={14} /> Båda parter får möjlighet att lämna recensioner</div>
-                  <div className={styles.confirm_item} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Wallet size={14} /> Du påminns om att ta betalt</div>
-                  <div className={styles.confirm_item} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Lock size={14} /> Projektstatus låses och kan inte ändras</div>
-                </>
-              )}
-            </div>
-            <div style={{ display: 'flex', gap: '12px', marginTop: '20px', justifyContent: 'flex-end' }}>
-              <button className="btn btn-outline" onClick={() => setShowCompleteConfirm(false)}>Avbryt</button>
-              <button
-                className="btn btn-primary"
-                onClick={async () => {
-                  if (isTyp3) {
-                    await handleTyp3Complete()
-                    setSuccessType('delivered')
-                  } else {
-                    await handleProjectStatus('completed')
-                    setSuccessType('completed')
-                  }
-                  setShowCompleteConfirm(false)
-                  setShowSuccessPopup(true)
-                }}
-                disabled={updating}
-              >
-                {updating ? 'Sparar...' : isTyp3 ? <><Package size={16} /> Ja, leveransen är gjord!</> : '🎉 Ja, projektet är klart!'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {showSuccessPopup && (
         <div className="modal-backdrop" onClick={() => setShowSuccessPopup(false)}>
