@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import useAuth from '@/hooks/useAuth'
-import { orderQuestions } from '@/data/orderQuestions'
 import type { ServiceType } from '@/data/categories'
 import styles from './OrderModal.module.scss'
 import { Wallet, Lightbulb } from 'lucide-react'
@@ -90,8 +89,6 @@ export default function OrderModal({
     fetchProfile()
   }, [user])
 
-  const subcategoryQuestions = orderQuestions[subcategory] || []
-  const hasSubcategoryQuestions = subcategoryQuestions.length > 0
   const hasCustomQuestions = customQuestions.length > 0
 
   // Typ-specifikt steg
@@ -103,7 +100,6 @@ export default function OrderModal({
   const STEPS = [
     'Kontaktinfo',
     typeStepLabel,
-    ...(hasSubcategoryQuestions ? ['Frågor'] : []),
     ...(hasCustomQuestions ? ['Utförarens frågor'] : []),
     'Bekräfta',
   ]
@@ -113,9 +109,6 @@ export default function OrderModal({
     if (step === 0) return name && email
     if (STEPS[step] === 'Datum & plats') return preferredDate && address
     if (STEPS[step] === 'Upphämtning & leverans') return pickupAddress && deliveryAddress && pickupDate
-    if (STEPS[step] === 'Frågor') {
-      return subcategoryQuestions.filter(q => q.required).every(q => answers[q.id])
-    }
     if (STEPS[step] === 'Utförarens frågor') {
       return customQuestions.filter(q => q.required).every(q => customAnswers[q.id])
     }
@@ -127,9 +120,6 @@ export default function OrderModal({
     setSaving(true)
     try {
       const answersWithLabels: Record<string, string> = {}
-      subcategoryQuestions.forEach(q => {
-        if (answers[q.id]) answersWithLabels[q.label] = answers[q.id]
-      })
 
       const customAnswersWithLabels: Record<string, string> = {}
       customQuestions.forEach(q => {
@@ -413,21 +403,6 @@ export default function OrderModal({
                     onChange={e => setPickupTime(e.target.value)}
                   />
                 </div>
-              </div>
-            )}
-
-            {/* Underkategori-frågor */}
-            {STEPS[step] === 'Frågor' && (
-              <div className={styles.fields}>
-                <p className={styles.hint}>Besvara frågorna så utföraren kan förbereda sig.</p>
-                {subcategoryQuestions.map(q => (
-                  <div key={q.id} className={styles.field}>
-                    <label className={styles.label}>
-                      {q.label} {q.required && <span className={styles.required}>*</span>}
-                    </label>
-                    {renderField(q, answers[q.id] || '', val => setAnswers(prev => ({ ...prev, [q.id]: val })))}
-                  </div>
-                ))}
               </div>
             )}
 
