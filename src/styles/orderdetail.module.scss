@@ -574,6 +574,15 @@
   justify-content: center;
   flex-shrink: 0;
   color: var(--color-gray);
+
+  &--approved   { background: #E6F1FB; color: #378ADD; }
+  &--price_rejected { background: #FAECE7; color: #ff5733; }
+  &--pending    { background: #FAEEDA; color: #EF9F27; }
+  &--created    { background: #F3F4F6; color: #6b7280; }
+  &--accepted   { background: #EAF3DE; color: #639922; }
+  &--rejected   { background: #FAECE7; color: #ff5733; }
+  &--status     { background: #E6F1FB; color: #378ADD; }
+  &--completed  { background: #EAF3DE; color: #639922; }
 }
 
 .feed__text {

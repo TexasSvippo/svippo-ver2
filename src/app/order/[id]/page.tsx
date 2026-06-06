@@ -350,23 +350,23 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
     : 'Skicka ett prisförslag till beställaren'
 
   const t0 = new Date(order.created_at).getTime()
-  const feedEvents: Array<{ id: string; icon: JSX.Element; text: string; ts: string }> = [
-    { id: 'created', icon: <Package size={14} />, text: 'Beställningen skapades', ts: order.created_at },
+  const feedEvents: Array<{ id: string; icon: JSX.Element; iconType: string; text: string; ts: string }> = [
+    { id: 'created', icon: <Package size={14} />, iconType: 'created', text: 'Beställningen skapades', ts: order.created_at },
   ]
   if (order.status === 'accepted') {
-    feedEvents.push({ id: 'status', icon: <CheckCircle size={14} />, text: 'Du godkände beställningen', ts: new Date(t0 + 60000).toISOString() })
+    feedEvents.push({ id: 'status', icon: <CheckCircle size={14} />, iconType: 'accepted', text: 'Du godkände beställningen', ts: new Date(t0 + 60000).toISOString() })
   } else if (order.status === 'rejected') {
-    feedEvents.push({ id: 'status', icon: <XCircle size={14} />, text: 'Du nekade beställningen', ts: new Date(t0 + 60000).toISOString() })
+    feedEvents.push({ id: 'status', icon: <XCircle size={14} />, iconType: 'rejected', text: 'Du nekade beställningen', ts: new Date(t0 + 60000).toISOString() })
   } else if (isCancelled) {
-    feedEvents.push({ id: 'status', icon: <XCircle size={14} />, text: 'Du avbröt beställningen', ts: new Date(t0 + 60000).toISOString() })
+    feedEvents.push({ id: 'status', icon: <XCircle size={14} />, iconType: 'rejected', text: 'Du avbröt beställningen', ts: new Date(t0 + 60000).toISOString() })
   }
   for (const p of proposals) {
     if (p.status === 'approved' && p.responded_at) {
-      feedEvents.push({ id: `p-${p.id}`, icon: <CheckCircle size={14} />, text: `Prisförslag godkänt – ${p.amount} kr`, ts: p.responded_at })
+      feedEvents.push({ id: `p-${p.id}`, icon: <CheckCircle size={14} />, iconType: 'approved', text: `Prisförslag godkänt – ${p.amount} kr`, ts: p.responded_at })
     } else if (p.status === 'rejected' && p.responded_at) {
-      feedEvents.push({ id: `p-${p.id}`, icon: <XCircle size={14} />, text: `Prisförslag avböjt – ${p.amount} kr`, ts: p.responded_at })
+      feedEvents.push({ id: `p-${p.id}`, icon: <XCircle size={14} />, iconType: 'price_rejected', text: `Prisförslag avböjt – ${p.amount} kr`, ts: p.responded_at })
     } else {
-      feedEvents.push({ id: `p-${p.id}`, icon: <Tag size={14} />, text: `Prisförslag skickat – ${p.amount} kr`, ts: p.created_at })
+      feedEvents.push({ id: `p-${p.id}`, icon: <Tag size={14} />, iconType: 'pending', text: `Prisförslag skickat – ${p.amount} kr`, ts: p.created_at })
     }
   }
   if (projectStatus !== 'not_started') {
@@ -374,10 +374,10 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
       : projectStatus === 'almost_done' ? 'Nästan klart'
       : projectStatus === 'completed' ? 'Slutfört'
       : projectStatus
-    feedEvents.push({ id: 'project-status', icon: <BarChart2 size={14} />, text: `Projektstatus uppdaterad till: ${psLabel}`, ts: new Date(t0 + 120000).toISOString() })
+    feedEvents.push({ id: 'project-status', icon: <BarChart2 size={14} />, iconType: 'status', text: `Projektstatus uppdaterad till: ${psLabel}`, ts: new Date(t0 + 120000).toISOString() })
   }
   if (projectStatus === 'completed') {
-    feedEvents.push({ id: 'completed', icon: <CheckCircle size={14} />, text: 'Uppdraget markerades som klart', ts: new Date(t0 + 180000).toISOString() })
+    feedEvents.push({ id: 'completed', icon: <CheckCircle size={14} />, iconType: 'completed', text: 'Uppdraget markerades som klart', ts: new Date(t0 + 180000).toISOString() })
   }
   feedEvents.sort((a, b) => new Date(b.ts).getTime() - new Date(a.ts).getTime())
 
@@ -456,7 +456,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                   <div className={styles.feed}>
                     {feedEvents.map(e => (
                       <div key={e.id} className={styles.feed__item}>
-                        <div className={styles.feed__icon}>{e.icon}</div>
+                        <div className={`${styles.feed__icon} ${styles[`feed__icon--${e.iconType}`]}`}>{e.icon}</div>
                         <span className={styles.feed__text}>{e.text}</span>
                         <span className={styles.feed__date}>{new Date(e.ts).toLocaleDateString('sv-SE', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
                       </div>
