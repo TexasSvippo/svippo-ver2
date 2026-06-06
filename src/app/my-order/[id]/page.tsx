@@ -129,10 +129,14 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
     if (!order) return
     setProposalActing(true)
     try {
+      const { data: { session } } = await supabase.auth.getSession()
       const res = await fetch(`/api/price-proposals/${proposalId}`, {
         method: 'PATCH',
         credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token}`,
+        },
         body: JSON.stringify({ action }),
       })
       if (res.ok) {

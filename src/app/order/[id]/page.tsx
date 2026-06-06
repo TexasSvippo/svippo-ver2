@@ -224,10 +224,14 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
     if (!order || !priceAmount) return
     setPriceSubmitting(true)
     try {
+      const { data: { session } } = await supabase.auth.getSession()
       const res = await fetch('/api/price-proposals', {
         method: 'POST',
         credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token}`,
+        },
         body: JSON.stringify({
           order_id: order.id,
           amount: Number(priceAmount),

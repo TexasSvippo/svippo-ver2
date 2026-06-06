@@ -1,6 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@supabase/ssr'
-import { cookies } from 'next/headers'
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
 
 export async function PATCH(
@@ -10,13 +8,8 @@ export async function PATCH(
   const { id } = await params
 
   // ── Auth ────────────────────────────────────────────────────────────────
-  const cookieStore = await cookies()
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { cookies: { getAll() { return cookieStore.getAll() } } }
-  )
-  const { data: { user } } = await supabase.auth.getUser()
+  const token = req.headers.get('authorization')?.replace('Bearer ', '')
+  const { data: { user } } = await supabaseAdmin.auth.getUser(token ?? '')
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
@@ -65,9 +58,14 @@ export async function PATCH(
 
   // ── Handle approve ──────────────────────────────────────────────────────
   if (action === 'approve') {
-    // The RPC uses auth.uid() internally, so it must be called with the
-    // user's JWT (cookie client), not the service role client.
-    const { error: rpcError } = await supabase.rpc('approve_price_proposal', {
+    // The RPC uses auth.uid() internally — call it with a JWT-scoped client.
+    const { createClient } = await import('@supabase/supabase-js')
+    const userClient = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      { global: { headers: { Authorization: `Bearer ${token}` } } }
+    )
+    const { error: rpcError } = await userClient.rpc('approve_price_proposal', {
       proposal_id: id,
     })
     if (rpcError) {
