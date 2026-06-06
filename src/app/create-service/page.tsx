@@ -108,8 +108,42 @@ export default function CreateServicePage() {
   }, [editId, user])
 
   useEffect(() => {
-    if (!loading && !user) router.push('/login')
-  }, [loading, user])
+    if (loading) return
+    if (!user) { router.push('/login'); return }
+    if (isEditing) return
+
+    const resumeDraft = async () => {
+      const { data } = await supabase
+        .from('services')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('status', 'draft')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single()
+
+      if (data) {
+        setSavedServiceId(data.id)
+        setForm({
+          title: data.title || '',
+          description: data.description || '',
+          category_id: data.category_id || '',
+          subcategory: data.subcategory || '',
+          price_type: data.price_type || 'timpris',
+          price: data.price ? String(data.price) : '',
+          location: data.location || '',
+          location_type: data.location === 'Online' ? 'online' : 'plats',
+          custom_questions: data.custom_questions || [],
+          offers_rut: data.offers_rut || false,
+          offers_rot: data.offers_rot || false,
+        })
+        setLocationSearch(data.location !== 'Online' ? data.location || '' : '')
+        setStep(1)
+      }
+    }
+
+    resumeDraft()
+  }, [loading, user, isEditing])
 
   if (loading || loadingEdit) return <div className={styles.create_loading}>Laddar...</div>
   if (!user) return null
@@ -221,6 +255,7 @@ export default function CreateServicePage() {
         await supabase.from('services').update({
           title: form.title,
           description: form.description,
+          status: 'active',
           price_type: form.price_type,
           price: form.price_type !== 'offert' ? Number(form.price) : null,
           location: form.location,
