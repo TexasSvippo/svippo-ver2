@@ -433,7 +433,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
 
             {activeTab === 'aktivitet' && (
               <>
-                <div className={`${styles.status_summary} card`}>
+                <div className={`${styles.status_summary} staticcard`}>
                   <div className={styles.status_summary__item}>
                     <span className={styles.status_summary__label}>Status</span>
                     <span className={styles.status_summary__value}>
@@ -452,7 +452,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                     <span className={styles.status_summary__next}>{sellerNextStep}</span>
                   </div>
                 </div>
-                <div className={`${styles.orderdetail__form} card`}>
+                <div className={`${styles.orderdetail__form} staticcard`}>
                   <div className={styles.feed}>
                     {feedEvents.map(e => (
                       <div key={e.id} className={styles.feed__item}>

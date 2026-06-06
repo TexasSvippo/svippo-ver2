@@ -367,7 +367,7 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
 
             {activeTab === 'aktivitet' && (
               <>
-                <div className={`${orderStyles.status_summary} card`}>
+                <div className={`${orderStyles.status_summary} staticcard`}>
                   <div className={orderStyles.status_summary__item}>
                     <span className={orderStyles.status_summary__label}>Status</span>
                     <span className={orderStyles.status_summary__value}>
@@ -386,7 +386,7 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
                     <span className={orderStyles.status_summary__next}>{buyerNextStep}</span>
                   </div>
                 </div>
-                <div className={`${styles.myorder__message} card`} style={{ color: 'var(--color-gray)', fontSize: '14px', fontStyle: 'italic' }}>
+                <div className={`${styles.myorder__message} staticcard`} style={{ color: 'var(--color-gray)', fontSize: '14px', fontStyle: 'italic' }}>
                   Aktivitetsfeed kommer snart
                 </div>
               </>
