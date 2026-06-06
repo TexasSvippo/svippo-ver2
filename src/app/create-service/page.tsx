@@ -54,9 +54,10 @@ export default function CreateServicePage() {
   const [newQuestion, setNewQuestion] = useState({
     label: '',
     type: 'text' as 'text' | 'select' | 'textarea',
-    options: '',
+    options: [] as string[],
     required: false,
   })
+  const [optionInput, setOptionInput] = useState('')
 
   const [form, setForm] = useState<FormData>({
     title: '',
@@ -552,7 +553,54 @@ export default function CreateServicePage() {
                     {newQuestion.type === 'select' && (
                       <div className={styles.create__field}>
                         <label className={styles.create__label}>Svarsalternativ</label>
-                        <input className={styles.create__input} placeholder="Separera med komma, t.ex. Ja,Nej,Vet ej" value={newQuestion.options} onChange={e => setNewQuestion(prev => ({ ...prev, options: e.target.value }))} />
+                        {newQuestion.options.length > 0 && (
+                          <div className={styles.option_pills}>
+                            {newQuestion.options.map(opt => (
+                              <span key={opt} className={styles.option_pill}>
+                                {opt}
+                                <button
+                                  type="button"
+                                  className={styles.option_pill__remove}
+                                  onClick={() => setNewQuestion(prev => ({ ...prev, options: prev.options.filter(o => o !== opt) }))}
+                                >×</button>
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                        <div className={styles.option_input_row}>
+                          <input
+                            className={styles.create__input}
+                            placeholder="Skriv alternativ..."
+                            value={optionInput}
+                            disabled={newQuestion.options.length >= 6}
+                            onChange={e => setOptionInput(e.target.value)}
+                            onKeyDown={e => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault()
+                                const val = optionInput.trim()
+                                if (val && !newQuestion.options.includes(val) && newQuestion.options.length < 6) {
+                                  setNewQuestion(prev => ({ ...prev, options: [...prev.options, val] }))
+                                  setOptionInput('')
+                                }
+                              }
+                            }}
+                          />
+                          <button
+                            type="button"
+                            className={styles.option_add_btn}
+                            disabled={!optionInput.trim() || newQuestion.options.includes(optionInput.trim()) || newQuestion.options.length >= 6}
+                            onClick={() => {
+                              const val = optionInput.trim()
+                              if (val && !newQuestion.options.includes(val) && newQuestion.options.length < 6) {
+                                setNewQuestion(prev => ({ ...prev, options: [...prev.options, val] }))
+                                setOptionInput('')
+                              }
+                            }}
+                          >+</button>
+                        </div>
+                        {newQuestion.options.length >= 6 && (
+                          <p className={styles.create__online_hint}>Max 6 alternativ</p>
+                        )}
                       </div>
                     )}
                     <div className={styles.create__field}>
@@ -564,17 +612,18 @@ export default function CreateServicePage() {
                     <button
                       type="button"
                       className="btn btn-primary"
-                      disabled={!newQuestion.label || (newQuestion.type === 'select' && !newQuestion.options)}
+                      disabled={!newQuestion.label || (newQuestion.type === 'select' && newQuestion.options.length === 0)}
                       onClick={() => {
                         const question: CustomQuestion = {
                           id: Date.now().toString(),
                           label: newQuestion.label,
                           type: newQuestion.type,
-                          options: newQuestion.type === 'select' ? newQuestion.options.split(',').map(o => o.trim()).filter(Boolean) : undefined,
+                          options: newQuestion.type === 'select' ? newQuestion.options : undefined,
                           required: newQuestion.required,
                         }
                         setForm(prev => ({ ...prev, custom_questions: [...prev.custom_questions, question] }))
-                        setNewQuestion({ label: '', type: 'text', options: '', required: false })
+                        setNewQuestion({ label: '', type: 'text', options: [], required: false })
+                        setOptionInput('')
                       }}
                     >
                       Lägg till fråga
