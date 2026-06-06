@@ -35,6 +35,7 @@ type Props = {
 }
 
 const WORD_LIMIT = 20
+const AD_INTERVAL = 3 // show ad after every 3rd card – easy to change later
 
 const categoryDescriptions: Record<string, string> = {
   'digitala-tjanster': 'Hitta experter inom webb, app och IT och få hjälp med ditt digitala projekt idag.',
@@ -336,7 +337,6 @@ export default function TjansterClient({ services, page, totalCount, pageSize }:
             ) : (
               <div className={styles.tjanster__list}>
                 {filtered.flatMap((s, idx) => {
-                  const adInsertAfter = filtered.length >= 3 ? 2 : filtered.length - 1
                   const card = (
                   <Link href={`/service/${s.id}`} key={s.id} className={`${styles.service_card} ${getCardStyle(s.account_type)}`}>
                     <div className={styles.service_card__top}>
@@ -423,7 +423,7 @@ export default function TjansterClient({ services, page, totalCount, pageSize }:
                     </div>
                   </Link>
                   )
-                  if (idx === adInsertAfter) return [card, <AdCard key="ad-card" />]
+                  if ((idx + 1) % AD_INTERVAL === 0) return [card, <AdCard key={`ad-card-${idx}`} />]
                   return [card]
                 })}
               </div>
