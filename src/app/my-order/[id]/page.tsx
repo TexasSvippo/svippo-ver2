@@ -399,6 +399,28 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
 
             {activeTab === 'aktivitet' && (
               <>
+                <div className={`${styles.myorder__header} card`}>
+                  <div className={styles.header_top}>
+                    <div>
+                      <span className={orderStyles.label}>Din beställning av</span>
+                      <h1 className={orderStyles.title}>{order.service_title}</h1>
+                      <span className={orderStyles.date}>
+                        {new Date(order.created_at).toLocaleDateString('sv-SE', { year: 'numeric', month: 'long', day: 'numeric' })}
+                      </span>
+                    </div>
+                    <span className={`${orderStyles.status_badge} ${orderStyles[`status--${order.status}`]}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                      {order.status === 'pending' ? <><Clock size={14} /> Väntar på godkännande</> : order.status === 'accepted' ? <><CheckCircle size={14} /> Godkänd</> : <><XCircle size={14} /> Nekad</>}
+                    </span>
+                  </div>
+                  <Link
+                    href={order.from_request ? `/request/${order.service_id}` : `/service/${order.service_id}`}
+                    className={orderStyles.service_link}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                  >
+                    <LinkIcon size={16} /> {order.from_request ? 'Visa din förfrågan →' : 'Visa tjänsten →'}
+                  </Link>
+                </div>
+
                 <div className={`${orderStyles.status_summary} staticcard`}>
                   <div className={orderStyles.status_summary__item}>
                     <span className={orderStyles.status_summary__label}>Status</span>
