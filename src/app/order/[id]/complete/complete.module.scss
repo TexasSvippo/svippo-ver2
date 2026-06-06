@@ -1,0 +1,261 @@
+.complete {
+  min-height: 100vh;
+  background-color: var(--color-bg);
+  padding: 48px 16px 80px;
+}
+
+.inner {
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-gray);
+  font-size: 14px;
+  margin-bottom: 32px;
+  text-decoration: none;
+  transition: color var(--transition-fast);
+
+  &:hover { color: var(--color-dark); }
+}
+
+// ── Step indicator ──────────────────────────────────────────────────────────
+
+.steps {
+  display: flex;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.step__num {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--color-gray-light);
+  color: var(--color-gray);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+  transition: background var(--transition-fast), color var(--transition-fast);
+
+  &--active {
+    background: var(--color-primary);
+    color: #fff;
+  }
+
+  &--done {
+    background: #1a7a4a;
+    color: #fff;
+  }
+}
+
+.step__label {
+  font-size: 13px;
+  color: var(--color-gray);
+  white-space: nowrap;
+
+  &--active {
+    color: var(--color-dark);
+    font-weight: 600;
+  }
+}
+
+.step__line {
+  flex: 1;
+  height: 2px;
+  background: var(--color-border);
+  margin: 0 10px;
+}
+
+// ── Card ────────────────────────────────────────────────────────────────────
+
+.card {
+  padding: 28px 32px;
+  margin-bottom: 16px;
+}
+
+.card__heading {
+  font-family: var(--font-heading);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-dark);
+  margin-bottom: 6px;
+}
+
+.card__sub {
+  font-size: 14px;
+  color: var(--color-gray);
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+
+// ── Step 1 – Price ──────────────────────────────────────────────────────────
+
+.price_highlight {
+  background: #E6F1FB;
+  border-radius: var(--radius-sm);
+  padding: 18px 24px;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-primary);
+  text-align: center;
+  margin-bottom: 20px;
+  font-family: var(--font-heading);
+}
+
+.input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  color: var(--color-dark);
+  font-family: var(--font-body);
+  outline: none;
+  margin-bottom: 12px;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+
+  &:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(6, 102, 150, 0.12);
+  }
+
+  &::placeholder { color: var(--color-gray); }
+}
+
+.calc {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-dark);
+  margin-bottom: 16px;
+
+  span {
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--color-gray);
+    margin-left: 6px;
+  }
+}
+
+// ── Step 2 – Payment ────────────────────────────────────────────────────────
+
+.payment_type {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-primary);
+  background: #E6F1FB;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  margin-bottom: 12px;
+}
+
+.payment_bullets {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 14px;
+    color: var(--color-dark);
+    line-height: 1.5;
+  }
+}
+
+.bullet_icon {
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: var(--color-primary);
+}
+
+.invoice_box {
+  background: #FFF3E0;
+  border-radius: var(--radius-sm);
+  padding: 14px 18px;
+  font-size: 14px;
+  color: #7a4f00;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  line-height: 1.5;
+}
+
+// ── Step 3 – Message ────────────────────────────────────────────────────────
+
+.textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  color: var(--color-dark);
+  font-family: var(--font-body);
+  outline: none;
+  resize: vertical;
+  min-height: 110px;
+  line-height: 1.6;
+  margin-bottom: 4px;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+
+  &:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(6, 102, 150, 0.12);
+  }
+}
+
+// ── Shared actions ──────────────────────────────────────────────────────────
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 4px;
+
+  button, a { width: 100%; justify-content: center; }
+}
+
+.link_btn {
+  background: none;
+  border: none;
+  color: var(--color-gray);
+  font-size: 13px;
+  text-align: center;
+  cursor: pointer;
+  padding: 6px;
+  font-family: var(--font-body);
+  text-decoration: underline;
+  transition: color var(--transition-fast);
+
+  &:hover:not(:disabled) { color: var(--color-dark); }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+
+// ── Loading ─────────────────────────────────────────────────────────────────
+
+.loading {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-gray);
+  font-size: 15px;
+}
