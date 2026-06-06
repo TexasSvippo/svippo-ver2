@@ -573,36 +573,34 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                   </div>
                 )}
 
-                {(order.price_status === 'no_price' || order.price_status === 'price_rejected') && (
-                  showPriceForm ? (
-                    <div className={styles.price_form}>
-                      <input
-                        className={styles.price_form_input}
-                        type="number"
-                        placeholder="Belopp (kr)"
-                        min={1}
-                        value={priceAmount}
-                        onChange={e => setPriceAmount(e.target.value)}
-                      />
-                      <input
-                        className={styles.price_form_input}
-                        type="text"
-                        placeholder="Kommentar (valfritt)"
-                        value={priceNote}
-                        onChange={e => setPriceNote(e.target.value)}
-                      />
-                      <div style={{ display: 'flex', gap: '8px' }}>
-                        <button className="btn btn-outline" onClick={() => { setShowPriceForm(false); setPriceAmount(''); setPriceNote('') }}>Avbryt</button>
-                        <button className="btn btn-primary" onClick={handleSubmitProposal} disabled={!priceAmount || priceSubmitting}>
-                          {priceSubmitting ? 'Skickar...' : 'Skicka förslag'}
-                        </button>
-                      </div>
+                {showPriceForm ? (
+                  <div className={styles.price_form}>
+                    <input
+                      className={styles.price_form_input}
+                      type="number"
+                      placeholder="Belopp (kr)"
+                      min={1}
+                      value={priceAmount}
+                      onChange={e => setPriceAmount(e.target.value)}
+                    />
+                    <input
+                      className={styles.price_form_input}
+                      type="text"
+                      placeholder="Kommentar (valfritt)"
+                      value={priceNote}
+                      onChange={e => setPriceNote(e.target.value)}
+                    />
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button className="btn btn-outline" onClick={() => { setShowPriceForm(false); setPriceAmount(''); setPriceNote('') }}>Avbryt</button>
+                      <button className="btn btn-primary" onClick={handleSubmitProposal} disabled={!priceAmount || priceSubmitting}>
+                        {priceSubmitting ? 'Skickar...' : 'Skicka förslag'}
+                      </button>
                     </div>
-                  ) : (
-                    <button className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }} onClick={() => setShowPriceForm(true)}>
-                      <Tag size={16} /> Föreslå pris
-                    </button>
-                  )
+                  </div>
+                ) : (
+                  <button className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }} onClick={() => setShowPriceForm(true)}>
+                    <Tag size={16} /> Föreslå pris
+                  </button>
                 )}
 
                 {proposals.length > 0 && (
