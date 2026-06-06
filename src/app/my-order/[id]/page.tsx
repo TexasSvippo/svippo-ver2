@@ -315,6 +315,38 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
     : order.price_status === 'price_approved' ? 'Uppdraget pågår'
     : 'Inväntar prisförslag från utföraren'
 
+  const t0 = new Date(order.created_at).getTime()
+  const feedEvents: Array<{ id: string; icon: JSX.Element; iconType: string; text: string; ts: string }> = [
+    { id: 'created', icon: <Package size={14} />, iconType: 'created', text: 'Beställningen skapades', ts: order.created_at },
+  ]
+  if (order.status === 'accepted') {
+    feedEvents.push({ id: 'status', icon: <CheckCircle size={14} />, iconType: 'accepted', text: 'Utföraren godkände beställningen', ts: new Date(t0 + 60000).toISOString() })
+  } else if (order.status === 'rejected') {
+    feedEvents.push({ id: 'status', icon: <XCircle size={14} />, iconType: 'rejected', text: 'Utföraren nekade beställningen', ts: new Date(t0 + 60000).toISOString() })
+  } else if (isCancelled) {
+    feedEvents.push({ id: 'status', icon: <XCircle size={14} />, iconType: 'rejected', text: 'Beställningen avbröts', ts: new Date(t0 + 60000).toISOString() })
+  }
+  for (const p of proposals) {
+    if (p.status === 'approved' && p.responded_at) {
+      feedEvents.push({ id: `p-${p.id}`, icon: <CheckCircle size={14} />, iconType: 'approved', text: `Du godkände prisförslaget – ${p.amount} kr`, ts: p.responded_at })
+    } else if (p.status === 'rejected' && p.responded_at) {
+      feedEvents.push({ id: `p-${p.id}`, icon: <XCircle size={14} />, iconType: 'price_rejected', text: `Du avböjde prisförslaget – ${p.amount} kr`, ts: p.responded_at })
+    } else {
+      feedEvents.push({ id: `p-${p.id}`, icon: <Tag size={14} />, iconType: 'pending', text: `Nytt prisförslag mottaget – ${p.amount} kr`, ts: p.created_at })
+    }
+  }
+  if (projectStatus !== 'not_started') {
+    const psLabel = projectStatus === 'in_progress' ? 'Pågår'
+      : projectStatus === 'almost_done' ? 'Nästan klart'
+      : projectStatus === 'completed' ? 'Slutfört'
+      : projectStatus
+    feedEvents.push({ id: 'project-status', icon: <BarChart2 size={14} />, iconType: 'status', text: `Projektstatus uppdaterad till: ${psLabel}`, ts: new Date(t0 + 120000).toISOString() })
+  }
+  if (projectStatus === 'completed') {
+    feedEvents.push({ id: 'completed', icon: <CheckCircle size={14} />, iconType: 'completed', text: 'Uppdraget markerades som klart av utföraren', ts: new Date(t0 + 180000).toISOString() })
+  }
+  feedEvents.sort((a, b) => new Date(b.ts).getTime() - new Date(a.ts).getTime())
+
   return (
     <div className={styles.myorder}>
       <div className={`container ${styles.myorder__inner}`}>
@@ -386,8 +418,16 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
                     <span className={orderStyles.status_summary__next}>{buyerNextStep}</span>
                   </div>
                 </div>
-                <div className={`${styles.myorder__message} staticcard`} style={{ color: 'var(--color-gray)', fontSize: '14px', fontStyle: 'italic' }}>
-                  Aktivitetsfeed kommer snart
+                <div className={`${styles.myorder__message} staticcard`}>
+                  <div className={orderStyles.feed}>
+                    {feedEvents.map(e => (
+                      <div key={e.id} className={orderStyles.feed__item}>
+                        <div className={`${orderStyles.feed__icon} ${orderStyles[`feed__icon--${e.iconType}`]}`}>{e.icon}</div>
+                        <span className={orderStyles.feed__text}>{e.text}</span>
+                        <span className={orderStyles.feed__date}>{new Date(e.ts).toLocaleDateString('sv-SE', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </>
             )}
