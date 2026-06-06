@@ -458,6 +458,40 @@
   padding: 24px !important;
 }
 
+// Tab bar
+.tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1.5px solid var(--color-border);
+  background: white;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  padding: 0 8px;
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  padding: 14px 20px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-gray);
+  cursor: pointer;
+  font-family: var(--font-body);
+  margin-bottom: -1.5px;
+  transition: color 0.15s, border-color 0.15s;
+
+  &:hover { color: var(--color-dark); }
+
+  &--active {
+    color: #378ADD;
+    border-bottom-color: #378ADD;
+    font-weight: 600;
+  }
+}
+
 // Price proposal card
 .price_card {
   padding: 24px;

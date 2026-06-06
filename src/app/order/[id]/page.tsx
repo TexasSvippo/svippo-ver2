@@ -81,6 +81,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
   const [priceAmount, setPriceAmount] = useState('')
   const [priceNote, setPriceNote] = useState('')
   const [priceSubmitting, setPriceSubmitting] = useState(false)
+  const [activeTab, setActiveTab] = useState<'aktivitet' | 'detaljer' | 'leveranser'>('aktivitet')
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -349,6 +350,29 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
 
           {/* Vänster */}
           <div className={styles.orderdetail__main}>
+
+            <div className={styles.tabs}>
+              <button
+                className={`${styles.tab} ${activeTab === 'aktivitet' ? styles['tab--active'] : ''}`}
+                onClick={() => setActiveTab('aktivitet')}
+              >
+                Aktivitet
+              </button>
+              <button
+                className={`${styles.tab} ${activeTab === 'detaljer' ? styles['tab--active'] : ''}`}
+                onClick={() => setActiveTab('detaljer')}
+              >
+                Detaljer
+              </button>
+              {serviceType === 'typ2' && (
+                <button
+                  className={`${styles.tab} ${activeTab === 'leveranser' ? styles['tab--active'] : ''}`}
+                  onClick={() => setActiveTab('leveranser')}
+                >
+                  Leveranser
+                </button>
+              )}
+            </div>
 
             <div className={`${styles.orderdetail__header} card`}>
               <div className={styles.header_top}>
