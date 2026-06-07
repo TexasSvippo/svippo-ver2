@@ -30,6 +30,13 @@ type RequestGroup = {
   interests: IncomingInterest[]
 }
 
+type RequestInfo = {
+  category: string | null
+  budget: number | null
+  budget_type: string | null
+  created_at: string | null
+}
+
 interface Props {
   userId: string
 }
@@ -39,6 +46,7 @@ export default function Intresseanmalningar({ userId }: Props) {
   const [fetching, setFetching] = useState(true)
   const [interestAcceptingId, setInterestAcceptingId] = useState<string | null>(null)
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({})
+  const [requestInfoMap, setRequestInfoMap] = useState<Record<string, RequestInfo>>({})
 
   const [interestFilterStatus, setInterestFilterStatus] = useState<'alla' | 'pending' | 'accepted' | 'rejected'>('alla')
 
@@ -56,11 +64,28 @@ export default function Intresseanmalningar({ userId }: Props) {
       }
 
       const svipparIds = [...new Set(rawInterests.map(i => i.svippar_id))]
+      const requestIds = [...new Set(rawInterests.map(i => i.request_id))]
 
       const { data: users } = await supabase
         .from('users')
         .select('id, avatar_url')
         .in('id', svipparIds)
+
+      const { data: requestsData } = await supabase
+        .from('requests')
+        .select('id, subcategory, budget, budget_type, created_at')
+        .in('id', requestIds)
+
+      const requestInfo: Record<string, RequestInfo> = {}
+      requestsData?.forEach(r => {
+        requestInfo[r.id] = {
+          category: r.subcategory ?? null,
+          budget: r.budget ?? null,
+          budget_type: r.budget_type ?? null,
+          created_at: r.created_at ?? null,
+        }
+      })
+      setRequestInfoMap(requestInfo)
 
       const { data: reviews } = await supabase
         .from('reviews')
@@ -240,11 +265,22 @@ export default function Intresseanmalningar({ userId }: Props) {
       group.interests.push(i)
     })
     map.forEach(group => {
+      const info = requestInfoMap[group.request_id]
       const earliest = group.interests.reduce((min, i) => i.created_at < min ? i.created_at : min, group.interests[0].created_at)
-      group.request_meta = `Första intresseanmälan ${new Date(earliest).toLocaleDateString('sv-SE')}`
+
+      if (!info) {
+        group.request_meta = `Första intresseanmälan ${new Date(earliest).toLocaleDateString('sv-SE')}`
+        return
+      }
+
+      const parts: string[] = []
+      if (info.category) parts.push(info.category)
+      parts.push(new Date(info.created_at ?? earliest).toLocaleDateString('sv-SE'))
+      parts.push(info.budget == null || info.budget_type !== 'fast' ? 'Budget: Offert' : `Budget: ${info.budget} kr`)
+      group.request_meta = parts.join(' · ')
     })
     return Array.from(map.values())
-  }, [incomingInterests])
+  }, [incomingInterests, requestInfoMap])
 
   const filteredGroups = useMemo(() => {
     return groupedByRequest
