@@ -7,7 +7,7 @@ import { categories as allCategories } from '@/data/categories'
 import { supabase } from '@/lib/supabase'
 import useAuth from '@/hooks/useAuth'
 import styles from './publicprofile.module.scss'
-import { Link as LinkIcon, MapPin, Star, MessageCircle, CheckCircle, Zap, ClipboardList, Lightbulb, Briefcase, Globe, Smartphone, Mail, User } from 'lucide-react'
+import { Link as LinkIcon, MapPin, Star, MessageCircle, CheckCircle, Zap, Briefcase, Globe, Smartphone, Mail, User, Info, Link2 } from 'lucide-react'
 import { renderStars } from '@/utils/renderStars'
 import type { ReactNode } from 'react'
 
@@ -115,7 +115,12 @@ export default function PublicProfileClient({
   const [contactMessage, setContactMessage] = useState('')
   const [contactSent, setContactSent] = useState(false)
   const [ratingFilter, setRatingFilter] = useState<number | null>(null)
+  const [visibleCount, setVisibleCount] = useState(5)
   const [certificates, setCertificates] = useState<{ id: string; name: string; category_id: string; subcategory: string; file_url: string }[]>([])
+
+  const filteredReviews = ratingFilter === null ? reviews : reviews.filter(r => r.rating === ratingFilter)
+  const visibleReviews = filteredReviews.slice(0, visibleCount)
+  const hasMoreReviews = filteredReviews.length > visibleCount
 
   const accountType = profile.account_type
   const isUF = accountType === 'uf-foretag'
@@ -273,6 +278,12 @@ export default function PublicProfileClient({
   return (
     <div className={`${styles.pubprofile} ${profileTypeClass}`}>
 
+      {/* Hero – dekorativ banner med SVG-bakgrund */}
+      <div className={styles.pubprofile__hero}>
+        <img src={heroBgDesktop} alt="" aria-hidden="true" className={`${styles.pubprofile__hero_bg} ${styles['pubprofile__hero_bg--desktop']}`} />
+        <img src={heroBgMobile} alt="" aria-hidden="true" className={`${styles.pubprofile__hero_bg} ${styles['pubprofile__hero_bg--mobile']}`} />
+      </div>
+
       {/* Sticky meny */}
       <div className={styles.pubprofile__nav}>
         <div className={`container ${styles.pubprofile__nav_inner}`}>
@@ -298,39 +309,6 @@ export default function PublicProfileClient({
         </div>
       </div>
 
-      {/* Hero – dekorativ banner med SVG-bakgrund */}
-      <div className={styles.pubprofile__hero}>
-        <img src={heroBgDesktop} alt="" aria-hidden="true" className={`${styles.pubprofile__hero_bg} ${styles['pubprofile__hero_bg--desktop']}`} />
-        <img src={heroBgMobile} alt="" aria-hidden="true" className={`${styles.pubprofile__hero_bg} ${styles['pubprofile__hero_bg--mobile']}`} />
-      </div>
-
-      {/* USP-rad */}
-      <div className={styles.pubprofile__usp}>
-        <div className={`container ${styles.pubprofile__usp_inner}`}>
-          {isSvippare && (
-            <>
-              <div className={styles.pubprofile__usp_item}><CheckCircle size={16} /><span>Verifierad Svippare</span></div>
-              <div className={styles.pubprofile__usp_item}><Zap size={16} /><span>Snabbt svar</span></div>
-              <div className={styles.pubprofile__usp_item}><Star size={16} /><span>{avgRating !== null ? `${avgRating} i snittbetyg` : 'Ny på Svippo'}</span></div>
-            </>
-          )}
-          {isCompany && (
-            <>
-              <div className={styles.pubprofile__usp_item}><span>🏢</span><span>Verifierat företag</span></div>
-              <div className={styles.pubprofile__usp_item}><ClipboardList size={16} /><span>Professionella tjänster</span></div>
-              <div className={styles.pubprofile__usp_item}><Star size={16} /><span>{avgRating !== null ? `${avgRating} i snittbetyg` : 'Nytt på Svippo'}</span></div>
-            </>
-          )}
-          {isUF && (
-            <>
-              <div className={styles.pubprofile__usp_item}><span>🎓</span><span>UF-företag</span></div>
-              <div className={styles.pubprofile__usp_item}><Lightbulb size={16} /><span>Ungt entreprenörskap</span></div>
-              <div className={styles.pubprofile__usp_item}><Star size={16} /><span>{avgRating !== null ? `${avgRating} i snittbetyg` : 'Nytt på Svippo'}</span></div>
-            </>
-          )}
-        </div>
-      </div>
-
       {/* Innehåll – tvåkolumnslayout */}
       <div className="container">
         <div className={styles.pubprofile__layout}>
@@ -348,7 +326,7 @@ export default function PublicProfileClient({
             </nav>
 
             {/* Profilrubrik */}
-            <div className={`${styles.pubprofile__header_card} card`}>
+            <div className={styles.pubprofile__header_card}>
               <div className={styles.pubprofile__avatar}>
                 {profile.avatar_url
                   ? <img src={profile.avatar_url} alt={profile.name} className={styles.pubprofile__avatar_img} />
@@ -488,140 +466,155 @@ export default function PublicProfileClient({
 
         {/* Recensioner */}
         <section id="recensioner" className={styles.pubprofile__section}>
-          <div className={styles.pubprofile__reviews_header}>
-            <h2 className={styles.pubprofile__section_title}>
-              Recensioner
-              {reviews.length > 0 && (
-                <span className={styles.pubprofile__reviews_meta}>
-                  {avgRating !== null && <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}><Star size={14} /> {avgRating}</span>} · {reviews.length} recensioner
-                </span>
-              )}
-            </h2>
+          <h2 className={styles.pubprofile__section_title}>Recensioner</h2>
 
-            {/* Stjärnfilter */}
-            {reviews.length > 0 && (
-              <div className={styles.pubprofile__rating_filters}>
-                <button
-                  className={`${styles.pubprofile__rating_filter} ${ratingFilter === null ? styles['pubprofile__rating_filter--active'] : ''}`}
-                  onClick={() => setRatingFilter(null)}
-                >
-                  Alla
-                </button>
-                {[5, 4, 3, 2, 1].map(star => (
+          <div className={styles.pubprofile__reviews_card}>
+            {reviews.length === 0 ? (
+              <p className={styles.pubprofile__no_reviews}>Inga recensioner ännu.</p>
+            ) : (
+              <>
+                {/* Sammanfattning: stort betyg + antal */}
+                <div className={styles.pubprofile__reviews_summary}>
+                  <span className={styles.pubprofile__reviews_big_rating}>{avgRating ?? '–'}</span>
+                  <span className={styles.pubprofile__reviews_count_label}>{reviews.length} omdömen</span>
+                </div>
+
+                {/* Filter-pills */}
+                <div className={styles.pubprofile__reviews_pills}>
                   <button
-                    key={star}
-                    className={`${styles.pubprofile__rating_filter} ${ratingFilter === star ? styles['pubprofile__rating_filter--active'] : ''}`}
-                    style={{ display: 'flex', alignItems: 'center', gap: '2px' }}
-                    onClick={() => setRatingFilter(ratingFilter === star ? null : star)}
+                    type="button"
+                    className={`${styles.pubprofile__review_pill} ${ratingFilter === null ? styles['pubprofile__review_pill--active'] : ''}`}
+                    onClick={() => { setRatingFilter(null); setVisibleCount(5) }}
                   >
-                    {renderStars(star, 14)}
+                    Alla
                   </button>
-                ))}
-              </div>
+                  {[5, 4, 3, 2, 1].map(n => (
+                    <button
+                      key={n}
+                      type="button"
+                      className={`${styles.pubprofile__review_pill} ${ratingFilter === n ? styles['pubprofile__review_pill--active'] : ''}`}
+                      onClick={() => { setRatingFilter(n); setVisibleCount(5) }}
+                    >
+                      <Star size={12} fill="#EF9F27" color="#EF9F27" /> {n}/5
+                    </button>
+                  ))}
+                </div>
+
+                {/* Recensionslista */}
+                <div className={styles.pubprofile__reviews_list}>
+                  {filteredReviews.length === 0 ? (
+                    <p className={styles.pubprofile__no_reviews}>Inga omdömen med det betyget.</p>
+                  ) : (
+                    visibleReviews.map((r, i) => (
+                      <div key={r.id}>
+                        {i > 0 && <div className={styles.pubprofile__review_divider} />}
+                        <div className={styles.pubprofile__review}>
+                          <div className={styles.pubprofile__review_header}>
+                            <div className={styles.pubprofile__review_avatar}>
+                              {r.reviewer_name?.charAt(0).toUpperCase() || '?'}
+                            </div>
+                            <div className={styles.pubprofile__review_meta}>
+                              <strong className={styles.pubprofile__review_name}>{r.reviewer_name}</strong>
+                              <div className={styles.pubprofile__review_stars}>{renderStars(r.rating, 13)}</div>
+                            </div>
+                          </div>
+                          {r.comment && <p className={styles.pubprofile__review_comment}>{r.comment}</p>}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                {/* Visa fler */}
+                {hasMoreReviews && (
+                  <button
+                    type="button"
+                    className={styles.pubprofile__reviews_load_more}
+                    onClick={() => setVisibleCount(c => c + 5)}
+                  >
+                    Se fler
+                  </button>
+                )}
+              </>
             )}
           </div>
-
-          {reviews.length === 0 ? (
-            <div className={styles.pubprofile__empty}>
-              <p>Inga recensioner ännu.</p>
-            </div>
-          ) : (
-            <div className={styles.pubprofile__reviews}>
-              {reviews
-                .filter(r => ratingFilter === null || r.rating === ratingFilter)
-                .map(r => (
-                  <div key={r.id} className={`${styles.pubprofile__review} card`}>
-                    <div className={styles.pubprofile__review_header}>
-                      <strong>{r.reviewer_name}</strong>
-                      {renderStars(r.rating, 14)}
-                    </div>
-                    <p>{r.comment}</p>
-                    <span className={styles.pubprofile__review_date}>
-                      {new Date(r.created_at).toLocaleDateString('sv-SE')}
-                    </span>
-                  </div>
-                ))
-              }
-              {reviews.filter(r => ratingFilter === null || r.rating === ratingFilter).length === 0 && (
-                <p className={styles.pubprofile__empty_text}>
-                  Inga recensioner med {ratingFilter} stjärnor.
-                </p>
-              )}
-            </div>
-          )}
         </section>
 
           </div>
 
           {/* Sidopanel (höger kolumn) */}
           <aside id="kontakt" className={styles.pubprofile__sidebar}>
+            <div className={styles.pubprofile__sidebar_card}>
 
-            {/* Snittbetyg */}
-            <div className={`${styles.pubprofile__sidebar_card} card`}>
+              {/* Snittbetyg */}
               <div className={styles.pubprofile__sidebar_rating}>
                 <strong>{avgRating !== null ? avgRating : '–'}</strong>
                 <span>i snittbetyg</span>
               </div>
-              {reviews.length > 0 && (
-                <span className={styles.pubprofile__sidebar_rating_count}>{reviews.length} recensioner</span>
-              )}
-            </div>
 
-            {/* Kontaktuppgifter */}
-            <div className={`${styles.pubprofile__sidebar_card} card`}>
-              <h3 className={styles.pubprofile__sidebar_heading}>Kontaktuppgifter</h3>
-              <div className={styles.pubprofile__contact_info}>
-                <div className={styles.pubprofile__contact_item}>
-                  <Mail size={16} />
-                  <span>{profile.email}</span>
-                </div>
-                {profile.phone && (
+              <div className={styles.pubprofile__sidebar_divider} />
+
+              {/* Kontaktuppgifter */}
+              <div className={styles.pubprofile__sidebar_section}>
+                <h3 className={styles.pubprofile__sidebar_heading}>
+                  <Info size={16} /> Kontaktuppgifter
+                </h3>
+                <div className={styles.pubprofile__contact_info}>
                   <div className={styles.pubprofile__contact_item}>
                     <Smartphone size={16} />
-                    <span>{profile.phone}</span>
+                    <span>{profile.phone || '–'}</span>
                   </div>
-                )}
+                  <div className={styles.pubprofile__contact_item}>
+                    <Mail size={16} />
+                    <span>{profile.email}</span>
+                  </div>
+                </div>
               </div>
-            </div>
 
-            {/* Länkar */}
-            {(website || socialLinks.length > 0) && (
-              <div className={`${styles.pubprofile__sidebar_card} card`}>
-                <h3 className={styles.pubprofile__sidebar_heading}>Länkar</h3>
-                {website && (
-                  <a
-                    href={website}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={styles.pubprofile__link}
-                  >
-                    <Globe size={16} /> {website}
-                  </a>
-                )}
-                {socialLinks.length > 0 && (
-                  <div className={styles.pubprofile__social_links}>
-                    {socialLinks.map((url, i) => (
+              {/* Länkar */}
+              {(website || socialLinks.length > 0) && (
+                <>
+                  <div className={styles.pubprofile__sidebar_divider} />
+                  <div className={styles.pubprofile__sidebar_section}>
+                    <h3 className={styles.pubprofile__sidebar_heading}>
+                      <Link2 size={16} /> Länkar
+                    </h3>
+                    {website && (
                       <a
-                        key={i}
-                        href={url}
+                        href={website}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className={styles.pubprofile__social_link}
+                        className={styles.pubprofile__link}
                       >
-                        <span>{getSocialIcon(url)}</span>
-                        <span>{getSocialLabel(url)}</span>
+                        <Globe size={16} /> {website}
                       </a>
-                    ))}
+                    )}
+                    {socialLinks.length > 0 && (
+                      <div className={styles.pubprofile__social_links}>
+                        {socialLinks.map((url, i) => (
+                          <a
+                            key={i}
+                            href={url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={styles.pubprofile__social_link}
+                          >
+                            <span>{getSocialIcon(url)}</span>
+                            <span>{getSocialLabel(url)}</span>
+                          </a>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-            )}
+                </>
+              )}
 
-            {/* Meddela mig */}
-            <button className={`btn btn-primary ${styles.pubprofile__sidebar_cta}`} onClick={handleContact}>
-              <MessageCircle size={16} /> Meddela mig
-            </button>
+              {/* Meddela mig */}
+              <button className={`btn btn-primary ${styles.pubprofile__sidebar_cta}`} onClick={handleContact}>
+                <MessageCircle size={16} /> Meddela mig
+              </button>
 
+            </div>
           </aside>
 
         </div>

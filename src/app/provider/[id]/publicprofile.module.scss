@@ -130,12 +130,11 @@
 }
 
 // ================================
-// HERO – gradient per profiltyp
+// HERO – dekorativ SVG-banner
 // ================================
 .pubprofile__hero {
   position: relative;
-  padding: 56px 0 48px;
-  color: white;
+  height: 200px;
   overflow: hidden;
 }
 
@@ -145,7 +144,6 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  z-index: 0;
 
   &--desktop { display: block; }
   &--mobile { display: none; }
@@ -158,8 +156,7 @@
   display: flex;
   align-items: flex-start;
   gap: 24px;
-  padding: 28px;
-  margin-bottom: 16px;
+  padding: 24px 0 8px;
 }
 
 .pubprofile__avatar {
@@ -282,35 +279,6 @@
 }
 
 // ================================
-// USP-RAD under hero
-// ================================
-.pubprofile__usp {
-  background: white;
-  border-bottom: 1px solid var(--color-border);
-  padding: 20px 0;
-}
-
-.pubprofile__usp_inner {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 48px;
-}
-
-.pubprofile__usp_item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--color-dark);
-
-  span:first-child {
-    font-size: 20px;
-  }
-}
-
-// ================================
 // TVÅKOLUMNS-LAYOUT
 // ================================
 .pubprofile__layout {
@@ -337,11 +305,28 @@
 .pubprofile__sidebar_card {
   display: flex;
   flex-direction: column;
+  gap: 20px;
+  padding: 24px;
+  background: white;
+  border: 0.5px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.pubprofile__sidebar_divider {
+  height: 0.5px;
+  background: var(--color-border);
+}
+
+.pubprofile__sidebar_section {
+  display: flex;
+  flex-direction: column;
   gap: 12px;
-  padding: 20px;
 }
 
 .pubprofile__sidebar_heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 14px;
   font-weight: 700;
   color: var(--color-dark);
@@ -365,11 +350,6 @@
     color: var(--color-gray);
     font-weight: 500;
   }
-}
-
-.pubprofile__sidebar_rating_count {
-  font-size: 12px;
-  color: var(--color-gray);
 }
 
 .pubprofile__sidebar_cta {
@@ -595,79 +575,145 @@
 // ================================
 // RECENSIONER
 // ================================
-.pubprofile__reviews {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.pubprofile__reviews_header {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.pubprofile__reviews_meta {
-  font-size: 16px;
-  font-weight: 500;
-  color: var(--color-gray);
-  margin-left: 10px;
-}
-
-.pubprofile__rating_filters {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.pubprofile__rating_filter {
-  padding: 6px 14px;
-  border-radius: var(--radius-full);
+.pubprofile__reviews_card {
   border: 1.5px solid var(--color-border);
+  border-radius: 12px;
+  padding: 1.25rem;
+}
+
+.pubprofile__reviews_summary {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.pubprofile__reviews_big_rating {
+  font-size: 48px;
+  font-weight: 500;
+  color: var(--color-dark);
+  line-height: 1;
+  letter-spacing: -0.5px;
+}
+
+.pubprofile__reviews_count_label {
+  font-size: 14px;
+  color: var(--color-gray);
+  font-weight: 400;
+}
+
+.pubprofile__reviews_pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 0;
+}
+
+.pubprofile__review_pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 14px;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-full);
   background: white;
   font-size: 13px;
   font-weight: 500;
-  color: var(--color-gray);
+  color: var(--color-dark);
   cursor: pointer;
   font-family: var(--font-body);
-  transition: all 0.2s;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
 
-  &:hover {
-    border-color: var(--profile-accent, var(--color-primary));
-    color: var(--profile-accent, var(--color-primary));
-  }
+  &:hover { border-color: #378ADD; }
 
   &--active {
-    background: var(--profile-accent-light, #e0f0fa);
-    border-color: var(--profile-accent, var(--color-primary));
-    color: var(--profile-accent, var(--color-primary));
-    font-weight: 600;
+    background: #E6F1FB;
+    border-color: #378ADD;
+    color: #185FA5;
   }
 }
 
+.pubprofile__reviews_list {
+  display: flex;
+  flex-direction: column;
+}
+
+.pubprofile__review_divider {
+  height: 0.5px;
+  background: var(--color-border);
+}
+
 .pubprofile__review {
-  padding: 24px;
+  padding: 16px 0;
   display: flex;
   flex-direction: column;
   gap: 10px;
-  border-left: 3px solid var(--profile-accent, var(--color-primary)) !important;
 }
 
 .pubprofile__review_header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-
-  strong {
-    font-size: 15px;
-    font-weight: 700;
-    color: var(--color-dark);
-  }
+  gap: 12px;
 }
 
-.pubprofile__review_date {
-  font-size: 12px;
+.pubprofile__review_avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--profile-accent, var(--color-primary));
+  color: white;
+  font-size: 16px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.pubprofile__review_meta {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.pubprofile__review_name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-dark);
+}
+
+.pubprofile__review_stars {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.pubprofile__review_comment {
+  font-size: 14px;
+  color: var(--color-dark);
+  line-height: 1.65;
+  padding-left: 52px;
+}
+
+.pubprofile__no_reviews {
+  font-size: 14px;
   color: var(--color-gray);
+}
+
+.pubprofile__reviews_load_more {
+  align-self: flex-start;
+  margin-top: 8px;
+  padding: 9px 22px;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-full);
+  background: white;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-dark);
+  cursor: pointer;
+  font-family: var(--font-body);
+  transition: border-color 0.15s, color 0.15s;
+
+  &:hover { border-color: #378ADD; color: #185FA5; }
 }
 
 // ================================
@@ -716,7 +762,7 @@
 // ================================
 @media (max-width: 768px) {
   .pubprofile__hero {
-    padding: 40px 0 32px;
+    height: 140px;
   }
 
   .pubprofile__hero_bg {
@@ -768,13 +814,6 @@
 
   .pubprofile__nav {
     top: 60px;
-  }
-
-  .pubprofile__usp_inner {
-    flex-direction: column;
-    gap: 16px;
-    align-items: flex-start;
-    padding: 0 16px;
   }
 
   .pubprofile__name {
