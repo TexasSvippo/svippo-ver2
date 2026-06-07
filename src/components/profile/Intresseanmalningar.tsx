@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import styles from './intresseanmalningar.module.scss'
-import { Star, User, CheckCircle, XCircle, Mail, ChevronDown } from 'lucide-react'
+import { Star, User, CheckCircle, XCircle, Mail, ChevronDown, X } from 'lucide-react'
 
 type IncomingInterest = {
   id: string
@@ -47,6 +47,7 @@ export default function Intresseanmalningar({ userId }: Props) {
   const [interestAcceptingId, setInterestAcceptingId] = useState<string | null>(null)
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({})
   const [requestInfoMap, setRequestInfoMap] = useState<Record<string, RequestInfo>>({})
+  const [selectedInterest, setSelectedInterest] = useState<IncomingInterest | null>(null)
 
   const [interestFilterStatus, setInterestFilterStatus] = useState<'alla' | 'pending' | 'accepted' | 'rejected'>('alla')
 
@@ -117,6 +118,15 @@ export default function Intresseanmalningar({ userId }: Props) {
     }
     fetchInterests()
   }, [userId])
+
+  useEffect(() => {
+    if (!selectedInterest) return
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setSelectedInterest(null)
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [selectedInterest])
 
   const handleAccept = async (interest: IncomingInterest) => {
     setInterestAcceptingId(interest.id)
@@ -315,16 +325,6 @@ export default function Intresseanmalningar({ userId }: Props) {
 
   if (fetching) return <p style={{ color: 'var(--color-gray)', fontSize: 14 }}>Laddar intresseanmälningar...</p>
 
-  if (incomingInterests.length === 0) {
-    return (
-      <div className={styles.empty}>
-        <span>📭</span>
-        <p>Inga intresseanmälningar ännu.</p>
-        <Link href="/create-request" className="btn btn-orange">Skapa en förfrågan</Link>
-      </div>
-    )
-  }
-
   return (
     <>
       {/* Filter-flikar */}
@@ -346,7 +346,13 @@ export default function Intresseanmalningar({ userId }: Props) {
       </div>
 
       {/* Grupperad vy per förfrågan */}
-      {filteredGroups.length === 0 ? (
+      {incomingInterests.length === 0 ? (
+        <div className={styles.empty}>
+          <span>📭</span>
+          <p>Inga intresseanmälningar ännu.</p>
+          <Link href="/create-request" className="btn btn-orange">Skapa en förfrågan</Link>
+        </div>
+      ) : filteredGroups.length === 0 ? (
         <div className={styles.groups_empty}>
           <p>Inga intresseanmälningar matchar valt filter.</p>
         </div>
@@ -370,7 +376,12 @@ export default function Intresseanmalningar({ userId }: Props) {
                 {open && (
                   <div className={styles.group__body}>
                     {group.interests.map(interest => (
-                      <div key={interest.id} className={styles.interest_row}>
+                      <div
+                        key={interest.id}
+                        className={styles.interest_row}
+                        onClick={() => setSelectedInterest(interest)}
+                        style={{ cursor: 'pointer' }}
+                      >
                         <div className={styles.svippar_avatar}>
                           {interest.avatar_url
                             // eslint-disable-next-line @next/next/no-img-element
@@ -397,7 +408,7 @@ export default function Intresseanmalningar({ userId }: Props) {
                         <div className={styles.interest_row__price}>{interest.price ? `${interest.price} kr` : '–'}</div>
                         <div className={styles.interest_row__date}>{new Date(interest.created_at).toLocaleDateString('sv-SE')}</div>
 
-                        <div className={styles.interest_row__actions}>
+                        <div className={styles.interest_row__actions} onClick={e => e.stopPropagation()}>
                           <Link href={`/provider/${interest.svippar_id}`} className={styles.action_btn}><User size={16} /></Link>
                           <a href={`mailto:${interest.svippar_email}`} className={styles.action_btn}><Mail size={16} /></a>
                           {interest.status === 'pending' ? (
@@ -423,6 +434,72 @@ export default function Intresseanmalningar({ userId }: Props) {
             )
           })}
         </div>
+      )}
+
+      {/* Detaljpanel */}
+      {selectedInterest && (
+        <>
+          <div className={styles.drawer_overlay} onClick={() => setSelectedInterest(null)} />
+          <div className={styles.drawer}>
+            <button type="button" className={styles.drawer__close} onClick={() => setSelectedInterest(null)}>
+              <X size={20} />
+            </button>
+
+            <div className={styles.drawer__header}>
+              <div className={styles.drawer__avatar}>
+                {selectedInterest.avatar_url
+                  // eslint-disable-next-line @next/next/no-img-element
+                  ? <img src={selectedInterest.avatar_url} alt={selectedInterest.svippar_name} className={styles.svippar_avatar_img} />
+                  : selectedInterest.svippar_name?.charAt(0).toUpperCase()
+                }
+              </div>
+              <div className={styles.drawer__header_info}>
+                <span className={styles.drawer__name}>{selectedInterest.svippar_name}</span>
+                {selectedInterest.rating !== null && selectedInterest.rating !== undefined ? (
+                  <span className={styles.rating_cell} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                    <Star size={14} fill="#EF9F27" color="#EF9F27" /> {selectedInterest.rating}
+                    <span className={styles.rating_count}>({selectedInterest.reviews})</span>
+                  </span>
+                ) : (
+                  <span className={styles.rating_new}>Ny</span>
+                )}
+              </div>
+            </div>
+
+            <p className={styles.drawer__message}>{selectedInterest.message}</p>
+
+            {selectedInterest.price && (
+              <p className={styles.drawer__price}>Prisförslag: {selectedInterest.price} kr</p>
+            )}
+            <p className={styles.drawer__date}>Anmälde sig {new Date(selectedInterest.created_at).toLocaleDateString('sv-SE')}</p>
+
+            <div className={styles.drawer__divider} />
+
+            {selectedInterest.status === 'pending' ? (
+              <div className={styles.drawer__actions}>
+                <button
+                  type="button"
+                  className={styles.drawer__btn_primary}
+                  onClick={() => handleAccept(selectedInterest)}
+                  disabled={interestAcceptingId === selectedInterest.id}
+                >
+                  {interestAcceptingId === selectedInterest.id ? 'Godkänner...' : 'Välj denna utförare'}
+                </button>
+                <button type="button" className={styles.drawer__btn_secondary} onClick={() => handleReject(selectedInterest)}>
+                  Neka
+                </button>
+              </div>
+            ) : (
+              <span className={`${styles.status_badge} ${selectedInterest.status === 'accepted' ? styles['status_badge--accepted'] : styles['status_badge--rejected']}`}>
+                {selectedInterest.status === 'accepted' ? <><CheckCircle size={14} /> Godkänd</> : <><XCircle size={14} /> Nekad</>}
+              </span>
+            )}
+
+            <Link href={`/provider/${selectedInterest.svippar_id}`} className={styles.drawer__profile_link}>
+              Se fullständig profil →
+            </Link>
+          </div>
+        </>
       )}
     </>
   )
