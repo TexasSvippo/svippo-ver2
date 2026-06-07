@@ -598,10 +598,6 @@ export default function ProfileClient({ initialAccountType }: Props) {
               ) : filteredIncoming.length === 0 ? (
                 <div className={styles.profile__empty}><p>Inga beställningar matchar valt filter.</p></div>
               ) : (() => {
-                const isDoneIncoming = (o: Order) => o.project_status === 'completed' || o.status === 'cancelled' || (o.project_status as string) === 'cancelled' || o.status === 'rejected'
-                const activeIncoming = filteredIncoming.filter(o => !isDoneIncoming(o))
-                const historyIncoming = filteredIncoming.filter(o => isDoneIncoming(o))
-
                 const renderCard = (order: Order) => {
                     const raw = order as Order & { from_request?: boolean }
                     const ps = order.project_status
@@ -611,6 +607,8 @@ export default function ProfileClient({ initialAccountType }: Props) {
                     // Left border color
                     const borderCls = isCancelled
                       ? styles['placed_card--cancelled']
+                      : ps === 'awaiting_confirmation'
+                      ? styles['placed_card--action']
                       : ps === 'completed' || order.status === 'rejected'
                       ? styles['placed_card--done']
                       : styles['placed_card--ongoing']
@@ -620,6 +618,7 @@ export default function ProfileClient({ initialAccountType }: Props) {
                       isCancelled ? 'Avbokad' :
                       order.status === 'rejected' ? 'Nekad' :
                       ps === 'completed' ? 'Avslutat' :
+                      ps === 'awaiting_confirmation' ? 'Inväntar beställarens bekräftelse' :
                       ps === 'delivered' ? 'Levererat – inväntar godkännande' :
                       (ps === 'in_progress' || ps === 'almost_done') ? 'Pågår' :
                       'Ny beställning'
@@ -627,7 +626,7 @@ export default function ProfileClient({ initialAccountType }: Props) {
                     const statusCls =
                       isCancelled || order.status === 'rejected' ? styles['placed_card__status_text--done'] :
                       ps === 'completed' ? styles['placed_card__status_text--done'] :
-                      ps === 'delivered' ? styles['placed_card__status_text--action'] :
+                      (ps === 'awaiting_confirmation' || ps === 'delivered') ? styles['placed_card__status_text--action'] :
                       styles['placed_card__status_text--ongoing']
 
                     return (
@@ -712,6 +711,14 @@ export default function ProfileClient({ initialAccountType }: Props) {
                       </div>
                     )
                   }
+
+                if (incomingStatusFilter === 'done') {
+                  return <div className={styles.profile__list}>{filteredIncoming.map(renderCard)}</div>
+                }
+
+                const isDoneIncoming = (o: Order) => o.project_status !== 'awaiting_confirmation' && (o.project_status === 'completed' || o.status === 'cancelled' || (o.project_status as string) === 'cancelled' || o.status === 'rejected')
+                const activeIncoming = filteredIncoming.filter(o => !isDoneIncoming(o))
+                const historyIncoming = filteredIncoming.filter(o => isDoneIncoming(o))
 
                 return (
                   <>
