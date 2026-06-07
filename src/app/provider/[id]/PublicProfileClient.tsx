@@ -136,6 +136,22 @@ export default function PublicProfileClient({
     ? '🏢 Företag'
     : <><Zap size={14} /> Svippare</>
 
+  // Hero-bakgrund (SVG) per profiltyp – desktop och mobil
+  const heroBgDesktop = encodeURI(
+    isUF
+      ? '/images/UF profil bg dator.svg'
+      : isCompany
+      ? '/images/Företag profil bg dator.svg'
+      : '/images/Svippare profil bg dator.svg'
+  )
+  const heroBgMobile = encodeURI(
+    isUF
+      ? '/images/uf bg mobil.svg'
+      : isCompany
+      ? '/images/företag bg mobil.svg'
+      : '/images/svippare bg mobil.svg'
+  )
+
 
   // Bio att visa – svippare har bio i svippareProfile, företag i companyProfile, annars users.bio
   const displayBio = isSvippare
@@ -255,7 +271,7 @@ export default function PublicProfileClient({
   }
 
   return (
-    <div className={`${styles.pubprofile} ${profileTypeClass}`}>  
+    <div className={`${styles.pubprofile} ${profileTypeClass}`}>
 
       {/* Sticky meny */}
       <div className={styles.pubprofile__nav}>
@@ -282,64 +298,10 @@ export default function PublicProfileClient({
         </div>
       </div>
 
-      {/* Hero */}
+      {/* Hero – dekorativ banner med SVG-bakgrund */}
       <div className={styles.pubprofile__hero}>
-        <div className={`container ${styles.pubprofile__hero_inner}`}>
-        <div className={styles.pubprofile__avatar}>
-          {profile.avatar_url
-            ? <img src={profile.avatar_url} alt={profile.name} className={styles.pubprofile__avatar_img} />
-            : profile.name?.charAt(0).toUpperCase()
-          }
-        </div>
-          <div className={styles.pubprofile__hero_info}>
-            <div className={styles.pubprofile__hero_top}>
-              <span className={styles.pubprofile__badge}>{profileBadge}</span>
-              {displayCity && (
-                <span className={styles.pubprofile__location} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}><MapPin size={14} /> {displayCity}</span>
-              )}
-            </div>
-            {profile.created_at && (
-              <span className={styles.pubprofile__member}>
-                Medlem sedan {new Date(profile.created_at).toLocaleDateString('sv-SE', { year: 'numeric', month: 'long' })}
-              </span>
-            )}
-            <h1 className={styles.pubprofile__name}>{profile.name}</h1>
-            {displayBio && (
-              <p className={styles.pubprofile__bio_short}>
-                {displayBio.slice(0, 120)}{displayBio.length > 120 ? '...' : ''}
-              </p>
-            )}
-
-            {/* Kategorier */}
-            {categoryObjects.length > 0 && (
-              <div className={styles.pubprofile__categories}>
-                {categoryObjects.map(cat => (
-                  <span key={cat!.id} className={styles.pubprofile__category_tag}>
-                    {cat!.icon} {cat!.label}
-                  </span>
-                ))}
-              </div>
-            )}
-
-            <div className={styles.pubprofile__stats}>
-              <div className={styles.pubprofile__stat}>
-                <strong>{services.length}</strong>
-                <span>Tjänster</span>
-              </div>
-              <div className={styles.pubprofile__stat}>
-                <strong>{reviews.length}</strong>
-                <span>Recensioner</span>
-              </div>
-              <div className={styles.pubprofile__stat}>
-                <strong style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>{avgRating !== null ? <><Star size={14} /> {avgRating}</> : '–'}</strong>
-                <span>Snittbetyg</span>
-              </div>
-            </div>
-          </div>
-          <button className={`btn btn-primary ${styles.pubprofile__contact_btn}`} onClick={() => scrollTo('kontakt')}>
-            <MessageCircle size={16} /> Kontakta {isCompany || isUF ? 'oss' : 'mig'}
-          </button>
-        </div>
+        <img src={heroBgDesktop} alt="" aria-hidden="true" className={`${styles.pubprofile__hero_bg} ${styles['pubprofile__hero_bg--desktop']}`} />
+        <img src={heroBgMobile} alt="" aria-hidden="true" className={`${styles.pubprofile__hero_bg} ${styles['pubprofile__hero_bg--mobile']}`} />
       </div>
 
       {/* USP-rad */}
@@ -369,8 +331,76 @@ export default function PublicProfileClient({
         </div>
       </div>
 
-      {/* Innehåll */}
+      {/* Innehåll – tvåkolumnslayout */}
       <div className="container">
+        <div className={styles.pubprofile__layout}>
+
+          {/* Huvudinnehåll (vänster kolumn) */}
+          <div className={styles.pubprofile__main}>
+
+            {/* Breadcrumbs */}
+            <nav className={styles.breadcrumb}>
+              <Link href="/">Hem</Link>
+              <span>·</span>
+              <Link href="/services">Svippare</Link>
+              <span>·</span>
+              <span>{profile.name}</span>
+            </nav>
+
+            {/* Profilrubrik */}
+            <div className={`${styles.pubprofile__header_card} card`}>
+              <div className={styles.pubprofile__avatar}>
+                {profile.avatar_url
+                  ? <img src={profile.avatar_url} alt={profile.name} className={styles.pubprofile__avatar_img} />
+                  : profile.name?.charAt(0).toUpperCase()
+                }
+              </div>
+              <div className={styles.pubprofile__header_info}>
+                <div className={styles.pubprofile__hero_top}>
+                  <span className={styles.pubprofile__badge}>{profileBadge}</span>
+                  {displayCity && (
+                    <span className={styles.pubprofile__location} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}><MapPin size={14} /> {displayCity}</span>
+                  )}
+                </div>
+                {profile.created_at && (
+                  <span className={styles.pubprofile__member}>
+                    Medlem sedan {new Date(profile.created_at).toLocaleDateString('sv-SE', { year: 'numeric', month: 'long' })}
+                  </span>
+                )}
+                <h1 className={styles.pubprofile__name}>{profile.name}</h1>
+                {displayBio && (
+                  <p className={styles.pubprofile__bio_short}>
+                    {displayBio.slice(0, 120)}{displayBio.length > 120 ? '...' : ''}
+                  </p>
+                )}
+
+                {/* Kategorier */}
+                {categoryObjects.length > 0 && (
+                  <div className={styles.pubprofile__categories}>
+                    {categoryObjects.map(cat => (
+                      <span key={cat!.id} className={styles.pubprofile__category_tag}>
+                        {cat!.icon} {cat!.label}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                <div className={styles.pubprofile__stats}>
+                  <div className={styles.pubprofile__stat}>
+                    <strong>{services.length}</strong>
+                    <span>Tjänster</span>
+                  </div>
+                  <div className={styles.pubprofile__stat}>
+                    <strong>{reviews.length}</strong>
+                    <span>Recensioner</span>
+                  </div>
+                  <div className={styles.pubprofile__stat}>
+                    <strong style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>{avgRating !== null ? <><Star size={14} /> {avgRating}</> : '–'}</strong>
+                    <span>Snittbetyg</span>
+                  </div>
+                </div>
+              </div>
+            </div>
 
         {/* Tjänster */}
         <section id="tjanster" className={styles.pubprofile__section}>
@@ -429,40 +459,6 @@ export default function PublicProfileClient({
             )}
 
             {/* Webbplats */}
-            {website && (
-              <div className={styles.pubprofile__about_block}>
-                <h3 className={styles.pubprofile__about_heading} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> Webbplats</h3>
-                <a
-                  href={website}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={styles.pubprofile__link}
-                >
-                  {website}
-                </a>
-              </div>
-            )}
-
-            {/* Sociala medier */}
-            {socialLinks.length > 0 && (
-              <div className={styles.pubprofile__about_block}>
-                <h3 className={styles.pubprofile__about_heading} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Smartphone size={16} /> Sociala medier</h3>
-                <div className={styles.pubprofile__social_links}>
-                  {socialLinks.map((url, i) => (
-                    <a
-                      key={i}
-                      href={url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={styles.pubprofile__social_link}
-                    >
-                      <span>{getSocialIcon(url)}</span>
-                      <span>{getSocialLabel(url)}</span>
-                    </a>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
         </section>
 
@@ -555,63 +551,80 @@ export default function PublicProfileClient({
           )}
         </section>
 
-        {/* Kontakt */}
-        <section id="kontakt" className={`${styles.pubprofile__section} ${styles.pubprofile__contact_layout}`}>
-          <div className={styles.pubprofile__contact_left}>
-            <h2 className={styles.pubprofile__section_title}>
-              {isCompany || isUF ? 'Kontakta oss' : 'Vill du komma i kontakt?'}
-            </h2>
-            <p className={styles.pubprofile__contact_text}>
-              {isCompany || isUF
-                ? `Fyll i formuläret så återkommer vi till dig så snart som möjligt.`
-                : `Fyll i formuläret så återkommer ${profile.name} till dig så snart som möjligt.`
-              }
-            </p>
-            <div className={styles.pubprofile__contact_info}>
-              <div className={styles.pubprofile__contact_item}>
-                <Mail size={16} />
-                <span>{profile.email}</span>
-              </div>
-              {profile.phone && (
-                <div className={styles.pubprofile__contact_item}>
-                  <Smartphone size={16} />
-                  <span>{profile.phone}</span>
-                </div>
-              )}
-              {displayCity && (
-                <div className={styles.pubprofile__contact_item}>
-                  <MapPin size={16} />
-                  <span>{displayCity}</span>
-                </div>
-              )}
-            </div>
           </div>
 
-          <div className={`${styles.pubprofile__contact_right} card`}>
-            <div className={styles.pubprofile__contact_form}>
-              <p style={{ color: 'var(--color-gray)', fontSize: '14px', marginBottom: '16px' }}>
-                Skicka ett meddelande direkt via Svippos inbyggda chatt. Säkert och enkelt.
-              </p>
-              <button
-                className="btn btn-primary"
-                style={{ width: '100%', justifyContent: 'center' }}
-                onClick={handleContact}
-              >
-                <MessageCircle size={16} /> Skicka meddelande via Svippo
-              </button>
-              <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--color-border)' }}>
-                <a
-                  href={`mailto:${profile.email}`}
-                  className="btn btn-outline"
-                  style={{ width: '100%', justifyContent: 'center' }}
-                >
-                  <Mail size={16} /> Skicka e-post direkt
-                </a>
+          {/* Sidopanel (höger kolumn) */}
+          <aside id="kontakt" className={styles.pubprofile__sidebar}>
+
+            {/* Snittbetyg */}
+            <div className={`${styles.pubprofile__sidebar_card} card`}>
+              <div className={styles.pubprofile__sidebar_rating}>
+                <strong>{avgRating !== null ? avgRating : '–'}</strong>
+                <span>i snittbetyg</span>
+              </div>
+              {reviews.length > 0 && (
+                <span className={styles.pubprofile__sidebar_rating_count}>{reviews.length} recensioner</span>
+              )}
+            </div>
+
+            {/* Kontaktuppgifter */}
+            <div className={`${styles.pubprofile__sidebar_card} card`}>
+              <h3 className={styles.pubprofile__sidebar_heading}>Kontaktuppgifter</h3>
+              <div className={styles.pubprofile__contact_info}>
+                <div className={styles.pubprofile__contact_item}>
+                  <Mail size={16} />
+                  <span>{profile.email}</span>
+                </div>
+                {profile.phone && (
+                  <div className={styles.pubprofile__contact_item}>
+                    <Smartphone size={16} />
+                    <span>{profile.phone}</span>
+                  </div>
+                )}
               </div>
             </div>
-          </div>
-        </section>
 
+            {/* Länkar */}
+            {(website || socialLinks.length > 0) && (
+              <div className={`${styles.pubprofile__sidebar_card} card`}>
+                <h3 className={styles.pubprofile__sidebar_heading}>Länkar</h3>
+                {website && (
+                  <a
+                    href={website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={styles.pubprofile__link}
+                  >
+                    <Globe size={16} /> {website}
+                  </a>
+                )}
+                {socialLinks.length > 0 && (
+                  <div className={styles.pubprofile__social_links}>
+                    {socialLinks.map((url, i) => (
+                      <a
+                        key={i}
+                        href={url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={styles.pubprofile__social_link}
+                      >
+                        <span>{getSocialIcon(url)}</span>
+                        <span>{getSocialLabel(url)}</span>
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Meddela mig */}
+            <button className={`btn btn-primary ${styles.pubprofile__sidebar_cta}`} onClick={handleContact}>
+              <MessageCircle size={16} /> Meddela mig
+            </button>
+
+          </aside>
+
+        </div>
       </div>
       {/* Mobil sticky CTA */}
       <div className={styles.pubprofile__mobile_cta}>
