@@ -136,6 +136,37 @@
   margin-top: 4px;
 }
 
+.auth__checkbox_field {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.auth__checkbox {
+  width: 16px;
+  height: 16px;
+  margin-top: 3px;
+  flex-shrink: 0;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+}
+
+.auth__checkbox_label {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--color-dark);
+  cursor: pointer;
+
+  a {
+    color: var(--color-primary);
+    font-weight: 600;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
 .auth__switch {
   text-align: center;
   margin-top: 24px;

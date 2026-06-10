@@ -29,6 +29,7 @@ const [accountType, setAccountType] = useState<AccountType>('privatperson')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [step, setStep] = useState<Step>('register')
+  const [acceptedTerms, setAcceptedTerms] = useState(false)
 
   // Etiketter per kontotyp
   const nameLabel =
@@ -48,6 +49,12 @@ const [accountType, setAccountType] = useState<AccountType>('privatperson')
 
     if (password.length < 6) {
       setError('Lösenordet måste vara minst 6 tecken.')
+      setLoading(false)
+      return
+    }
+
+    if (!acceptedTerms) {
+      setError('Du måste godkänna villkoren för att skapa ett konto.')
       setLoading(false)
       return
     }
@@ -189,6 +196,20 @@ const [accountType, setAccountType] = useState<AccountType>('privatperson')
             <div className={styles.auth__field}>
               <label className={styles.auth__label}>Lösenord</label>
               <input className={styles.auth__input} placeholder="Minst 6 tecken" type="password" value={password} onChange={e => setPassword(e.target.value)} required />
+            </div>
+
+            <div className={styles.auth__checkbox_field}>
+              <input
+                id="accept-terms"
+                type="checkbox"
+                className={styles.auth__checkbox}
+                checked={acceptedTerms}
+                onChange={e => setAcceptedTerms(e.target.checked)}
+              />
+              <label htmlFor="accept-terms" className={styles.auth__checkbox_label}>
+                Jag har läst och godkänner Svippos{' '}
+                <Link href="/villkor" target="_blank" rel="noopener noreferrer">allmänna villkor</Link>
+              </label>
             </div>
 
             {error && <div className={styles.auth__error_box}>{error}</div>}
