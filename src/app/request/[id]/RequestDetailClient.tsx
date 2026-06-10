@@ -113,6 +113,14 @@ export default function RequestDetailClient({ request }: Props) {
         created_at: new Date().toISOString(),
       })
 
+      fetch(`/api/requests/${request.id}/notify-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          svippareName: userProfile?.name || user.email,
+        }),
+      }).catch(err => console.error('Email notification error:', err))
+
       setSuccess(true)
       setShowInterestForm(false)
     } catch (err) {
