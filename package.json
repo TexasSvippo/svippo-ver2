@@ -23,7 +23,8 @@
     "next": "^16.2.3",
     "next-sanity": "^13.0.8",
     "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react-dom": "19.2.3",
+    "resend": "^6.12.4"
   },
   "devDependencies": {
     "@types/node": "^20",
