@@ -201,6 +201,16 @@ export default function ChatBox({
         created_at: new Date().toISOString(),
       })
 
+      fetch(`/api/messages/${activeConversation.id}/notify-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          senderId: user.id,
+          senderName: currentUserName,
+          messagePreview: input.trim(),
+        }),
+      }).catch(err => console.error('Email notification error:', err))
+
       setInput('')
     } catch (err) {
       console.error(err)
