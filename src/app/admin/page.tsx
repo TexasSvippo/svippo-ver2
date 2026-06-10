@@ -157,6 +157,12 @@ export default function AdminPage() {
     setApplications(prev => prev.filter(a => a.id !== app.id))
     setStats(s => ({ ...s, pending: Math.max(0, s.pending - 1) }))
     setFeedback(f => ({ ...f, [app.id]: '✓ Godkänd' }))
+
+    fetch('/api/admin/notify-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type: 'approved', userId: app.user_id }),
+    }).catch(err => console.error('Email notification error:', err))
   }
 
   const handleReject = async (app: Application) => {
@@ -165,6 +171,12 @@ export default function AdminPage() {
     setApplications(prev => prev.filter(a => a.id !== app.id))
     setStats(s => ({ ...s, pending: Math.max(0, s.pending - 1) }))
     setFeedback(f => ({ ...f, [app.id]: '✓ Nekad' }))
+
+    fetch('/api/admin/notify-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type: 'rejected', userId: app.user_id }),
+    }).catch(err => console.error('Email notification error:', err))
   }
 
   // TODO: For delete operations to work, add RLS policies in Supabase:
