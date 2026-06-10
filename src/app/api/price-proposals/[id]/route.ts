@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
+import { sendPrisforlagGodkant } from '@/lib/emails/prisforlagGodkant'
+import { sendPrisforlagNekat } from '@/lib/emails/prisforlagNekat'
 
 export async function PATCH(
   req: NextRequest,
@@ -101,6 +103,23 @@ export async function PATCH(
       email_sent: false,
       created_at: new Date().toISOString(),
     })
+
+    const { data: seller } = await supabaseAdmin
+      .from('users')
+      .select('email, name')
+      .eq('id', order.seller_id)
+      .single()
+
+    if (seller?.email) {
+      const baseUrl = req.nextUrl.origin
+      sendPrisforlagGodkant({
+        to: seller.email,
+        sellerName: seller.name ?? 'där',
+        buyerName: order.buyer_name,
+        amount: proposal.amount,
+        orderUrl: `${baseUrl}/order/${proposal.order_id}`,
+      }).catch(err => console.error('Email notification error:', err))
+    }
   }
 
   // ── Handle reject ───────────────────────────────────────────────────────
@@ -147,6 +166,22 @@ export async function PATCH(
       email_sent: false,
       created_at: new Date().toISOString(),
     })
+
+    const { data: seller } = await supabaseAdmin
+      .from('users')
+      .select('email, name')
+      .eq('id', order.seller_id)
+      .single()
+
+    if (seller?.email) {
+      const baseUrl = req.nextUrl.origin
+      sendPrisforlagNekat({
+        to: seller.email,
+        sellerName: seller.name ?? 'där',
+        buyerName: order.buyer_name,
+        orderUrl: `${baseUrl}/order/${proposal.order_id}`,
+      }).catch(err => console.error('Email notification error:', err))
+    }
   }
 
   // ── Return updated proposal ─────────────────────────────────────────────

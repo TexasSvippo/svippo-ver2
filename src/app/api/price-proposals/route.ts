@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
+import { sendPrisforlagMottaget } from '@/lib/emails/prisforlagMottaget'
 
 export async function POST(req: NextRequest) {
   // ── Auth ────────────────────────────────────────────────────────────────
@@ -101,6 +102,25 @@ export async function POST(req: NextRequest) {
     email_sent: false,
     created_at: new Date().toISOString(),
   })
+
+  // ── Email notification for buyer ─────────────────────────────────────────
+  const { data: buyer } = await supabaseAdmin
+    .from('users')
+    .select('email, name')
+    .eq('id', order.buyer_id)
+    .single()
+
+  if (buyer?.email) {
+    const baseUrl = req.nextUrl.origin
+    sendPrisforlagMottaget({
+      to: buyer.email,
+      buyerName: buyer.name ?? 'där',
+      sellerName: order.seller_name,
+      amount,
+      note: proposal.note,
+      orderUrl: `${baseUrl}/my-order/${order_id}`,
+    }).catch(err => console.error('Email notification error:', err))
+  }
 
   return NextResponse.json(proposal, { status: 201 })
 }
