@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import { supabase } from '@/lib/supabase'
 import ForfragningarClient from './ForfragningarClient'
 
@@ -30,5 +31,9 @@ export default async function ForfragningarPage() {
     avatar_url: avatarMap[r.user_id] ?? null,
   }))
 
-  return <ForfragningarClient requests={requests} />
+  return (
+    <Suspense fallback={null}>
+      <ForfragningarClient requests={requests} />
+    </Suspense>
+  )
 }

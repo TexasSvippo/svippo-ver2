@@ -22,7 +22,7 @@ type Service = {
   user_name: string
   user_id: string
   account_type: string
-  avatar_url?: string
+  avatar_url?: string | null
   rating: number
   reviews: number
 }

@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import { supabase } from '@/lib/supabase'
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
 import { notFound } from 'next/navigation'
@@ -62,12 +63,14 @@ export default async function ServiceDetailPage({ params }: Props) {
     : null
 
   return (
-    <ServiceDetailClient
-      service={service}
-      reviews={reviews ?? []}
-      avgRating={avgRating}
-      references={references ?? []}
-      bio={providerBio}
-    />
+    <Suspense fallback={null}>
+      <ServiceDetailClient
+        service={service}
+        reviews={reviews ?? []}
+        avgRating={avgRating}
+        references={references ?? []}
+        bio={providerBio}
+      />
+    </Suspense>
   )
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import useAuth from '@/hooks/useAuth'
@@ -38,7 +38,7 @@ type FormData = {
 
 const STEPS = ['Kategori', 'Detaljer', 'Pris & plats', 'Egna frågor', 'Granska']
 
-export default function CreateServicePage() {
+function CreateServiceContent() {
   const { user, loading, accountType, svippareStatus, canCreateService } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -756,5 +756,13 @@ export default function CreateServicePage() {
         </div>
       )}
     </div>
+  )
+}
+
+export default function CreateServicePage() {
+  return (
+    <Suspense fallback={null}>
+      <CreateServiceContent />
+    </Suspense>
   )
 }

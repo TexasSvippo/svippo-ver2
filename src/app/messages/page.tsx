@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { MessageCircle, Package } from 'lucide-react'
@@ -26,7 +26,7 @@ type Conversation = {
   unreadCount?: number
 }
 
-export default function MeddelandenPage() {
+function MessagesContent() {
   const { user } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -220,5 +220,13 @@ export default function MeddelandenPage() {
         )}
       </div>
     </div>
+  )
+}
+
+export default function MeddelandenPage() {
+  return (
+    <Suspense fallback={null}>
+      <MessagesContent />
+    </Suspense>
   )
 }

@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import { supabase } from '@/lib/supabase'
 import TjansterClient from './TjansterClient'
 
@@ -36,11 +37,13 @@ export default async function TjansterPage({ searchParams }: PageProps) {
   })
 
   return (
-    <TjansterClient
-      services={services}
-      page={page}
-      totalCount={countRes.count ?? 0}
-      pageSize={PAGE_SIZE}
-    />
+    <Suspense fallback={null}>
+      <TjansterClient
+        services={services}
+        page={page}
+        totalCount={countRes.count ?? 0}
+        pageSize={PAGE_SIZE}
+      />
+    </Suspense>
   )
 }

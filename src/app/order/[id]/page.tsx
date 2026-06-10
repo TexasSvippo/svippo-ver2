@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
@@ -36,6 +36,7 @@ type Order = {
   active_price: number | null
   price_status: string | null
   conversation_id: string | null
+  from_request?: boolean
 }
 
 type PriceProposal = {
@@ -347,7 +348,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
     : 'Skicka ett prisförslag till beställaren'
 
   const t0 = new Date(order.created_at).getTime()
-  const feedEvents: Array<{ id: string; icon: JSX.Element; iconType: string; text: string; ts: string }> = [
+  const feedEvents: Array<{ id: string; icon: React.ReactNode; iconType: string; text: string; ts: string }> = [
     { id: 'created', icon: <Package size={14} />, iconType: 'created', text: 'Beställningen skapades', ts: order.created_at },
   ]
   if (order.status === 'accepted') {
