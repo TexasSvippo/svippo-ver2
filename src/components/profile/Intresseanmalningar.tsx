@@ -198,6 +198,17 @@ export default function Intresseanmalningar({ userId }: Props) {
           email_sent: false,
           created_at: new Date().toISOString(),
         })
+
+        fetch('/api/interests/notify-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'accepted',
+            svippareId: interest.svippar_id,
+            requestTitle: interest.request_title,
+            orderId: order.id,
+          }),
+        }).catch(err => console.error('Email notification error:', err))
       }
 
       if (order && interest.price) {
@@ -237,6 +248,18 @@ export default function Intresseanmalningar({ userId }: Props) {
             ? { ...i, status: 'rejected' }
             : i
         ))
+
+        otherPending.forEach(other => {
+          fetch('/api/interests/notify-email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              type: 'rejected',
+              svippareId: other.svippar_id,
+              requestTitle: interest.request_title,
+            }),
+          }).catch(err => console.error('Email notification error:', err))
+        })
       }
     } catch (err) {
       console.error(err)
@@ -262,6 +285,16 @@ export default function Intresseanmalningar({ userId }: Props) {
       email_sent: false,
       created_at: new Date().toISOString(),
     })
+
+    fetch('/api/interests/notify-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: 'rejected',
+        svippareId: interest.svippar_id,
+        requestTitle: interest.request_title,
+      }),
+    }).catch(err => console.error('Email notification error:', err))
   }
 
   const groupedByRequest = useMemo(() => {
