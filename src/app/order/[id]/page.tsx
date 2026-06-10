@@ -147,6 +147,13 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
       email_sent: false,
       created_at: new Date().toISOString(),
     })
+
+    fetch(`/api/orders/${order.id}/notify-email`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type: status }),
+    }).catch(err => console.error('Email notification error:', err))
+
     setUpdating(false)
   }
 

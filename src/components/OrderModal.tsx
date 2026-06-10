@@ -181,6 +181,12 @@ export default function OrderModal({
           email_sent: false,
           created_at: new Date().toISOString(),
         })
+
+        fetch(`/api/orders/${order.id}/notify-email`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: 'new_order' }),
+        }).catch(err => console.error('Email notification error:', err))
       }
 
       if (order && priceType === 'fastpris' && price) {
