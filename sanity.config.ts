@@ -6,8 +6,8 @@ import { schemaTypes } from './src/sanity/schemas'
 export default defineConfig({
   name: 'default',
   title: 'Svippo CMS',
-  projectId: '39ack986',
-  dataset: 'production',
+  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID ?? '39ack986',
+  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET ?? 'production',
   plugins: [
     structureTool(),
     visionTool(),
