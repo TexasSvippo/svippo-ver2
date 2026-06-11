@@ -330,15 +330,6 @@ export default function Navbar() {
         onClick={() => setMobileMenuOpen(false)}
       />
       <div className={`${styles.navbar__overlay_panel} ${mobileMenuOpen ? styles['navbar__overlay_panel--open'] : ''}`}>
-        <button
-          type="button"
-          className={styles.navbar__overlay_close}
-          onClick={() => setMobileMenuOpen(false)}
-          aria-label="Stäng meny"
-        >
-          <X size={20} />
-        </button>
-
         <div className={styles.navbar__overlay_body}>
           {!loading && user ? (
             <>

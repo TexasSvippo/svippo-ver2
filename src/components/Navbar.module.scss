@@ -369,7 +369,7 @@
 @media (max-width: 768px) {
   // 120px = 60px navbar + 60px mobil sökfältsrad
   .navbar__overlay_backdrop {
-    display: block;
+    display: none;
     position: fixed;
     top: 120px;
     right: 0;
@@ -377,19 +377,14 @@
     left: 0;
     background: rgba(0, 0, 0, 0.3);
     z-index: 999;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.35s ease, visibility 0s linear 0.35s;
 
     &--open {
-      opacity: 1;
-      visibility: visible;
-      transition: opacity 0.35s ease, visibility 0s linear 0s;
+      display: block;
     }
   }
 
   .navbar__overlay_panel {
-    display: flex;
+    display: none;
     flex-direction: column;
     position: fixed;
     top: 120px;
@@ -399,46 +394,17 @@
     max-height: calc(100vh - 120px);
     overflow-y: auto;
     background: var(--color-bg);
-    transform: translateY(-100%);
-    visibility: hidden;
-    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), visibility 0s linear 0.35s;
 
     &--open {
-      transform: translateY(0);
-      visibility: visible;
-      transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), visibility 0s linear 0s;
+      display: flex;
     }
-  }
-}
-
-// X-knapp uppe i höger hörn av panelen
-.navbar__overlay_close {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  background: none;
-  border: none;
-  color: var(--color-dark);
-  cursor: pointer;
-  border-radius: var(--radius-sm);
-  flex-shrink: 0;
-  z-index: 1;
-  transition: background 0.15s;
-
-  &:hover {
-    background: var(--color-gray-light);
   }
 }
 
 .navbar__overlay_body {
   display: flex;
   flex-direction: column;
-  padding: 44px 0 8px;
+  padding: 8px 0;
 }
 
 // Användarkort (inloggad)
