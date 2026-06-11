@@ -258,6 +258,10 @@
 }
 
 @media (max-width: 640px) {
+  .dash__section {
+    min-width: 0;
+  }
+
   .dash__section_head {
     flex-wrap: wrap;
     gap: 4px;
@@ -347,6 +351,17 @@
     min-width: 0;
   }
 
+  .dash__service_title {
+    max-width: 100%;
+  }
+
+  .dash__service_sub {
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
   .dash__service_price {
     font-size: 13px;
   }
@@ -420,6 +435,14 @@
 
   .dash__item_info {
     min-width: 0;
+  }
+
+  .dash__item_name {
+    max-width: 100%;
+  }
+
+  .dash__item_sub {
+    max-width: 100%;
   }
 }
 
