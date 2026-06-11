@@ -81,7 +81,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
   const [priceAmount, setPriceAmount] = useState('')
   const [priceNote, setPriceNote] = useState('')
   const [priceSubmitting, setPriceSubmitting] = useState(false)
-  const [activeTab, setActiveTab] = useState<'aktivitet' | 'detaljer' | 'leveranser'>('aktivitet')
+  const [activeTab, setActiveTab] = useState<'aktivitet' | 'detaljer'>('aktivitet')
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -430,14 +430,6 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
               >
                 Detaljer
               </button>
-              {serviceType === 'typ2' && (
-                <button
-                  className={`${styles.tab} ${activeTab === 'leveranser' ? styles['tab--active'] : ''}`}
-                  onClick={() => setActiveTab('leveranser')}
-                >
-                  Leveranser
-                </button>
-              )}
             </div>
 
             {activeTab === 'aktivitet' && (
@@ -636,12 +628,6 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                   )}
                 </div>
               </>
-            )}
-
-            {activeTab === 'leveranser' && (
-              <div className={`${styles.orderdetail__form} staticcard`} style={{ color: 'var(--color-gray)', fontSize: '14px', fontStyle: 'italic' }}>
-                Leveranser kommer snart
-              </div>
             )}
 
           </div>
