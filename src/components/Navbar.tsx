@@ -39,9 +39,9 @@ function getOverlayNavGroups(accountType: AccountType | null): OverlayNavGroup[]
     return [
       {
         label: 'Tjänster', items: [
-          { label: 'Mina tjänster', href: '/profile', icon: Wrench },
-          { label: 'Mina bevakningar', href: '/profile', icon: Bell },
-          { label: 'Inkomna beställningar', href: '/profile', icon: Inbox },
+          { label: 'Mina tjänster', href: '/profile?tab=tjanster', icon: Wrench },
+          { label: 'Mina bevakningar', href: '/profile?tab=bevakningar', icon: Bell },
+          { label: 'Inkomna beställningar', href: '/profile?tab=inkomna', icon: Inbox },
         ]
       },
       {
@@ -51,9 +51,9 @@ function getOverlayNavGroups(accountType: AccountType | null): OverlayNavGroup[]
       },
       {
         label: 'Min profil', items: [
-          { label: 'Recensioner & betyg', href: '/profile', icon: Star },
-          { label: 'Min karriär', href: '/profile', icon: Trophy },
-          { label: 'Profilinställningar', href: '/profile', icon: Settings },
+          { label: 'Recensioner & betyg', href: '/profile?tab=recensioner', icon: Star },
+          { label: 'Min karriär', href: '/profile?tab=karriar', icon: Trophy },
+          { label: 'Profilinställningar', href: '/profile?tab=installningar', icon: Settings },
         ]
       },
     ]
@@ -63,14 +63,14 @@ function getOverlayNavGroups(accountType: AccountType | null): OverlayNavGroup[]
     return [
       {
         label: 'Tjänster', items: [
-          { label: 'Mina tjänster', href: '/profile', icon: Wrench },
-          { label: 'Mina bevakningar', href: '/profile', icon: Bell },
-          { label: 'Inkomna beställningar', href: '/profile', icon: Inbox },
+          { label: 'Mina tjänster', href: '/profile?tab=tjanster', icon: Wrench },
+          { label: 'Mina bevakningar', href: '/profile?tab=bevakningar', icon: Bell },
+          { label: 'Inkomna beställningar', href: '/profile?tab=inkomna', icon: Inbox },
         ]
       },
       {
         label: 'Förfrågningar', items: [
-          { label: 'Placerade beställningar', href: '/profile', icon: Send },
+          { label: 'Placerade beställningar', href: '/profile?tab=placerade', icon: Send },
         ]
       },
       {
@@ -80,8 +80,8 @@ function getOverlayNavGroups(accountType: AccountType | null): OverlayNavGroup[]
       },
       {
         label: 'Min profil', items: [
-          { label: 'Recensioner & betyg', href: '/profile', icon: Star },
-          { label: 'Profilinställningar', href: '/profile', icon: Settings },
+          { label: 'Recensioner & betyg', href: '/profile?tab=recensioner', icon: Star },
+          { label: 'Profilinställningar', href: '/profile?tab=installningar', icon: Settings },
         ]
       },
     ]
@@ -91,9 +91,9 @@ function getOverlayNavGroups(accountType: AccountType | null): OverlayNavGroup[]
   return [
     {
       label: 'Förfrågningar', items: [
-        { label: 'Mina förfrågningar', href: '/profile', icon: Users },
-        { label: 'Intresseanmälningar', href: '/profile', icon: Eye },
-        { label: 'Placerade beställningar', href: '/profile', icon: Send },
+        { label: 'Mina förfrågningar', href: '/profile?tab=forfragningar', icon: Users },
+        { label: 'Intresseanmälningar', href: '/profile?tab=intresse', icon: Eye },
+        { label: 'Placerade beställningar', href: '/profile?tab=placerade', icon: Send },
       ]
     },
     {
@@ -103,8 +103,8 @@ function getOverlayNavGroups(accountType: AccountType | null): OverlayNavGroup[]
     },
     {
       label: 'Min profil', items: [
-        { label: 'Recensioner & betyg', href: '/profile', icon: Star },
-        { label: 'Profilinställningar', href: '/profile', icon: Settings },
+        { label: 'Recensioner & betyg', href: '/profile?tab=recensioner', icon: Star },
+        { label: 'Profilinställningar', href: '/profile?tab=installningar', icon: Settings },
       ]
     },
   ]
@@ -275,36 +275,43 @@ export default function Navbar() {
           )}
         </div>
 
-        {/* Mobil högersektion – notifikationer/avatar/Skapa konto + hamburgare */}
+        {/* Mobil högersektion – notifikationer + pill (hamburgare + profilbild/Meny) */}
         <div className={styles.navbar__mobile_right}>
           {!loading && user && (
-            <>
-              <Link href="/notifications" className={styles.navbar__notif_btn}>
-                <Bell size={20} />
-                {unreadCount > 0 && <span className={styles.navbar__notif_badge}>{unreadCount}</span>}
-              </Link>
-              <div className={styles.navbar__pill_avatar}>
+            <Link href="/notifications" className={styles.navbar__notif_btn}>
+              <Bell size={22} />
+              {unreadCount > 0 && <span className={styles.navbar__notif_badge}>{unreadCount}</span>}
+            </Link>
+          )}
+
+          {!loading && user ? (
+            <button
+              type="button"
+              className={styles.navbar__menu_pill}
+              onClick={() => setMobileMenuOpen(o => !o)}
+              aria-label={mobileMenuOpen ? 'Stäng meny' : 'Öppna meny'}
+              aria-expanded={mobileMenuOpen}
+            >
+              {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
+              <span className={styles.navbar__pill_avatar}>
                 {avatarUrl
                   ? <Image src={avatarUrl} alt="Profil" width={32} height={32} className={styles.navbar__avatar_img} />
                   : <span className={styles.navbar__pill_initial}>{(name || user.email || '?').charAt(0).toUpperCase()}</span>
                 }
-              </div>
-            </>
+              </span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              className={styles.navbar__menu_pill}
+              onClick={() => setMobileMenuOpen(o => !o)}
+              aria-label={mobileMenuOpen ? 'Stäng meny' : 'Öppna meny'}
+              aria-expanded={mobileMenuOpen}
+            >
+              {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
+              <span>{mobileMenuOpen ? 'Stäng' : 'Meny'}</span>
+            </button>
           )}
-
-          {!loading && !user && (
-            <Link href="/register" className="btn btn-orange">Skapa konto</Link>
-          )}
-
-          <button
-            type="button"
-            className={styles.navbar__mobile_icon_btn}
-            onClick={() => setMobileMenuOpen(true)}
-            aria-label="Öppna meny"
-            aria-expanded={mobileMenuOpen}
-          >
-            <Menu size={22} />
-          </button>
         </div>
 
       </div>
@@ -323,19 +330,14 @@ export default function Navbar() {
         onClick={() => setMobileMenuOpen(false)}
       />
       <div className={`${styles.navbar__overlay_panel} ${mobileMenuOpen ? styles['navbar__overlay_panel--open'] : ''}`}>
-        <div className={styles.navbar__overlay_header}>
-          <Link href="/" className={styles.navbar__overlay_logo}>
-            <Image src="/images/Svippo-vit.svg" alt="Svippo" width={100} height={30} />
-          </Link>
-          <button
-            type="button"
-            className={styles.navbar__overlay_close}
-            onClick={() => setMobileMenuOpen(false)}
-            aria-label="Stäng meny"
-          >
-            <X size={22} />
-          </button>
-        </div>
+        <button
+          type="button"
+          className={styles.navbar__overlay_close}
+          onClick={() => setMobileMenuOpen(false)}
+          aria-label="Stäng meny"
+        >
+          <X size={20} />
+        </button>
 
         <div className={styles.navbar__overlay_body}>
           {!loading && user ? (
@@ -369,7 +371,7 @@ export default function Navbar() {
                       <Link
                         key={item.label}
                         href={item.href}
-                        className={`${styles.navbar__overlay_item} ${pathname === item.href ? styles['navbar__overlay_item--active'] : ''}`}
+                        className={styles.navbar__overlay_item}
                       >
                         <Icon size={18} />
                         <span>{item.label}</span>
@@ -381,11 +383,11 @@ export default function Navbar() {
 
               <div className={styles.navbar__overlay_divider} />
 
-              <Link href="/om-oss" className={`${styles.navbar__overlay_item} ${pathname === '/om-oss' ? styles['navbar__overlay_item--active'] : ''}`}>
+              <Link href="/om-oss" className={styles.navbar__overlay_item}>
                 <Info size={18} />
                 <span>Om oss</span>
               </Link>
-              <Link href="/kontakt" className={`${styles.navbar__overlay_item} ${pathname === '/kontakt' ? styles['navbar__overlay_item--active'] : ''}`}>
+              <Link href="/kontakt" className={styles.navbar__overlay_item}>
                 <Mail size={18} />
                 <span>Kontakt</span>
               </Link>
@@ -432,11 +434,11 @@ export default function Navbar() {
 
               <div className={styles.navbar__overlay_divider} />
 
-              <Link href="/om-oss" className={`${styles.navbar__overlay_item} ${pathname === '/om-oss' ? styles['navbar__overlay_item--active'] : ''}`}>
+              <Link href="/om-oss" className={styles.navbar__overlay_item}>
                 <Info size={18} />
                 <span>Om oss</span>
               </Link>
-              <Link href="/kontakt" className={`${styles.navbar__overlay_item} ${pathname === '/kontakt' ? styles['navbar__overlay_item--active'] : ''}`}>
+              <Link href="/kontakt" className={styles.navbar__overlay_item}>
                 <Mail size={18} />
                 <span>Kontakt</span>
               </Link>

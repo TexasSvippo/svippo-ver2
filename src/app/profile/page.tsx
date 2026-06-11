@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import ProfileClient from './ProfileClient'
@@ -29,5 +30,9 @@ export default async function ProfilePage() {
     initialAccountType = data?.account_type ?? null
   }
 
-  return <ProfileClient initialAccountType={initialAccountType} />
+  return (
+    <Suspense fallback={null}>
+      <ProfileClient initialAccountType={initialAccountType} />
+    </Suspense>
+  )
 }

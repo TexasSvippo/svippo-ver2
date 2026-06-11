@@ -266,7 +266,30 @@
   font-size: 14px;
 }
 
-// Avatar-cirkel (mobil header / pill)
+// Pill – hamburgare + avatar (inloggad) eller hamburgare + "Meny"/"Stäng" (utloggad)
+.navbar__menu_pill {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 100px;
+  padding: 8px 10px 8px 10px;
+  cursor: pointer;
+  background: white;
+  color: var(--color-dark);
+  font-size: 14px;
+  font-weight: 500;
+  font-family: var(--font-body);
+  transition: background 0.15s, border-color 0.15s;
+
+  &:hover {
+    background: var(--color-gray-light);
+    border: 1px solid var(--color-primary);
+  }
+}
+
+// Avatar-cirkel inuti pillen
 .navbar__pill_avatar {
   width: 32px;
   height: 32px;
@@ -344,10 +367,14 @@
 }
 
 @media (max-width: 768px) {
+  // 120px = 60px navbar + 60px mobil sökfältsrad
   .navbar__overlay_backdrop {
     display: block;
     position: fixed;
-    inset: 0;
+    top: 120px;
+    right: 0;
+    bottom: 0;
+    left: 0;
     background: rgba(0, 0, 0, 0.3);
     z-index: 999;
     opacity: 0;
@@ -365,11 +392,11 @@
     display: flex;
     flex-direction: column;
     position: fixed;
-    top: 0;
+    top: 120px;
     left: 0;
     right: 0;
     z-index: 1000;
-    max-height: 100vh;
+    max-height: calc(100vh - 120px);
     overflow-y: auto;
     background: var(--color-bg);
     transform: translateY(-100%);
@@ -384,44 +411,34 @@
   }
 }
 
-.navbar__overlay_header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 60px;
-  padding: 0 16px;
-  background: #066696;
-  flex-shrink: 0;
-}
-
-.navbar__overlay_logo {
-  display: flex;
-  align-items: center;
-}
-
+// X-knapp uppe i höger hörn av panelen
 .navbar__overlay_close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
+  width: 36px;
+  height: 36px;
   background: none;
   border: none;
-  color: white;
+  color: var(--color-dark);
   cursor: pointer;
   border-radius: var(--radius-sm);
   flex-shrink: 0;
+  z-index: 1;
   transition: background 0.15s;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.15);
+    background: var(--color-gray-light);
   }
 }
 
 .navbar__overlay_body {
   display: flex;
   flex-direction: column;
-  padding: 8px 0;
+  padding: 44px 0 8px;
 }
 
 // Användarkort (inloggad)
@@ -521,11 +538,6 @@
   }
 
   &:hover {
-    background: var(--color-gray-light);
-  }
-
-  &--active {
-    color: var(--color-primary);
     background: var(--color-gray-light);
   }
 }

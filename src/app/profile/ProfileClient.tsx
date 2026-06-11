@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import useAuth from '@/hooks/useAuth'
@@ -25,6 +25,18 @@ type Section =
   | 'recensioner'
   | 'karriar'
   | 'installningar'
+
+const TAB_TO_SECTION: Record<string, Section> = {
+  tjanster: 'mina-tjanster',
+  bevakningar: 'mina-bevakningar',
+  inkomna: 'inkomna-bestallningar',
+  forfragningar: 'mina-forfragningar',
+  intresse: 'intresseanmalningar',
+  placerade: 'placerade-bestallningar',
+  recensioner: 'recensioner',
+  karriar: 'karriar',
+  installningar: 'installningar',
+}
 
 type Service = { id: string; title: string; subcategory: string; price_type: string; price: number; location: string; status?: string }
 type Order = { id: string; service_title: string; buyer_name: string; buyer_email: string; message: string; status: string; project_status: string }
@@ -73,8 +85,17 @@ type Props = {
 export default function ProfileClient({ initialAccountType }: Props) {
   const { user, loading, accountType, svippareStatus, canCreateService } = useAuth()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const avatarInputRef = useRef<HTMLInputElement>(null)
   const [activeSection, setActiveSection] = useState<Section>('oversikt')
+
+  // Hoppa till rätt sektion om sidan laddas med ?tab=...
+  useEffect(() => {
+    const tab = searchParams.get('tab')
+    if (tab && tab in TAB_TO_SECTION) {
+      setActiveSection(TAB_TO_SECTION[tab])
+    }
+  }, [searchParams])
 
   const [displayName, setDisplayName] = useState('')
   const [phone, setPhone] = useState('')
