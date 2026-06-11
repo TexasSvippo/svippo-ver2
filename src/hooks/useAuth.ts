@@ -14,6 +14,7 @@ interface AuthState {
   svippareStatus: SvippareStatus
   canCreateService: boolean
   avatarUrl: string | null
+  name: string | null
 }
 
 export default function useAuth(): AuthState {
@@ -22,6 +23,7 @@ export default function useAuth(): AuthState {
   // ← NY: separat state för svippareStatus så vi kan uppdatera den från DB
   const [svippareStatus, setSvippareStatus] = useState<SvippareStatus>(null)
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
+  const [name, setName] = useState<string | null>(null)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -62,14 +64,15 @@ export default function useAuth(): AuthState {
         }
       }
 
-      // Hämta alltid avatar_url oavsett status
+      // Hämta alltid avatar_url och name oavsett status
       if (user) {
         const { data: userData } = await supabase
           .from('users')
-          .select('avatar_url')
+          .select('avatar_url, name')
           .eq('id', user.id)
           .single()
         setAvatarUrl(userData?.avatar_url ?? null)
+        setName(userData?.name ?? null)
       }
     }
 
@@ -83,5 +86,5 @@ export default function useAuth(): AuthState {
     accountType === 'uf-foretag' ||
     (accountType === 'svippare' && svippareStatus === 'approved')
 
-  return { user, loading, accountType, svippareStatus, canCreateService, avatarUrl }
+  return { user, loading, accountType, svippareStatus, canCreateService, avatarUrl, name }
 }

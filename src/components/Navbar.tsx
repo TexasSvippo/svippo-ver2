@@ -15,7 +15,7 @@ import Image from 'next/image'
 import { Bell, User, Wrench, Users, Package, MessageCircle, Pencil, LogOut, ChevronDown, Menu } from 'lucide-react'
 
 export default function Navbar() {
-  const { user, loading, avatarUrl } = useAuth()
+  const { user, loading, avatarUrl, name } = useAuth()
   const { unreadCount } = useNotifications()
   const [menuOpen, setMenuOpen] = useState(false)
   const [megaOpen, setMegaOpen] = useState(false)
@@ -108,7 +108,7 @@ export default function Navbar() {
                     >
                       {avatarUrl
                         ? <Image src={avatarUrl} alt="Profil" width={40} height={40} className={styles.navbar__avatar_img} />
-                        : <span>{user.email?.charAt(0).toUpperCase()}</span>
+                        : <span>{(name || user.email || '?').charAt(0).toUpperCase()}</span>
                       }
                     </button>
 
@@ -188,7 +188,7 @@ export default function Navbar() {
                 <span className={styles.navbar__pill_avatar}>
                   {avatarUrl
                     ? <Image src={avatarUrl} alt="Profil" width={32} height={32} className={styles.navbar__avatar_img} />
-                    : <span className={styles.navbar__pill_initial}>{user.email?.charAt(0).toUpperCase()}</span>
+                    : <span className={styles.navbar__pill_initial}>{(name || user.email || '?').charAt(0).toUpperCase()}</span>
                   }
                 </span>
               </button>
