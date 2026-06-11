@@ -464,7 +464,24 @@
 
 @media (max-width: 640px) {
   .dash__tips_grid {
-    grid-template-columns: 1fr;
+    display: flex;
+    overflow-x: auto;
+    gap: 1rem;
+    padding-bottom: 4px;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  .dash__tip_card {
+    flex: 0 0 240px;
+    width: 240px;
+    scroll-snap-align: start;
   }
 
   .dash__tip_img_wrap {
@@ -641,5 +658,6 @@
   .dash__promo_btn {
     align-self: stretch;
     text-align: center;
+    white-space: normal;
   }
 }
