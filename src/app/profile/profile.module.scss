@@ -332,6 +332,7 @@
   display: flex;
   flex-direction: column;
   gap: 3px;
+  min-width: 0;
 
   strong { font-size: 15px; font-weight: 600; color: var(--color-dark); }
   span { font-size: 13px; color: var(--color-gray); }
@@ -1568,6 +1569,8 @@
 @media (max-width: 768px) {
   .profile {
     grid-template-columns: 1fr;
+    max-width: 100vw;
+    overflow-x: hidden;
   }
 
   .profile__sidebar {
@@ -1580,5 +1583,9 @@
 
   .profile__section {
     gap: 16px;
+  }
+
+  .profile__stats {
+    grid-template-columns: repeat(2, 1fr);
   }
 }

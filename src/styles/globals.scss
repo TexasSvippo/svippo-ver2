@@ -458,3 +458,14 @@ h1, h2, h3, h4, h5, h6 {
   white-space: nowrap;
   border-width: 0;
 }
+
+/* ================================
+   MOBIL – FÖRHINDRA HORISONTELL SCROLL
+   ================================ */
+@media (max-width: 768px) {
+  html,
+  body {
+    overflow-x: hidden;
+    max-width: 100%;
+  }
+}
