@@ -36,11 +36,13 @@ export async function GET(request: NextRequest) {
 
       if (!existingUser) {
         const fullName = (data.user.user_metadata?.full_name ?? data.user.user_metadata?.name ?? '') as string
+        const avatarUrl = (data.user.user_metadata?.avatar_url ?? data.user.user_metadata?.picture ?? null) as string | null
 
         await supabaseAdmin.from('users').insert({
           id: data.user.id,
           name: fullName,
           email: data.user.email,
+          avatar_url: avatarUrl,
           account_type: accountType,
           is_approved: accountType !== 'bestellare',
           created_at: new Date().toISOString(),

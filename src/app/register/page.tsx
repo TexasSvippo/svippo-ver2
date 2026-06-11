@@ -4,7 +4,6 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
-import useAuth from '@/hooks/useAuth'
 import { User, Building2, GraduationCap, ChevronRight, ChevronLeft, Check } from 'lucide-react'
 import styles from './register.module.scss'
 
@@ -56,11 +55,6 @@ function GoogleIcon() {
 
 export default function RegisterPage() {
   const router = useRouter()
-  const { user, loading: authLoading } = useAuth()
-
-  useEffect(() => {
-    if (!authLoading && user) router.replace('/profile')
-  }, [user, authLoading])
 
   const [step, setStep] = useState(1)
   const [prevStep, setPrevStep] = useState<number | null>(null)

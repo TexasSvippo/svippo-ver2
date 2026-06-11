@@ -150,12 +150,18 @@ export default function ProfileClient({ initialAccountType }: Props) {
         supabase.from('notifications').select('*').eq('user_id', user.id).eq('read', false),
         supabase.from('category_subscriptions').select('*').eq('user_id', user.id),
       ])
-      if (profileRes.data) {
-        setDisplayName(profileRes.data.name || '')
-        setPhone(profileRes.data.phone || '')
-        setBio(profileRes.data.bio || '')
-        setAvatarUrl(profileRes.data.avatar_url || null)
-        setDbAccountType(profileRes.data.account_type || null)
+      let profileData = profileRes.data
+      if (!profileData?.name) {
+        await new Promise(resolve => setTimeout(resolve, 1000))
+        const retryRes = await supabase.from('users').select('*').eq('id', user.id).single()
+        if (retryRes.data) profileData = retryRes.data
+      }
+      if (profileData) {
+        setDisplayName(profileData.name || '')
+        setPhone(profileData.phone || '')
+        setBio(profileData.bio || '')
+        setAvatarUrl(profileData.avatar_url || null)
+        setDbAccountType(profileData.account_type || null)
       }
       setServices(servicesRes.data ?? [])
       setIncomingOrders(incomingRes.data ?? [])
