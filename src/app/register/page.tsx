@@ -264,18 +264,18 @@ export default function RegisterPage() {
             <>
               <div className={styles.wizard__field}>
                 <label htmlFor="firstName">Förnamn</label>
-                <input id="firstName" value={firstName} onChange={e => setFirstName(e.target.value)} />
+                <input id="firstName" value={firstName} onChange={e => setFirstName(e.target.value)} placeholder="Anna" />
               </div>
               <div className={styles.wizard__field}>
                 <label htmlFor="lastName">Efternamn</label>
-                <input id="lastName" value={lastName} onChange={e => setLastName(e.target.value)} />
+                <input id="lastName" value={lastName} onChange={e => setLastName(e.target.value)} placeholder="Lindgren" />
               </div>
             </>
           ) : (
             <>
               <div className={styles.wizard__field}>
                 <label htmlFor="companyName">Företagsnamn</label>
-                <input id="companyName" value={companyName} onChange={e => setCompanyName(e.target.value)} />
+                <input id="companyName" value={companyName} onChange={e => setCompanyName(e.target.value)} placeholder={accountType === 'foretag' ? 'Svippo AB' : 'Mitt UF AB'} />
               </div>
               {accountType === 'foretag' && (
                 <div className={styles.wizard__field}>
@@ -287,7 +287,7 @@ export default function RegisterPage() {
           )}
           <div className={styles.wizard__field}>
             <label htmlFor="city">Stad</label>
-            <input id="city" value={city} onChange={e => setCity(e.target.value)} />
+            <input id="city" value={city} onChange={e => setCity(e.target.value)} placeholder="Stockholm" />
           </div>
         </div>
 
