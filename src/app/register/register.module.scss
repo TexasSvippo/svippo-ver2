@@ -1,270 +1,381 @@
-.overlay {
-  position: fixed;
+.wizard {
+  min-height: calc(100vh - 68px);
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 56px 24px;
+}
+
+.wizard__progress {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 40px;
+}
+
+.wizard__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--color-border);
+  transition: width 0.3s ease, background-color 0.3s ease;
+
+  &--active {
+    width: 20px;
+    background: var(--color-dark);
+  }
+}
+
+.wizard__container {
+  width: 100%;
+  max-width: 480px;
+}
+
+.wizard__viewport {
+  position: relative;
+  overflow: hidden;
+  min-height: 560px;
+}
+
+.wizard__step {
+  width: 100%;
+}
+
+.wizard__step_abs {
+  position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
+  width: 100%;
+  transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+// Rubriker
+.wizard__title {
+  font-family: var(--font-heading);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-dark);
+  margin-bottom: 8px;
+}
+
+.wizard__subtitle {
+  font-size: 15px;
+  color: var(--color-gray);
+  margin-bottom: 24px;
+}
+
+// Tillbaka-knapp
+.wizard__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-gray);
+  cursor: pointer;
+  margin-bottom: 20px;
+  transition: color 0.15s ease;
+
+  &:hover {
+    color: var(--color-dark);
+  }
+}
+
+// Badge med kontotyp
+.wizard__badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 14px;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  margin-bottom: 16px;
+}
+
+// Steg 1 – Kort
+.wizard__cards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.wizard__card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  padding: 16px 20px;
+  border: 0.5px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: white;
+  text-align: left;
+  cursor: pointer;
+  font-family: var(--font-body);
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover,
+  &--active {
+    transform: translateY(-2px);
+    border-color: var(--card-color, var(--color-primary));
+    box-shadow: var(--shadow-sm);
+  }
+}
+
+.wizard__card_icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 999;
-  padding: 24px;
-}
-
-.popup {
-  background: white;
-  border-radius: var(--radius-lg);
-  padding: 40px;
-  width: 100%;
-  max-width: 480px;
-  box-shadow: var(--shadow-lg);
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  max-height: 90vh;
-  overflow-y: auto;
-}
-
-.popup__large {
-  max-width: 600px;
-}
-
-.popup__emoji {
-  font-size: 48px;
-  text-align: center;
-}
-
-.popup__title {
-  font-family: var(--font-heading);
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--color-dark);
-  text-align: center;
-}
-
-.popup__text {
-  font-size: 15px;
-  color: var(--color-gray);
-  text-align: center;
-  line-height: 1.6;
-}
-
-.popup__info {
-  background: var(--color-gray-light);
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
   border-radius: var(--radius-md);
-  padding: 16px;
+  background: var(--color-gray-light);
+  color: var(--color-dark);
+}
+
+.wizard__card_text {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 2px;
+  flex: 1;
 
   strong {
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 700;
     color: var(--color-dark);
   }
 
-  ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
+  span {
+    font-size: 13px;
+    color: var(--color-gray);
+    line-height: 1.4;
+  }
+}
 
-    li {
-      font-size: 14px;
-      color: var(--color-dark);
+.wizard__card_chevron {
+  flex-shrink: 0;
+  color: var(--color-gray);
+}
+
+.wizard__hint {
+  font-size: 13px;
+  color: var(--color-gray);
+  line-height: 1.5;
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;
+  margin-top: 0;
+  transition: opacity 0.3s ease, max-height 0.3s ease, margin-top 0.3s ease;
+
+  &--visible {
+    opacity: 1;
+    max-height: 80px;
+    margin-top: 16px;
+  }
+}
+
+// Formulärfält (steg 2 & 3)
+.wizard__fields {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 24px 0 32px;
+}
+
+.wizard__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-dark);
+  }
+
+  input {
+    padding: 12px 16px;
+    border-radius: var(--radius-md);
+    border: 1.5px solid var(--color-border);
+    font-size: 15px;
+    font-family: var(--font-body);
+    color: var(--color-dark);
+    outline: none;
+    background: white;
+    width: 100%;
+    transition: border-color 0.2s ease;
+
+    &:focus {
+      border-color: var(--account-color, var(--color-primary));
     }
   }
 }
 
-.popup__disclaimer {
-  font-size: 13px;
-  color: var(--color-gray);
-  line-height: 1.5;
-  margin-top: 8px;
-  padding-top: 8px;
-  border-top: 1px solid var(--color-border);
-}
-
-.popup__actions {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-// Info-box på registreringssidan
-.info_box {
-  background: #e0f0fa;
-  border: 1px solid var(--color-primary);
-  border-radius: var(--radius-md);
-  padding: 12px 16px;
-  font-size: 13px;
-  color: var(--color-dark);
-  line-height: 1.5;
-}
-
-// Svippare-formulär
-.form__header {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.form__back {
-  background: none;
-  border: none;
-  color: var(--color-primary);
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  font-family: var(--font-body);
-  padding: 0;
-  text-align: left;
-  &:hover { opacity: 0.7; }
-}
-
-.form__fields {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.form__field {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.form__label {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--color-dark);
-}
-
-.form__hint {
-  font-size: 13px;
-  color: var(--color-gray);
-  margin-top: -4px;
-}
-
-.required {
-  color: var(--color-orange);
-}
-
-.form__input {
-  padding: 12px 16px;
-  border-radius: var(--radius-md);
-  border: 1.5px solid var(--color-border);
-  font-size: 15px;
-  font-family: var(--font-body);
-  color: var(--color-dark);
-  outline: none;
-  transition: border-color 0.2s;
-  &:focus { border-color: var(--color-primary); }
-}
-
-.form__textarea {
-  padding: 12px 16px;
-  border-radius: var(--radius-md);
-  border: 1.5px solid var(--color-border);
-  font-size: 15px;
-  font-family: var(--font-body);
-  color: var(--color-dark);
-  outline: none;
-  resize: vertical;
-  line-height: 1.6;
-  transition: border-color 0.2s;
-  &:focus { border-color: var(--color-primary); }
-}
-
-// Kategorier
-.category_grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
-}
-
-.category_btn {
+// CTA-knapp
+.wizard__cta {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 14px;
-  border-radius: var(--radius-md);
+  justify-content: center;
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: var(--radius-full);
+  background: var(--account-color, var(--color-primary));
+  color: white;
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+
+  &:hover:not(:disabled) {
+    opacity: 0.9;
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+// Google-knapp
+.wizard__google {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 13px;
   border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-full);
   background: white;
-  font-size: 13px;
-  font-weight: 500;
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 600;
   color: var(--color-dark);
   cursor: pointer;
-  transition: all 0.2s;
-  font-family: var(--font-body);
-  text-align: left;
-  position: relative;
-
-  span:first-child { font-size: 20px; flex-shrink: 0; }
+  transition: border-color 0.2s ease, background-color 0.2s ease;
 
   &:hover {
-    border-color: var(--color-primary);
-    background: #f0f8ff;
+    border-color: var(--color-border-tertiary);
+    background: var(--color-gray-light);
   }
+}
 
-  &--active {
-    border-color: var(--color-primary);
-    background: #e0f0fa;
-    color: var(--color-primary);
+// Avdelare
+.wizard__divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 24px 0;
+  font-size: 13px;
+  color: var(--color-gray);
+
+  &::before,
+  &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--color-border);
+  }
+}
+
+// Checkbox
+.wizard__checkbox_field {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 8px 0 20px;
+}
+
+.wizard__checkbox {
+  width: 16px;
+  height: 16px;
+  margin-top: 3px;
+  flex-shrink: 0;
+  accent-color: var(--account-color, var(--color-primary));
+  cursor: pointer;
+}
+
+.wizard__checkbox_label {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--color-dark);
+  cursor: pointer;
+
+  a {
+    color: var(--account-color, var(--color-primary));
     font-weight: 600;
+
+    &:hover {
+      text-decoration: underline;
+    }
   }
 }
 
-.category_check {
-  margin-left: auto;
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--color-primary);
-}
-
-// Betalningsinfo
-.payment_info {
-  display: flex;
-  gap: 12px;
-  padding: 16px;
-  background: #fff8e1;
-  border: 1px solid #f59e0b;
+// Felmeddelande
+.wizard__error {
+  padding: 12px 16px;
   border-radius: var(--radius-md);
-
-  span:first-child { font-size: 20px; flex-shrink: 0; }
-
-  p {
-    font-size: 13px;
-    color: var(--color-dark);
-    line-height: 1.6;
-    margin: 0;
-  }
+  background: #fdecea;
+  color: var(--color-orange);
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 16px;
 }
 
-.form__actions {
+// Steg 4 – Lyckades
+.wizard__success {
   display: flex;
-  gap: 12px;
-  justify-content: flex-end;
-  padding-top: 8px;
-  border-top: 1px solid var(--color-border);
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 16px;
+  padding: 48px 0;
 }
 
-@media (max-width: 768px) {
-  .popup {
-    padding: 24px;
+.wizard__success_icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  margin-bottom: 8px;
+}
+
+.wizard__success_title {
+  font-family: var(--font-heading);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-dark);
+}
+
+.wizard__success_text {
+  font-size: 15px;
+  color: var(--color-gray);
+  line-height: 1.6;
+  max-width: 360px;
+}
+
+@media (max-width: 640px) {
+  .wizard {
+    padding: 40px 16px;
   }
 
-  .category_grid {
-    grid-template-columns: 1fr;
+  .wizard__viewport {
+    min-height: 640px;
   }
 
-  .popup__actions {
-    flex-direction: column;
-  }
-
-  .form__actions {
-    flex-direction: column-reverse;
-    button { width: 100%; justify-content: center; }
+  .wizard__hint {
+    opacity: 1;
+    max-height: none;
+    overflow: visible;
+    margin-top: 16px;
   }
 }
