@@ -1563,3 +1563,14 @@
   background: #e6f9f0;
   color: #1a7a4a;
 }
+
+// ─── Mobil ────────────────────────────────────────────────────────────────────
+@media (max-width: 768px) {
+  .profile__main {
+    padding: 16px;
+  }
+
+  .profile__section {
+    gap: 16px;
+  }
+}

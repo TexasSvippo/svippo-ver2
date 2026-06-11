@@ -48,6 +48,22 @@
   &:hover { opacity: 0.88; }
 }
 
+@media (max-width: 640px) {
+  .dash__top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .dash__greeting {
+    font-size: 20px;
+  }
+
+  .dash__create_btn {
+    align-self: flex-start;
+  }
+}
+
 // ─── Notifications ────────────────────────────────────────────────────────────
 
 .dash__notifs {
@@ -103,6 +119,23 @@
   &:hover { text-decoration: underline; }
 }
 
+@media (max-width: 640px) {
+  .dash__notif {
+    flex-wrap: wrap;
+  }
+
+  .dash__notif_msg {
+    width: 100%;
+    flex: none;
+  }
+
+  .dash__notif_actions {
+    width: 100%;
+    justify-content: flex-start;
+    margin-top: 4px;
+  }
+}
+
 // ─── Stats pills ──────────────────────────────────────────────────────────────
 
 .dash__stats {
@@ -146,7 +179,7 @@
   flex-shrink: 0;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 640px) {
   .dash__stats {
     flex-direction: column;
     align-items: flex-start;
@@ -224,6 +257,13 @@
   &:hover { text-decoration: underline; }
 }
 
+@media (max-width: 640px) {
+  .dash__section_head {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+}
+
 // ─── Services list ────────────────────────────────────────────────────────────
 
 .dash__service_list {
@@ -298,6 +338,20 @@
   flex-shrink: 0;
 }
 
+@media (max-width: 640px) {
+  .dash__service_row {
+    flex-wrap: wrap;
+  }
+
+  .dash__service_info {
+    min-width: 0;
+  }
+
+  .dash__service_price {
+    font-size: 13px;
+  }
+}
+
 // ─── Two columns ──────────────────────────────────────────────────────────────
 
 .dash__columns {
@@ -359,6 +413,16 @@
   text-overflow: ellipsis;
 }
 
+@media (max-width: 640px) {
+  .dash__item_row {
+    flex-wrap: wrap;
+  }
+
+  .dash__item_info {
+    min-width: 0;
+  }
+}
+
 // ─── Badges ───────────────────────────────────────────────────────────────────
 
 .dash__badge {
@@ -401,6 +465,10 @@
 @media (max-width: 640px) {
   .dash__tips_grid {
     grid-template-columns: 1fr;
+  }
+
+  .dash__tip_img_wrap {
+    height: 160px;
   }
 }
 
