@@ -245,7 +245,9 @@ export default function RegisterPage() {
 
     const valid = accountType === 'privatperson'
       ? firstName.trim() !== '' && lastName.trim() !== '' && city.trim() !== ''
-      : companyName.trim() !== '' && orgNumber.trim() !== '' && city.trim() !== ''
+      : accountType === 'foretag'
+        ? companyName.trim() !== '' && orgNumber.trim() !== '' && city.trim() !== ''
+        : companyName.trim() !== '' && city.trim() !== ''
 
     return (
       <div style={{ '--account-color': color } as CSSVars}>
@@ -275,10 +277,12 @@ export default function RegisterPage() {
                 <label htmlFor="companyName">Företagsnamn</label>
                 <input id="companyName" value={companyName} onChange={e => setCompanyName(e.target.value)} />
               </div>
-              <div className={styles.wizard__field}>
-                <label htmlFor="orgNumber">Organisationsnummer</label>
-                <input id="orgNumber" value={orgNumber} onChange={e => setOrgNumber(e.target.value)} placeholder="556123-4567" />
-              </div>
+              {accountType === 'foretag' && (
+                <div className={styles.wizard__field}>
+                  <label htmlFor="orgNumber">Organisationsnummer</label>
+                  <input id="orgNumber" value={orgNumber} onChange={e => setOrgNumber(e.target.value)} placeholder="556123-4567" />
+                </div>
+              )}
             </>
           )}
           <div className={styles.wizard__field}>
