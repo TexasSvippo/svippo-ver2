@@ -1566,6 +1566,14 @@
 
 // ─── Mobil ────────────────────────────────────────────────────────────────────
 @media (max-width: 768px) {
+  .profile {
+    grid-template-columns: 1fr;
+  }
+
+  .profile__sidebar {
+    display: none;
+  }
+
   .profile__main {
     padding: 16px;
   }
