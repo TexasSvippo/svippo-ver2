@@ -207,11 +207,6 @@
   color: var(--color-primary);
 }
 
-.navbar__dropdown_create,
-.navbar__dropdown_mobile_only {
-  display: none;
-}
-
 .navbar__nav_badge {
   margin-left: auto;
   background: var(--color-orange);
@@ -271,30 +266,7 @@
   font-size: 14px;
 }
 
-// Pill – hamburgare + avatar (inloggad) eller hamburgare + "Meny" (utloggad)
-.navbar__menu_pill {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 8px;
-  border: 1px solid var(--color-border);
-  border-radius: 100px;
-  padding: 8px 10px 8px 10px;
-  cursor: pointer;
-  background: white;
-  color: var(--color-dark);
-  font-size: 14px;
-  font-weight: 500;
-  font-family: var(--font-body);
-  transition: background 0.15s, border-color 0.15s;
-
-  &:hover {
-    background: var(--color-gray-light);
-    border: 1px solid var(--color-primary);
-  }
-}
-
-// Avatar-cirkel inuti pillen
+// Avatar-cirkel (mobil header / pill)
 .navbar__pill_avatar {
   width: 32px;
   height: 32px;
@@ -320,11 +292,6 @@
 // MOBILANPASSNING
 // ================================
 @media (max-width: 768px) {
-
-  .navbar__dropdown_create,
-  .navbar__dropdown_mobile_only {
-    display: flex;
-  }
 
   .navbar__inner {
     gap: 8px;
@@ -355,11 +322,6 @@
     flex-shrink: 0;
   }
 
-  .navbar__dropdown {
-    right: 0;
-    min-width: 200px;
-  }
-
   // Sökfält-overlay under navbaren på mobil
   .navbar__mobile_search_bar {
     display: block;
@@ -367,5 +329,258 @@
     background: white;
     border-top: 1px solid var(--color-border);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+}
+
+// ================================
+// MOBIL OVERLAY-MENY
+// ================================
+.navbar__overlay_backdrop {
+  display: none;
+}
+
+.navbar__overlay_panel {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .navbar__overlay_backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: 999;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.35s ease, visibility 0s linear 0.35s;
+
+    &--open {
+      opacity: 1;
+      visibility: visible;
+      transition: opacity 0.35s ease, visibility 0s linear 0s;
+    }
+  }
+
+  .navbar__overlay_panel {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    max-height: 100vh;
+    overflow-y: auto;
+    background: var(--color-bg);
+    transform: translateY(-100%);
+    visibility: hidden;
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), visibility 0s linear 0.35s;
+
+    &--open {
+      transform: translateY(0);
+      visibility: visible;
+      transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), visibility 0s linear 0s;
+    }
+  }
+}
+
+.navbar__overlay_header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 60px;
+  padding: 0 16px;
+  background: #066696;
+  flex-shrink: 0;
+}
+
+.navbar__overlay_logo {
+  display: flex;
+  align-items: center;
+}
+
+.navbar__overlay_close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+  transition: background 0.15s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.15);
+  }
+}
+
+.navbar__overlay_body {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 0;
+}
+
+// Användarkort (inloggad)
+.navbar__overlay_user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+}
+
+.navbar__overlay_user_avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-primary);
+  color: white;
+  font-size: 16px;
+  font-weight: 700;
+  overflow: hidden;
+
+  &--bestellare {
+    background: var(--color-orange);
+  }
+}
+
+.navbar__overlay_user_info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.navbar__overlay_user_name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-dark);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.navbar__overlay_user_email {
+  font-size: 13px;
+  color: var(--color-gray);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.navbar__overlay_user_link {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-primary);
+  text-decoration: none;
+  margin-top: 2px;
+
+  &:hover {
+    opacity: 0.7;
+  }
+}
+
+// Gruppetiketter
+.navbar__overlay_group_label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-gray);
+  padding: 12px 20px 4px;
+}
+
+// Menyrader
+.navbar__overlay_item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  width: 100%;
+  padding: 0 20px;
+  font-size: 15px;
+  font-weight: 500;
+  font-family: var(--font-body);
+  color: var(--color-dark);
+  text-decoration: none;
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+
+  svg {
+    flex-shrink: 0;
+  }
+
+  &:hover {
+    background: var(--color-gray-light);
+  }
+
+  &--active {
+    color: var(--color-primary);
+    background: var(--color-gray-light);
+  }
+}
+
+.navbar__overlay_chevron {
+  margin-left: auto;
+  flex-shrink: 0;
+  transition: transform 0.2s;
+
+  &--open {
+    transform: rotate(180deg);
+  }
+}
+
+// Ackordeon-underrader
+.navbar__overlay_subitems {
+  display: flex;
+  flex-direction: column;
+}
+
+.navbar__overlay_subitem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  padding-left: 48px;
+  padding-right: 20px;
+  font-size: 14px;
+  color: var(--color-dark);
+  text-decoration: none;
+  transition: background 0.15s;
+
+  svg {
+    flex-shrink: 0;
+    color: var(--color-gray);
+  }
+
+  &:hover {
+    background: var(--color-gray-light);
+  }
+}
+
+.navbar__overlay_divider {
+  border-top: 0.5px solid var(--color-border-tertiary);
+  margin: 8px 0;
+}
+
+.navbar__overlay_footer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  margin-top: auto;
+
+  a, button {
+    width: 100%;
   }
 }
