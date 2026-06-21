@@ -344,7 +344,7 @@ export default function Navbar() {
                   <span className={styles.navbar__overlay_user_name}>{name || user.email}</span>
                   <span className={styles.navbar__overlay_user_email}>{user.email}</span>
                   {showPublicProfileLink && (
-                    <Link href={`/provider/${user.id}`} className={styles.navbar__overlay_user_link}>
+                    <Link href={`/provider/${user.id}`} className={styles.navbar__overlay_user_link} onClick={() => setMobileMenuOpen(false)}>
                       Se publik profil →
                     </Link>
                   )}
@@ -363,6 +363,7 @@ export default function Navbar() {
                         key={item.label}
                         href={item.href}
                         className={styles.navbar__overlay_item}
+                        onClick={() => setMobileMenuOpen(false)}
                       >
                         <Icon size={18} />
                         <span>{item.label}</span>
@@ -374,11 +375,11 @@ export default function Navbar() {
 
               <div className={styles.navbar__overlay_divider} />
 
-              <Link href="/om-oss" className={styles.navbar__overlay_item}>
+              <Link href="/om-oss" className={styles.navbar__overlay_item} onClick={() => setMobileMenuOpen(false)}>
                 <Info size={18} />
                 <span>Om oss</span>
               </Link>
-              <Link href="/kontakt" className={styles.navbar__overlay_item}>
+              <Link href="/kontakt" className={styles.navbar__overlay_item} onClick={() => setMobileMenuOpen(false)}>
                 <Mail size={18} />
                 <span>Kontakt</span>
               </Link>
@@ -395,7 +396,7 @@ export default function Navbar() {
                   {categories.map(cat => {
                     const Icon = CATEGORY_ICONS[cat.id]
                     return (
-                      <Link key={cat.id} href={`/services?category=${cat.id}`} className={styles.navbar__overlay_subitem}>
+                      <Link key={cat.id} href={`/services?category=${cat.id}`} className={styles.navbar__overlay_subitem} onClick={() => setMobileMenuOpen(false)}>
                         <Icon size={16} />
                         <span>{cat.label}</span>
                       </Link>
@@ -414,7 +415,7 @@ export default function Navbar() {
                   {categories.map(cat => {
                     const Icon = CATEGORY_ICONS[cat.id]
                     return (
-                      <Link key={cat.id} href={`/requests?category=${cat.id}`} className={styles.navbar__overlay_subitem}>
+                      <Link key={cat.id} href={`/requests?category=${cat.id}`} className={styles.navbar__overlay_subitem} onClick={() => setMobileMenuOpen(false)}>
                         <Icon size={16} />
                         <span>{cat.label}</span>
                       </Link>
@@ -425,11 +426,11 @@ export default function Navbar() {
 
               <div className={styles.navbar__overlay_divider} />
 
-              <Link href="/om-oss" className={styles.navbar__overlay_item}>
+              <Link href="/om-oss" className={styles.navbar__overlay_item} onClick={() => setMobileMenuOpen(false)}>
                 <Info size={18} />
                 <span>Om oss</span>
               </Link>
-              <Link href="/kontakt" className={styles.navbar__overlay_item}>
+              <Link href="/kontakt" className={styles.navbar__overlay_item} onClick={() => setMobileMenuOpen(false)}>
                 <Mail size={18} />
                 <span>Kontakt</span>
               </Link>
@@ -444,8 +445,8 @@ export default function Navbar() {
             </button>
           ) : (
             <>
-              <Link href="/register" className="btn btn-orange">Skapa konto</Link>
-              <Link href="/login" className="btn btn-outline">Logga in</Link>
+              <Link href="/register" className="btn btn-orange" onClick={() => setMobileMenuOpen(false)}>Skapa konto</Link>
+              <Link href="/login" className="btn btn-outline" onClick={() => setMobileMenuOpen(false)}>Logga in</Link>
             </>
           )}
         </div>
