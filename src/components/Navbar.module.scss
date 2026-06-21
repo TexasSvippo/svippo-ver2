@@ -470,16 +470,6 @@
   }
 }
 
-// Gruppetiketter
-.navbar__overlay_group_label {
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: var(--color-gray);
-  padding: 12px 20px 4px;
-}
-
 // Menyrader
 .navbar__overlay_item {
   display: flex;
@@ -522,6 +512,7 @@
 .navbar__overlay_subitems {
   display: flex;
   flex-direction: column;
+  background: var(--color-gray-light);
 }
 
 .navbar__overlay_subitem {
@@ -542,7 +533,7 @@
   }
 
   &:hover {
-    background: var(--color-gray-light);
+    background: rgba(0, 0, 0, 0.06);
   }
 }
 

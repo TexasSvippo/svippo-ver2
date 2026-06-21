@@ -32,25 +32,35 @@ const CATEGORY_ICONS: Record<string, LucideIcon> = {
 }
 
 type OverlayNavItem = { label: string; href: string; icon: LucideIcon }
-type OverlayNavGroup = { label: string; items: OverlayNavItem[] }
+type OverlayEntry =
+  | { kind: 'link'; label: string; href: string; icon: LucideIcon }
+  | { kind: 'group'; label: string; items: OverlayNavItem[] }
 
-function getOverlayNavGroups(accountType: AccountType | null): OverlayNavGroup[] {
+function getOverlayNavEntries(accountType: AccountType | null): OverlayEntry[] {
+  const oversikt: OverlayEntry = { kind: 'link', label: 'Översikt', href: '/profile', icon: Home }
+  const meddelanden: OverlayEntry = { kind: 'link', label: 'Meddelanden', href: '/messages', icon: MessageCircle }
+  const tjansterGroup: OverlayEntry = {
+    kind: 'group', label: 'Tjänster', items: [
+      { label: 'Mina tjänster', href: '/profile?tab=tjanster', icon: Wrench },
+      { label: 'Mina bevakningar', href: '/profile?tab=bevakningar', icon: Bell },
+      { label: 'Inkomna beställningar', href: '/profile?tab=inkomna', icon: Inbox },
+    ]
+  }
+
   if (accountType === 'svippare') {
     return [
+      oversikt,
+      tjansterGroup,
       {
-        label: 'Tjänster', items: [
-          { label: 'Mina tjänster', href: '/profile?tab=tjanster', icon: Wrench },
-          { label: 'Mina bevakningar', href: '/profile?tab=bevakningar', icon: Bell },
-          { label: 'Inkomna beställningar', href: '/profile?tab=inkomna', icon: Inbox },
+        kind: 'group', label: 'Förfrågningar', items: [
+          { label: 'Mina förfrågningar', href: '/profile?tab=forfragningar', icon: Users },
+          { label: 'Intresseanmälningar', href: '/profile?tab=intresse', icon: Eye },
+          { label: 'Placerade beställningar', href: '/profile?tab=placerade', icon: Send },
         ]
       },
+      meddelanden,
       {
-        label: 'Meddelanden', items: [
-          { label: 'Meddelanden', href: '/messages', icon: MessageCircle },
-        ]
-      },
-      {
-        label: 'Min profil', items: [
+        kind: 'group', label: 'Min profil', items: [
           { label: 'Recensioner & betyg', href: '/profile?tab=recensioner', icon: Star },
           { label: 'Min karriär', href: '/profile?tab=karriar', icon: Trophy },
           { label: 'Profilinställningar', href: '/profile?tab=installningar', icon: Settings },
@@ -61,25 +71,16 @@ function getOverlayNavGroups(accountType: AccountType | null): OverlayNavGroup[]
 
   if (accountType === 'foretag' || accountType === 'uf-foretag') {
     return [
+      oversikt,
+      tjansterGroup,
       {
-        label: 'Tjänster', items: [
-          { label: 'Mina tjänster', href: '/profile?tab=tjanster', icon: Wrench },
-          { label: 'Mina bevakningar', href: '/profile?tab=bevakningar', icon: Bell },
-          { label: 'Inkomna beställningar', href: '/profile?tab=inkomna', icon: Inbox },
-        ]
-      },
-      {
-        label: 'Förfrågningar', items: [
+        kind: 'group', label: 'Förfrågningar', items: [
           { label: 'Placerade beställningar', href: '/profile?tab=placerade', icon: Send },
         ]
       },
+      meddelanden,
       {
-        label: 'Meddelanden', items: [
-          { label: 'Meddelanden', href: '/messages', icon: MessageCircle },
-        ]
-      },
-      {
-        label: 'Min profil', items: [
+        kind: 'group', label: 'Min profil', items: [
           { label: 'Recensioner & betyg', href: '/profile?tab=recensioner', icon: Star },
           { label: 'Profilinställningar', href: '/profile?tab=installningar', icon: Settings },
         ]
@@ -89,20 +90,17 @@ function getOverlayNavGroups(accountType: AccountType | null): OverlayNavGroup[]
 
   // bestellare (default)
   return [
+    oversikt,
     {
-      label: 'Förfrågningar', items: [
+      kind: 'group', label: 'Förfrågningar', items: [
         { label: 'Mina förfrågningar', href: '/profile?tab=forfragningar', icon: Users },
         { label: 'Intresseanmälningar', href: '/profile?tab=intresse', icon: Eye },
         { label: 'Placerade beställningar', href: '/profile?tab=placerade', icon: Send },
       ]
     },
+    meddelanden,
     {
-      label: 'Meddelanden', items: [
-        { label: 'Meddelanden', href: '/messages', icon: MessageCircle },
-      ]
-    },
-    {
-      label: 'Min profil', items: [
+      kind: 'group', label: 'Min profil', items: [
         { label: 'Recensioner & betyg', href: '/profile?tab=recensioner', icon: Star },
         { label: 'Profilinställningar', href: '/profile?tab=installningar', icon: Settings },
       ]
@@ -120,6 +118,7 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [tjansterOpen, setTjansterOpen] = useState(false)
   const [forfragningarOpen, setForfragningarOpen] = useState(false)
+  const [openMobileGroup, setOpenMobileGroup] = useState<string | null>(null)
   const router = useRouter()
   const pathname = usePathname()
 
@@ -146,6 +145,11 @@ export default function Navbar() {
     setMobileMenuOpen(false)
   }, [pathname])
 
+  // Återställ öppen ackordeongrupp när mobilmenyn stängs
+  useEffect(() => {
+    if (!mobileMenuOpen) setOpenMobileGroup(null)
+  }, [mobileMenuOpen])
+
   // Lås body-scroll när mobilmenyn är öppen
   useEffect(() => {
     document.body.style.overflow = mobileMenuOpen ? 'hidden' : ''
@@ -169,7 +173,7 @@ export default function Navbar() {
     router.push('/')
   }
 
-  const overlayNavGroups = getOverlayNavGroups(accountType)
+  const overlayNavEntries = getOverlayNavEntries(accountType)
   const showPublicProfileLink = accountType === 'svippare' || accountType === 'foretag' || accountType === 'uf-foretag'
 
   return (
@@ -353,25 +357,44 @@ export default function Navbar() {
 
               <div className={styles.navbar__overlay_divider} />
 
-              {overlayNavGroups.map(group => (
-                <div key={group.label}>
-                  <div className={styles.navbar__overlay_group_label}>{group.label}</div>
-                  {group.items.map(item => {
-                    const Icon = item.icon
-                    return (
-                      <Link
-                        key={item.label}
-                        href={item.href}
-                        className={styles.navbar__overlay_item}
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        <Icon size={18} />
-                        <span>{item.label}</span>
-                      </Link>
-                    )
-                  })}
-                </div>
-              ))}
+              {overlayNavEntries.map(entry => {
+                if (entry.kind === 'link') {
+                  const Icon = entry.icon
+                  return (
+                    <Link key={entry.label} href={entry.href} className={styles.navbar__overlay_item} onClick={() => setMobileMenuOpen(false)}>
+                      <Icon size={18} />
+                      <span>{entry.label}</span>
+                    </Link>
+                  )
+                }
+                const isOpen = openMobileGroup === entry.label
+                return (
+                  <div key={entry.label}>
+                    <button
+                      type="button"
+                      className={styles.navbar__overlay_item}
+                      onClick={() => setOpenMobileGroup(isOpen ? null : entry.label)}
+                      aria-expanded={isOpen}
+                    >
+                      <span>{entry.label}</span>
+                      <ChevronDown size={18} className={`${styles.navbar__overlay_chevron} ${isOpen ? styles['navbar__overlay_chevron--open'] : ''}`} />
+                    </button>
+                    {isOpen && (
+                      <div className={styles.navbar__overlay_subitems}>
+                        {entry.items.map(item => {
+                          const Icon = item.icon
+                          return (
+                            <Link key={item.label} href={item.href} className={styles.navbar__overlay_subitem} onClick={() => setMobileMenuOpen(false)}>
+                              <Icon size={16} />
+                              <span>{item.label}</span>
+                            </Link>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
 
               <div className={styles.navbar__overlay_divider} />
 
