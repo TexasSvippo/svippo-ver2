@@ -475,33 +475,6 @@ export default function TjansterClient({ services, page, totalCount, pageSize }:
               <h2 className={styles.filter_panel__title}>Filter</h2>
               {maxPrice && <div className={styles.filter_panel__active_tag}>Pris: {maxPrice}kr <button onClick={() => setMaxPrice('')}>✕</button></div>}
               <div className={styles.filter_panel__group}>
-                <label className={styles.filter_panel__label}>Kategorier</label>
-                <div className={styles.filter_panel__search_wrap}>
-                  <input className={styles.filter_panel__search} placeholder="Sök efter kategori" onChange={() => {}} />
-                </div>
-                <div className={styles.filter_panel__checkboxes}>
-                  {categories.map(cat => (
-                    <label key={cat.id} className={styles.filter_panel__checkbox_label}>
-                      <input type="checkbox" checked={selectedCategory === cat.id} onChange={() => selectCategory(selectedCategory === cat.id ? '' : cat.id)} />
-                      <span>{cat.icon} {cat.label}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-              {selectedCategory && (
-                <div className={styles.filter_panel__group}>
-                  <label className={styles.filter_panel__label}>Underkategori</label>
-                  <div className={styles.filter_panel__checkboxes}>
-                    {categories.find(c => c.id === selectedCategory)?.subcategories.map(sub => (
-                      <label key={sub} className={styles.filter_panel__checkbox_label}>
-                        <input type="checkbox" checked={selectedSubcategory === sub} onChange={() => selectSubcategory(selectedSubcategory === sub ? '' : sub)} />
-                        <span>{sub}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-              )}
-              <div className={styles.filter_panel__group}>
                 <label className={styles.filter_panel__label}>Plats</label>
                 <select className={styles.filter_panel__select} value={selectedLocation} onChange={e => setSelectedLocation(e.target.value)}>
                   <option value="">Alla platser</option>
