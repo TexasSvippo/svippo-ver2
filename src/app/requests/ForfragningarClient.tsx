@@ -204,10 +204,6 @@ export default function ForfragningarClient({ requests }: Props) {
           {/* Desktop filter-rad */}
           <div className={styles.requests__filter_row}>
             <div className={styles.requests__filter_left}>
-              <select className={styles.requests__select} value={selectedCategory} onChange={e => setSelectedCategory(e.target.value)}>
-                <option value="">Alla kategorier</option>
-                {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.icon} {cat.label}</option>)}
-              </select>
               <select className={styles.requests__select} value={selectedLocation} onChange={e => setSelectedLocation(e.target.value)}>
                 <option value="">Alla platser</option>
                 {locations.map(loc => <option key={loc} value={loc}>{loc}</option>)}
