@@ -1588,4 +1588,32 @@
   .profile__stats {
     grid-template-columns: repeat(2, 1fr);
   }
+
+  .profile__section_header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .profile__empty {
+    padding: 32px 20px;
+  }
+
+  // Mina tjänster – tvåradig kortlayout på mobil
+  .service_card_new {
+    flex-wrap: wrap;
+  }
+
+  .service_card_new__right {
+    flex-basis: 100%;
+    justify-content: flex-end;
+  }
+
+  .service_card_new__edit_btn,
+  .service_card_new__delete_btn {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    justify-content: center;
+  }
 }
