@@ -665,7 +665,7 @@ export default function ProfileClient({ initialAccountType }: Props) {
                               {isRequest ? 'Förfrågan' : 'Tjänst'}
                             </span>
                             <div className={styles.placed_card__avatar}>{order.buyer_name?.charAt(0).toUpperCase() || '?'}</div>
-                            <span style={{ fontSize: 13, color: 'var(--color-gray)' }}>{order.buyer_name}</span>
+                            <span className={styles.placed_card__buyer_name}>{order.buyer_name}</span>
                           </div>
                           <span className={`${styles.placed_card__status_text} ${statusCls}`}>{friendlyStatus}</span>
                         </div>

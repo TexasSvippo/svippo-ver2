@@ -1080,6 +1080,16 @@
   flex-shrink: 0;
 }
 
+.placed_card__buyer_name {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  color: var(--color-gray);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 // ─── Progress bar ─────────────────────────────────────────────────────────────
 
 .placed_card__progress {
