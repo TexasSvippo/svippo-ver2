@@ -16,7 +16,7 @@ import Image from 'next/image'
 import {
   Bell, User, Wrench, Users, Package, MessageCircle, LogOut, ChevronDown, Menu, X,
   Laptop, Camera, Book, Home, Car, Heart, Hammer, Truck, Info, Mail,
-  Eye, Send, Inbox, Star, Trophy, Settings,
+  Eye, Send, Inbox, Star, Trophy, Settings, FileText,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
@@ -34,13 +34,13 @@ const CATEGORY_ICONS: Record<string, LucideIcon> = {
 type OverlayNavItem = { label: string; href: string; icon: LucideIcon }
 type OverlayEntry =
   | { kind: 'link'; label: string; href: string; icon: LucideIcon }
-  | { kind: 'group'; label: string; items: OverlayNavItem[] }
+  | { kind: 'group'; label: string; icon: LucideIcon; items: OverlayNavItem[] }
 
 function getOverlayNavEntries(accountType: AccountType | null): OverlayEntry[] {
   const oversikt: OverlayEntry = { kind: 'link', label: 'Översikt', href: '/profile', icon: Home }
   const meddelanden: OverlayEntry = { kind: 'link', label: 'Meddelanden', href: '/messages', icon: MessageCircle }
   const tjansterGroup: OverlayEntry = {
-    kind: 'group', label: 'Tjänster', items: [
+    kind: 'group', label: 'Tjänster', icon: Wrench, items: [
       { label: 'Mina tjänster', href: '/profile?tab=tjanster', icon: Wrench },
       { label: 'Mina bevakningar', href: '/profile?tab=bevakningar', icon: Bell },
       { label: 'Inkomna beställningar', href: '/profile?tab=inkomna', icon: Inbox },
@@ -52,7 +52,7 @@ function getOverlayNavEntries(accountType: AccountType | null): OverlayEntry[] {
       oversikt,
       tjansterGroup,
       {
-        kind: 'group', label: 'Förfrågningar', items: [
+        kind: 'group', label: 'Förfrågningar', icon: FileText, items: [
           { label: 'Mina förfrågningar', href: '/profile?tab=forfragningar', icon: Users },
           { label: 'Intresseanmälningar', href: '/profile?tab=intresse', icon: Eye },
           { label: 'Placerade beställningar', href: '/profile?tab=placerade', icon: Send },
@@ -60,7 +60,7 @@ function getOverlayNavEntries(accountType: AccountType | null): OverlayEntry[] {
       },
       meddelanden,
       {
-        kind: 'group', label: 'Min profil', items: [
+        kind: 'group', label: 'Min profil', icon: User, items: [
           { label: 'Recensioner & betyg', href: '/profile?tab=recensioner', icon: Star },
           { label: 'Min karriär', href: '/profile?tab=karriar', icon: Trophy },
           { label: 'Profilinställningar', href: '/profile?tab=installningar', icon: Settings },
@@ -74,13 +74,13 @@ function getOverlayNavEntries(accountType: AccountType | null): OverlayEntry[] {
       oversikt,
       tjansterGroup,
       {
-        kind: 'group', label: 'Förfrågningar', items: [
+        kind: 'group', label: 'Förfrågningar', icon: FileText, items: [
           { label: 'Placerade beställningar', href: '/profile?tab=placerade', icon: Send },
         ]
       },
       meddelanden,
       {
-        kind: 'group', label: 'Min profil', items: [
+        kind: 'group', label: 'Min profil', icon: User, items: [
           { label: 'Recensioner & betyg', href: '/profile?tab=recensioner', icon: Star },
           { label: 'Profilinställningar', href: '/profile?tab=installningar', icon: Settings },
         ]
@@ -92,7 +92,7 @@ function getOverlayNavEntries(accountType: AccountType | null): OverlayEntry[] {
   return [
     oversikt,
     {
-      kind: 'group', label: 'Förfrågningar', items: [
+      kind: 'group', label: 'Förfrågningar', icon: FileText, items: [
         { label: 'Mina förfrågningar', href: '/profile?tab=forfragningar', icon: Users },
         { label: 'Intresseanmälningar', href: '/profile?tab=intresse', icon: Eye },
         { label: 'Placerade beställningar', href: '/profile?tab=placerade', icon: Send },
@@ -100,7 +100,7 @@ function getOverlayNavEntries(accountType: AccountType | null): OverlayEntry[] {
     },
     meddelanden,
     {
-      kind: 'group', label: 'Min profil', items: [
+      kind: 'group', label: 'Min profil', icon: User, items: [
         { label: 'Recensioner & betyg', href: '/profile?tab=recensioner', icon: Star },
         { label: 'Profilinställningar', href: '/profile?tab=installningar', icon: Settings },
       ]
@@ -368,6 +368,7 @@ export default function Navbar() {
                   )
                 }
                 const isOpen = openMobileGroup === entry.label
+                const GroupIcon = entry.icon
                 return (
                   <div key={entry.label}>
                     <button
@@ -376,6 +377,7 @@ export default function Navbar() {
                       onClick={() => setOpenMobileGroup(isOpen ? null : entry.label)}
                       aria-expanded={isOpen}
                     >
+                      <GroupIcon size={18} />
                       <span>{entry.label}</span>
                       <ChevronDown size={18} className={`${styles.navbar__overlay_chevron} ${isOpen ? styles['navbar__overlay_chevron--open'] : ''}`} />
                     </button>
