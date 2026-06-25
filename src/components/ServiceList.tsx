@@ -3,9 +3,9 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import AdCard from './AdCard'
+import ServiceCard from './ServiceCard'
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
-import { Star } from 'lucide-react'
 import styles from './ServiceList.module.scss'
 
 type Service = {
@@ -31,15 +31,6 @@ type Request = {
   user_name: string
   created_at: string
   avatar_url?: string | null
-}
-
-function StarRating({ rating }: { rating: number }) {
-  if (!rating) return <span className={styles.star_rating}><strong>–</strong></span>
-  return (
-    <span className={styles.star_rating} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-      <Star size={14} fill="#EF9F27" color="#EF9F27" /><strong>{rating}</strong>
-    </span>
-  )
 }
 
 export default function ServiceList() {
@@ -135,34 +126,7 @@ export default function ServiceList() {
                   </div>
                 ) : (
                   services.flatMap((s, idx) => {
-                    const card = (
-                      <Link href={`/service/${s.id}`} key={s.id} className={`${styles.service_card} card`}>
-                        <div className={styles.service_card__avatar}>
-                          {s.avatar_url
-                            ? <img src={s.avatar_url} alt={s.user_name} className={styles.service_card__avatar_img} />
-                            : <div className={styles.service_card__avatar_placeholder}>{s.user_name?.charAt(0).toUpperCase() || '?'}</div>
-                          }
-                        </div>
-                        <div className={styles.service_card__info}>
-                          <div className={styles.service_card__meta}>
-                            <span className={styles.service_card__name}>{s.user_name}</span>
-                            <StarRating rating={s.rating} />
-                            <span className={styles.service_card__reviews}>({s.reviews})</span>
-                            <span className={styles.service_card__distance}>· {s.location}</span>
-                          </div>
-                          <p className={styles.service_card__title}>{s.title}</p>
-                          <span className={styles.service_card__category}>{s.subcategory}</span>
-                        </div>
-                        <div className={styles.service_card__price}>
-                          <span className={styles.service_card__price_type}>
-                            {s.price_type === 'offert' ? '' : 'från:'}
-                          </span>
-                          <strong>
-                            {s.price_type === 'offert' ? 'Offert' : `${s.price}kr`}
-                          </strong>
-                        </div>
-                      </Link>
-                    )
+                    const card = <ServiceCard key={s.id} {...s} />
                     // Insert AdCard after index 2 (or after the last card if fewer than 3)
                     const adInsertAfter = services.length >= 3 ? 2 : services.length - 1
                     if (idx === adInsertAfter) {

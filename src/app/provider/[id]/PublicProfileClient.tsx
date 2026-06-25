@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { categories as allCategories } from '@/data/categories'
 import { supabase } from '@/lib/supabase'
 import useAuth from '@/hooks/useAuth'
+import ServiceCard from '@/components/ServiceCard'
 import styles from './publicprofile.module.scss'
 import { Link as LinkIcon, MapPin, Star, MessageCircle, CheckCircle, Zap, Briefcase, Globe, Smartphone, Mail, User, Info, Link2 } from 'lucide-react'
 import { renderStars } from '@/utils/renderStars'
@@ -392,17 +393,19 @@ export default function PublicProfileClient({
           ) : (
             <div className={styles.pubprofile__services}>
               {services.map(s => (
-                <Link href={`/service/${s.id}`} key={s.id} className={`${styles.pubprofile__service} card`}>
-                  <div className={styles.pubprofile__service_info}>
-                    <span className={styles.pubprofile__service_category}>{s.subcategory}</span>
-                    <h3 className={styles.pubprofile__service_title}>{s.title}</h3>
-                    <span className={styles.pubprofile__service_location} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}><MapPin size={14} /> {s.location}</span>
-                  </div>
-                  <div className={styles.pubprofile__service_price}>
-                    <span>{s.price_type === 'offert' ? '' : 'från'}</span>
-                    <strong>{s.price_type === 'offert' ? 'Offert' : `${s.price} kr`}</strong>
-                  </div>
-                </Link>
+                <ServiceCard
+                  key={s.id}
+                  id={s.id}
+                  title={s.title}
+                  subcategory={s.subcategory}
+                  price_type={s.price_type}
+                  price={s.price}
+                  location={s.location}
+                  user_name={profile.name}
+                  avatar_url={profile.avatar_url}
+                  rating={avgRating ?? 0}
+                  reviews={reviews.length}
+                />
               ))}
             </div>
           )}

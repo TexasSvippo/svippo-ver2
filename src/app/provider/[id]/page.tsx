@@ -32,7 +32,7 @@ export default async function PublicProfilePage({ params }: Props) {
 
   const [{ data: profile }, { data: services }, { data: reviews }] = await Promise.all([
     supabase.from('users').select('*').eq('id', id).single(),
-    supabase.from('services').select('*').eq('user_id', id).order('created_at', { ascending: false }),
+    supabase.from('services').select('*').eq('user_id', id).eq('status', 'active').order('created_at', { ascending: false }),
     supabase.from('reviews').select('*').eq('reviewee_id', id).eq('role', 'buyer'),
   ])
 
