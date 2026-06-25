@@ -745,4 +745,9 @@
   .type_info_grid {
     grid-template-columns: 1fr;
   }
+
+  .header_top {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }
