@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import useAuth from '@/hooks/useAuth'
@@ -48,6 +48,34 @@ const getActionBtn = (notif: Notification, onRead: (id: string) => void) => {
     >
       {action.label}
     </Link>
+  )
+}
+
+function NotificationMessage({ message }: { message: string }) {
+  const [expanded, setExpanded] = useState(false)
+  const [clamped, setClamped] = useState(false)
+  const ref = useRef<HTMLParagraphElement>(null)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    setClamped(el.scrollHeight > el.clientHeight + 1)
+  }, [message])
+
+  return (
+    <>
+      <p
+        ref={ref}
+        className={`${styles.notif_message} ${expanded ? styles['notif_message--expanded'] : ''}`}
+      >
+        {message}
+      </p>
+      {clamped && (
+        <button type="button" className={styles.read_more_btn} onClick={() => setExpanded(e => !e)}>
+          {expanded ? 'Läs mindre' : 'Läs mer'}
+        </button>
+      )}
+    </>
   )
 }
 
@@ -118,27 +146,27 @@ export default function NotificationsPage() {
               >
                 <span className={styles.notif_icon}>{getIcon(notif.type)}</span>
                 <div className={styles.notif_content}>
-                  <p className={styles.notif_message}>{notif.message}</p>
-                  <span className={styles.notif_date}>
-                    {new Date(notif.created_at).toLocaleDateString('sv-SE', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
-                  </span>
+                  <NotificationMessage message={notif.message} />
+                  <div className={styles.notif_bottom_row}>
+                    <span className={styles.notif_date}>
+                      {new Date(notif.created_at).toLocaleDateString('sv-SE', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </span>
+                    {getActionBtn(notif, markAsRead)}
+                  </div>
                 </div>
-                <div className={styles.notif_actions}>
-                  {getActionBtn(notif, markAsRead)}
-                  <button
-                    className={styles.dismiss_btn}
-                    onClick={() => dismiss(notif.id)}
-                    title="Stäng"
-                  >
-                    ✕
-                  </button>
-                </div>
+                <button
+                  className={styles.dismiss_btn}
+                  onClick={() => dismiss(notif.id)}
+                  title="Stäng"
+                >
+                  ✕
+                </button>
               </div>
             ))}
           </div>
