@@ -1644,4 +1644,31 @@
     padding: 0;
     justify-content: center;
   }
+
+  // Profilinställningar – spara/avbryt staplat på mobil
+  .profile__settings_actions {
+    flex-direction: column;
+
+    button, a {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+
+  // Företagsprofil – kategorigrid en kolumn på mobil
+  .profile__category_grid {
+    grid-template-columns: 1fr;
+  }
+
+  // Certifikat-rader – trunkerad text på mobil
+  .cert__info {
+    min-width: 0;
+
+    strong, span {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
 }
