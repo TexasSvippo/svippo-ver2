@@ -187,6 +187,10 @@
   font-size: 14px;
   font-weight: 600;
   color: var(--color-dark);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .interest_row__message {
@@ -474,6 +478,20 @@
 }
 
 @media (max-width: 900px) {
+  .filters__tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  .filters__tab {
+    flex-shrink: 0;
+  }
+
   .group__header {
     align-items: flex-start;
   }
@@ -491,5 +509,11 @@
   .interest_row__date {
     text-align: left;
     min-width: 0;
+  }
+
+  .drawer__close,
+  .action_btn {
+    width: 36px;
+    height: 36px;
   }
 }
