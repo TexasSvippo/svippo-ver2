@@ -401,7 +401,10 @@ export default function Intresseanmalningar({ userId }: Props) {
                     <span className={styles.group__meta}>{group.request_meta}</span>
                   </div>
                   <div className={styles.group__right}>
-                    <span className={styles.group__count}>{group.interests.length} intresseanmälning{group.interests.length !== 1 ? 'ar' : ''}</span>
+                    <span className={styles.group__count}>
+                      <span className={styles.group__count_full}>{group.interests.length} intresseanmälning{group.interests.length !== 1 ? 'ar' : ''}</span>
+                      <span className={styles.group__count_short}>{group.interests.length} st</span>
+                    </span>
                     <ChevronDown size={18} className={`${styles.group__chevron} ${open ? styles['group__chevron--open'] : ''}`} />
                   </div>
                 </button>
@@ -436,6 +439,9 @@ export default function Intresseanmalningar({ userId }: Props) {
                             )}
                           </div>
                           <p className={styles.interest_row__message}>{interest.message}</p>
+                          <span className={styles.interest_row__meta_mobile}>
+                            {interest.price ? `${interest.price} kr` : '–'}{' · '}{new Date(interest.created_at).toLocaleDateString('sv-SE')}
+                          </span>
                         </div>
 
                         <div className={styles.interest_row__price}>{interest.price ? `${interest.price} kr` : '–'}</div>
