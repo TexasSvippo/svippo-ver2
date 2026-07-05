@@ -35,6 +35,7 @@ export default function BliSvipparePage() {
   const router = useRouter()
   const [step, setStep] = useState(0)
   const [saving, setSaving] = useState(false)
+  const [ageError, setAgeError] = useState<string | null>(null)
 
   const [form, setForm] = useState<FormData>({
     categories: [],
@@ -69,6 +70,44 @@ export default function BliSvipparePage() {
     }, [loading, user, accountType, svippareStatus])
 
   if (loading || !user) return <div className={styles.loading}>Laddar...</div>
+
+  const parseAgeFromPersonnummer = (pnr: string): number | null => {
+    const cleaned = pnr.trim().replace(/\s/g, '')
+    let year: number, month: number, day: number
+
+    if (/^\d{8}[-+]?\d{4}$/.test(cleaned)) {
+      year = parseInt(cleaned.substring(0, 4), 10)
+      month = parseInt(cleaned.substring(4, 6), 10)
+      day = parseInt(cleaned.substring(6, 8), 10)
+    } else if (/^\d{6}[-+]?\d{4}$/.test(cleaned)) {
+      const yy = parseInt(cleaned.substring(0, 2), 10)
+      month = parseInt(cleaned.substring(2, 4), 10)
+      day = parseInt(cleaned.substring(4, 6), 10)
+      const currentYear2d = new Date().getFullYear() % 100
+      year = yy <= currentYear2d ? 2000 + yy : 1900 + yy
+    } else {
+      return null
+    }
+
+    const birth = new Date(year, month - 1, day)
+    if (isNaN(birth.getTime())) return null
+
+    const today = new Date()
+    let age = today.getFullYear() - birth.getFullYear()
+    const m = today.getMonth() - birth.getMonth()
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--
+    return age
+  }
+
+  const handlePersonalNumberChange = (value: string) => {
+    setForm(prev => ({ ...prev, personal_number: value }))
+    const age = parseAgeFromPersonnummer(value)
+    if (age !== null && age < 18) {
+      setAgeError('Du måste vara minst 18 år för att ansöka om att bli Svippare.')
+    } else {
+      setAgeError(null)
+    }
+  }
 
   const toggleCategory = (catId: string) => {
     setForm(prev => ({
@@ -144,7 +183,7 @@ export default function BliSvipparePage() {
 
   const canProceed = () => {
     if (step === 0) return form.categories.length > 0
-    if (step === 1) return !!(form.personal_number && form.address && form.postal_code && form.city)
+    if (step === 1) return !!(form.personal_number && form.address && form.postal_code && form.city) && !ageError
     if (step === 2) return !!form.bio
     return true
   }
@@ -202,8 +241,9 @@ export default function BliSvipparePage() {
                     className={styles.input}
                     placeholder="ÅÅMMDD-XXXX"
                     value={form.personal_number}
-                    onChange={e => setForm(prev => ({ ...prev, personal_number: e.target.value }))}
+                    onChange={e => handlePersonalNumberChange(e.target.value)}
                   />
+                  {ageError && <p className={styles.field_error}>{ageError}</p>}
                 </div>
                 <div className={styles.field}>
                   <label className={styles.label}>Adress <span className={styles.required}>*</span></label>
