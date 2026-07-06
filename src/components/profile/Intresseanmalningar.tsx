@@ -1,10 +1,10 @@
 'use client'
 
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, useRef } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import styles from './intresseanmalningar.module.scss'
-import { Star, User, CheckCircle, XCircle, Mail, ChevronDown, X } from 'lucide-react'
+import { Star, User, CheckCircle, XCircle, Mail, ChevronDown, X, SlidersHorizontal, Check } from 'lucide-react'
 
 type IncomingInterest = {
   id: string
@@ -50,6 +50,8 @@ export default function Intresseanmalningar({ userId }: Props) {
   const [selectedInterest, setSelectedInterest] = useState<IncomingInterest | null>(null)
 
   const [interestFilterStatus, setInterestFilterStatus] = useState<'alla' | 'pending' | 'accepted' | 'rejected'>('alla')
+  const [filterDropdownOpen, setFilterDropdownOpen] = useState(false)
+  const filterDropdownRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const fetchInterests = async () => {
@@ -127,6 +129,17 @@ export default function Intresseanmalningar({ userId }: Props) {
     document.addEventListener('keydown', onKeyDown)
     return () => document.removeEventListener('keydown', onKeyDown)
   }, [selectedInterest])
+
+  useEffect(() => {
+    if (!filterDropdownOpen) return
+    const handler = (e: MouseEvent) => {
+      if (filterDropdownRef.current && !filterDropdownRef.current.contains(e.target as Node)) {
+        setFilterDropdownOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [filterDropdownOpen])
 
   const handleAccept = async (interest: IncomingInterest) => {
     setInterestAcceptingId(interest.id)
@@ -362,6 +375,7 @@ export default function Intresseanmalningar({ userId }: Props) {
     <>
       {/* Filter-flikar */}
       <div className={styles.filters}>
+        {/* Desktop tab row */}
         <div className={styles.filters__tabs}>
           {(['alla', 'pending', 'accepted', 'rejected'] as const).map(s => (
             <button
@@ -375,6 +389,51 @@ export default function Intresseanmalningar({ userId }: Props) {
               </span>
             </button>
           ))}
+        </div>
+
+        {/* Mobile filter bar */}
+        <div className={styles.mobile_filter_bar}>
+          <div className={styles.mobile_filter_active}>
+            <span className={styles.mobile_filter_label}>
+              {interestFilterStatus === 'alla' ? 'Alla' : interestFilterStatus === 'pending' ? 'Väntande' : interestFilterStatus === 'accepted' ? 'Godkända' : 'Nekade'}
+            </span>
+            <span className={styles.mobile_filter_count}>
+              {interestFilterStatus === 'alla' ? incomingInterests.length : incomingInterests.filter(i => i.status === interestFilterStatus).length}
+            </span>
+          </div>
+          <div className={styles.mobile_filter_dropdown_wrap} ref={filterDropdownRef}>
+            <button
+              type="button"
+              className={styles.mobile_filter_btn}
+              onClick={() => setFilterDropdownOpen(o => !o)}
+            >
+              <SlidersHorizontal size={15} />
+              Filter
+            </button>
+            {filterDropdownOpen && (
+              <div className={styles.mobile_filter_dropdown}>
+                {(['alla', 'pending', 'accepted', 'rejected'] as const).map(s => {
+                  const label = s === 'alla' ? 'Alla' : s === 'pending' ? 'Väntande' : s === 'accepted' ? 'Godkända' : 'Nekade'
+                  const count = s === 'alla' ? incomingInterests.length : incomingInterests.filter(i => i.status === s).length
+                  const active = interestFilterStatus === s
+                  return (
+                    <button
+                      key={s}
+                      type="button"
+                      className={`${styles.mobile_filter_option} ${active ? styles['mobile_filter_option--active'] : ''}`}
+                      onClick={() => { setInterestFilterStatus(s); setFilterDropdownOpen(false) }}
+                    >
+                      {label}
+                      <span className={styles.mobile_filter_option__meta}>
+                        <span className={styles.mobile_filter_option__count}>{count}</span>
+                        {active && <Check size={14} />}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
