@@ -600,6 +600,18 @@
 
   .group__header {
     align-items: flex-start;
+    min-width: 0;
+  }
+
+  .group__info {
+    min-width: 0;
+  }
+
+  .group__title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
   }
 
   .group__meta {
