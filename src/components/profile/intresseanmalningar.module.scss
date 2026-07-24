@@ -601,6 +601,7 @@
   .group__header {
     align-items: flex-start;
     min-width: 0;
+    overflow: hidden;
   }
 
   .group__info {
@@ -610,6 +611,8 @@
   .group__title {
     white-space: normal;
     text-overflow: unset;
+    overflow: hidden;
+    word-break: break-word;
     max-width: 100%;
   }
 
@@ -634,6 +637,13 @@
 
   .interest_row__main {
     min-width: 200px;
+  }
+
+  .interest_row__message {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
   }
 
   .interest_row__price,
