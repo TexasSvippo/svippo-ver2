@@ -608,10 +608,14 @@
   }
 
   .group__title {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    white-space: normal;
+    text-overflow: unset;
     max-width: 100%;
+  }
+
+  .group__right {
+    flex-shrink: 0;
+    align-self: flex-start;
   }
 
   .group__meta {
