@@ -140,7 +140,7 @@ export default function VaraSvippareContent() {
       {/* 1. Hero */}
       <section className={styles.hero}>
         <Image
-          src="/images/om-oss-hero.png"
+          src="/images/utforare-img.png"
           alt="Svippare i arbete"
           fill
           className={styles.hero__img}
