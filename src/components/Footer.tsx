@@ -94,6 +94,7 @@ export default function Footer() {
           <Link href="/hjalp/svippare">Vara svippare</Link>
           <Link href="/hjalp/bestallare">Vara beställare</Link>
           <Link href="/hjalp/foretag">Vara företag</Link>
+          <Link href="/hjalp/uf-foretag">UF-företag</Link>
           <Link href="/faq">FAQ</Link>
         </div>
 
