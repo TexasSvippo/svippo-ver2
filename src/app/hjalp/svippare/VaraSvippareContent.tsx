@@ -10,6 +10,7 @@ import {
   Star,
   BarChart3,
   Info,
+  ExternalLink,
 } from 'lucide-react'
 import { useEffect, useRef } from 'react'
 import styles from './vara-svippare.module.scss'
@@ -70,18 +71,22 @@ const paymentServices = [
   {
     name: 'Gigapay',
     text: 'Enkelt och populärt. Snabb utbetalning. Passar dig som precis kommit igång.',
+    url: 'https://gigapay.co',
   },
   {
     name: 'Invoiz',
     text: 'Ett av de billigaste alternativen på marknaden. Avgift ca 1,4%.',
+    url: 'https://invoiz.se',
   },
   {
     name: 'Worknode',
     text: 'Erbjuder FLEX och PRO-planer. Automatisk försäkring ingår.',
+    url: 'https://worknode.se',
   },
   {
     name: 'Cool Company',
     text: 'Funnits sedan 2009. Inkluderar försäkringar och pensionsspar.',
+    url: 'https://coolcompany.com',
   },
 ]
 
@@ -223,17 +228,24 @@ export default function VaraSvippareContent() {
         className={`${styles.section} ${styles.animate_hidden}`}
       >
         <div className={styles.container}>
-          <span className={styles.tag}>Betalning</span>
+          <span className={styles.tagbet}>Betalning</span>
           <h2 className={styles.h2}>Så tar du betalt — utan eget företag</h2>
           <p className={styles.body}>
             Som privatperson kan du inte bara ta emot Swish eller kontant för tjänster — det räknas som inkomst och måste redovisas korrekt. Lösningen är en egenanställningstjänst. Du fakturerar via dem och de sköter skatten åt dig.
           </p>
           <div className={styles.payment_grid}>
             {paymentServices.map(service => (
-              <div key={service.name} className={styles.payment_card}>
+              <a
+                key={service.name}
+                href={service.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.payment_card}
+              >
+                <ExternalLink size={16} className={styles.payment_card__icon} />
                 <h3 className={styles.payment_card__title}>{service.name}</h3>
                 <p className={styles.payment_card__text}>{service.text}</p>
-              </div>
+              </a>
             ))}
           </div>
           <div className={styles.warning}>

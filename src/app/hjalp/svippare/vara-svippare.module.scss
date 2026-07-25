@@ -19,7 +19,7 @@
   position: relative;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 100px 24px;
+  padding: 250px 24px 100px 24px;
   text-align: center;
 }
 
@@ -86,6 +86,16 @@
   color: #066696;
   margin-bottom: 12px;
   text-align: center;
+}
+
+.tagbet{
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #066696;
+  margin-bottom: 12px;
 }
 
 .heroh2{
@@ -164,7 +174,7 @@
 }
 
 .steps__text {
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1.7;
   color: var(--color-gray);
   margin: 0;
@@ -224,9 +234,34 @@
 }
 
 .payment_card {
+  display: block;
+  position: relative;
   border: 1px solid var(--color-border);
   border-radius: 10px;
   padding: 22px;
+  text-decoration: none;
+  color: inherit;
+  box-shadow: none;
+  transition: border-color 0.15s;
+
+  &:hover {
+    border-color: #066696;
+    cursor: pointer;
+    box-shadow: none;
+  }
+}
+
+.payment_card__icon {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  color: #066696;
+  opacity: 0;
+  transition: opacity 0.15s;
+
+  .payment_card:hover & {
+    opacity: 1;
+  }
 }
 
 .payment_card__title {
