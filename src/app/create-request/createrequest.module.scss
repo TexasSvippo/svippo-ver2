@@ -160,6 +160,10 @@
 .create__price_types { display: flex; gap: 12px; }
 
 .create__price_type_btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   flex: 1;
   padding: 12px;
   border-radius: var(--radius-md);
@@ -173,7 +177,7 @@
   font-family: var(--font-body);
 
   &:hover { border-color: var(--color-orange); }
-  &--active { border-color: var(--color-orange); background: #fdecea; color: var(--color-orange); }
+  &--active { border-color: var(--color-orange); background: #fdecea; color: #4f1309; }
 }
 
 // Bilduppladdning

@@ -7,7 +7,7 @@ import useAuth from '@/hooks/useAuth'
 import { categories } from '@/data/categories'
 import { municipalities } from '@/data/municipalities'
 import styles from './createrequest.module.scss'
-import { Wallet, ClipboardList, MapPin } from 'lucide-react'
+import { Wallet, ClipboardList, MapPin, Clock, Calendar, Monitor } from 'lucide-react'
 
 type FormData = {
   title: string
@@ -232,7 +232,7 @@ function CreateRequestPage() {
           ))}
         </div>
 
-        <div className={`${styles.create__card} card`}>
+        <div className={styles.create__card}>
 
           {/* Steg 1 – Kategori */}
           {step === 0 && (
@@ -347,11 +347,11 @@ function CreateRequestPage() {
                 <div className={styles.create__field}>
                   <label className={styles.create__label}>Deadline</label>
                   <div className={styles.create__price_types}>
-                    <button type="button" className={`${styles.create__price_type_btn} ${form.deadline === 'ingen' ? styles['create__price_type_btn--active'] : ''}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }} onClick={() => update('deadline', 'ingen')}>
-                      🕐 Ingen deadline
+                    <button type="button" className={`${styles.create__price_type_btn} ${form.deadline === 'ingen' ? styles['create__price_type_btn--active'] : ''}`} onClick={() => update('deadline', 'ingen')}>
+                      <Clock size={14} /> Ingen deadline
                     </button>
-                    <button type="button" className={`${styles.create__price_type_btn} ${form.deadline !== 'ingen' && form.deadline !== '' ? styles['create__price_type_btn--active'] : ''}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }} onClick={() => update('deadline', new Date().toISOString().split('T')[0])}>
-                      📅 Sätt deadline
+                    <button type="button" className={`${styles.create__price_type_btn} ${form.deadline !== 'ingen' && form.deadline !== '' ? styles['create__price_type_btn--active'] : ''}`} onClick={() => update('deadline', new Date().toISOString().split('T')[0])}>
+                      <Calendar size={14} /> Sätt deadline
                     </button>
                   </div>
                   {form.deadline !== 'ingen' && form.deadline !== '' && (
@@ -377,7 +377,7 @@ function CreateRequestPage() {
                         }}
                         type="button"
                       >
-                        {type === 'plats' ? <><MapPin size={14} /> Plats</> : '💻 Online'}
+                        {type === 'plats' ? <><MapPin size={14} /> Plats</> : <><Monitor size={14} /> Online</>}
                       </button>
                     ))}
                   </div>
@@ -418,7 +418,7 @@ function CreateRequestPage() {
                   )}
 
                   {form.location_type === 'online' && (
-                    <p className={styles.create__online_hint}>💻 Uppdraget utförs digitalt och är tillgängligt för alla.</p>
+                    <p className={styles.create__online_hint} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}><Monitor size={14} /> Uppdraget utförs digitalt och är tillgängligt för alla.</p>
                   )}
                 </div>
               </div>
