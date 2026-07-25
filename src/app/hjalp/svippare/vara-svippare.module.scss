@@ -104,33 +104,34 @@
   margin: 0 0 20px;
 }
 
-// ── Steps / vertical timeline ────────────────────────────────────────────────
+// ── Steps / horizontal grid ────────────────────────────────────────────────────
 .steps {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 32px;
   margin-top: 40px;
-  max-width: 700px;
 }
 
 .steps__item {
-  display: flex;
-  gap: 24px;
+  position: relative;
+  text-align: center;
 }
 
-.steps__marker {
+.steps__number_wrap {
+  position: relative;
+  z-index: 1;
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  flex-shrink: 0;
+  justify-content: center;
+  margin-bottom: 16px;
 }
 
 .steps__number {
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   background: #066696;
   color: white;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
   display: flex;
   align-items: center;
@@ -138,31 +139,25 @@
   flex-shrink: 0;
 }
 
-.steps__line {
-  width: 2px;
-  flex: 1;
-  min-height: 32px;
+.steps__connector {
+  position: absolute;
+  top: 22px;
+  left: calc(50% + 22px);
+  width: calc(100% - 12px);
+  height: 2px;
   background: #e0dcd8;
-  margin-top: 6px;
-}
-
-.steps__content {
-  padding-bottom: 36px;
-}
-
-.steps__item:last-child .steps__content {
-  padding-bottom: 0;
+  z-index: 0;
 }
 
 .steps__title {
-  font-size: 17px;
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: 500;
   color: var(--color-dark);
-  margin: 6px 0 8px;
+  margin: 0 0 8px;
 }
 
 .steps__text {
-  font-size: 15px;
+  font-size: 14px;
   line-height: 1.7;
   color: var(--color-gray);
   margin: 0;
@@ -286,8 +281,8 @@
 
 .cta__title {
   font-family: var(--font-heading);
-  font-size: 28px;
-  font-weight: 500;
+  font-size: 35px;
+  font-weight: 800;
   color: white;
   margin: 0 0 16px;
 }
@@ -376,6 +371,21 @@
   }
 
   .payment_grid {
+    grid-template-columns: 1fr;
+  }
+
+  .steps {
+    grid-template-columns: repeat(2, 1fr);
+    row-gap: 40px;
+  }
+
+  .steps__connector {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .steps {
     grid-template-columns: 1fr;
   }
 }

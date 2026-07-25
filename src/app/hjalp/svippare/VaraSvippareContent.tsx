@@ -167,7 +167,7 @@ export default function VaraSvippareContent() {
       >
         <div className={styles.container}>
           <span className={styles.tag}>Hur det fungerar</span>
-          <h2 className={styles.h2}>Kom igång på fyra steg</h2>
+          <h2 className={styles.heroh2}>Kom igång på fyra steg</h2>
           <div className={styles.steps} ref={stepsContainerRef}>
             {stepsData.map((step, i) => (
               <div
@@ -176,14 +176,12 @@ export default function VaraSvippareContent() {
                 className={`${styles.steps__item} ${styles.animate_hidden}`}
                 style={{ transitionDelay: `${i * 120}ms` }}
               >
-                <div className={styles.steps__marker}>
+                <div className={styles.steps__number_wrap}>
                   <div className={styles.steps__number}>{i + 1}</div>
-                  {i < stepsData.length - 1 && <div className={styles.steps__line} />}
+                  {i < stepsData.length - 1 && <div className={styles.steps__connector} />}
                 </div>
-                <div className={styles.steps__content}>
-                  <h3 className={styles.steps__title}>{step.title}</h3>
-                  <p className={styles.steps__text}>{step.text}</p>
-                </div>
+                <h3 className={styles.steps__title}>{step.title}</h3>
+                <p className={styles.steps__text}>{step.text}</p>
               </div>
             ))}
           </div>
