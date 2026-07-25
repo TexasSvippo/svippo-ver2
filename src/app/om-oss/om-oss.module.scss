@@ -19,8 +19,11 @@
 .hero__content {
   position: absolute;
   bottom: 40px;
-  left: 40px;
+  left: 0;
+  right: 0;
   max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
 }
 
 .hero__title {
@@ -37,6 +40,7 @@
   line-height: 1.7;
   color: rgba(255, 255, 255, 0.88);
   margin: 0;
+  width: 450px;
 }
 
 // ── Layout utilities ──────────────────────────────────────────────────────────
@@ -322,13 +326,11 @@
 
   .hero__content {
     bottom: 24px;
-    left: 24px;
-    right: 24px;
-    max-width: 100%;
   }
 
   .hero__ingress {
     font-size: 15px;
+    width: auto;
   }
 
   .section {
