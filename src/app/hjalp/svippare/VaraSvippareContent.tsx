@@ -74,9 +74,9 @@ const paymentServices = [
     url: 'https://gigapay.co',
   },
   {
-    name: 'Invoiz',
-    text: 'Ett av de billigaste alternativen på marknaden. Avgift ca 1,4%.',
-    url: 'https://invoiz.se',
+    name: 'Invozio',
+    text: 'Enkel och smidig egenanställningstjänst. Kom igång snabbt utan krångel.',
+    url: 'https://www.invozio.com/',
   },
   {
     name: 'Worknode',
