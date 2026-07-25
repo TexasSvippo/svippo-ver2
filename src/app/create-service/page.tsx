@@ -153,7 +153,7 @@ function CreateServiceContent() {
     return (
       <div className={styles.create}>
         <div className={`container ${styles.create__inner}`}>
-          <div className={`${styles.create__card} card`}>
+          <div className={`${styles.create__card} staticcard`}>
             <div className={styles.create__content}>
               <div className={styles.create__blocked_emoji}><Clock size={40} /></div>
               <h1 className={styles.create__title}>Din ansökan granskas</h1>
@@ -173,7 +173,7 @@ function CreateServiceContent() {
   return (
     <div className={styles.create}>
       <div className={`container ${styles.create__inner}`}>
-        <div className={`${styles.create__card} card`}>
+        <div className={`${styles.create__card} staticcard`}>
           <div className={styles.create__content}>
             <div className={styles.create__blocked_emoji}><Lock size={40} /></div>
             <h1 className={styles.create__title}>Du kan inte skapa tjänster</h1>
@@ -329,7 +329,7 @@ function CreateServiceContent() {
           ))}
         </div>
 
-        <div className={`${styles.create__card} card`}>
+        <div className={`${styles.create__card} staticcard`}>
 
           {/* Steg 1 – Kategori */}
           {step === 0 && (
@@ -568,7 +568,7 @@ function CreateServiceContent() {
               )}
 
               {form.custom_questions.length < 5 && (
-                <div className={`${styles.create__add_question} card`}>
+                <div className={`${styles.create__add_question} staticcard`}>
                   <h3 className={styles.create__add_question_title}>+ Lägg till fråga</h3>
                   <div className={styles.create__fields}>
                     <div className={styles.create__field}>
