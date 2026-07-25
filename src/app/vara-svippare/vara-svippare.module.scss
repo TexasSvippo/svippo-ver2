@@ -1,0 +1,381 @@
+// ── Hero ──────────────────────────────────────────────────────────────────────
+.hero {
+  position: relative;
+  overflow: hidden;
+}
+
+.hero__img {
+  object-fit: cover;
+  object-position: center;
+}
+
+.hero__overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.hero__content {
+  position: relative;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 100px 24px;
+  text-align: center;
+}
+
+.hero__title {
+  font-family: var(--font-heading);
+  font-size: 44px;
+  font-weight: 700;
+  color: white;
+  margin: 0 0 20px;
+  line-height: 1.2;
+}
+
+.hero__highlight {
+  color: #e8541a;
+}
+
+.hero__ingress {
+  font-size: 18px;
+  line-height: 1.7;
+  color: white;
+  max-width: 700px;
+  margin: 0 auto 32px;
+}
+
+.hero__cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 32px;
+  height: 48px;
+  background: #e8541a;
+  color: white;
+  border-radius: var(--radius-md);
+  font-size: 16px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.15s;
+
+  &:hover { background: #d14717; }
+}
+
+// ── Layout utilities ──────────────────────────────────────────────────────────
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.section {
+  padding: 64px 24px;
+}
+
+.section__gray {
+  background: #f7f5f3;
+}
+
+// ── Typography ────────────────────────────────────────────────────────────────
+.tag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #066696;
+  margin-bottom: 12px;
+}
+
+.h2 {
+  font-family: var(--font-heading);
+  font-size: 28px;
+  font-weight: 500;
+  color: var(--color-dark);
+  line-height: 1.3;
+  margin: 0 0 20px;
+}
+
+.body {
+  font-size: 16px;
+  line-height: 1.85;
+  color: var(--color-gray);
+  max-width: 800px;
+  margin: 0 0 20px;
+}
+
+// ── Steps / vertical timeline ────────────────────────────────────────────────
+.steps {
+  display: flex;
+  flex-direction: column;
+  margin-top: 40px;
+  max-width: 700px;
+}
+
+.steps__item {
+  display: flex;
+  gap: 24px;
+}
+
+.steps__marker {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.steps__number {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #066696;
+  color: white;
+  font-size: 15px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.steps__line {
+  width: 2px;
+  flex: 1;
+  min-height: 32px;
+  background: #e0dcd8;
+  margin-top: 6px;
+}
+
+.steps__content {
+  padding-bottom: 36px;
+}
+
+.steps__item:last-child .steps__content {
+  padding-bottom: 0;
+}
+
+.steps__title {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--color-dark);
+  margin: 6px 0 8px;
+}
+
+.steps__text {
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--color-gray);
+  margin: 0;
+}
+
+// ── Perks grid ────────────────────────────────────────────────────────────────
+.perks {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-top: 40px;
+}
+
+.perks__card {
+  background: white;
+  border: 0.5px solid var(--color-border);
+  border-radius: 12px;
+  padding: 28px;
+}
+
+.perks__icon_wrap {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: #e6f1fb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.perks__icon {
+  color: #066696;
+}
+
+.perks__title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-dark);
+  margin: 0 0 8px;
+}
+
+.perks__text {
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--color-gray);
+  margin: 0;
+}
+
+// ── Payment grid ──────────────────────────────────────────────────────────────
+.payment_grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  margin: 8px 0 28px;
+  max-width: 800px;
+}
+
+.payment_card {
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 22px;
+}
+
+.payment_card__title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-dark);
+  margin: 0 0 8px;
+}
+
+.payment_card__text {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--color-gray);
+  margin: 0;
+}
+
+// ── Warning box ───────────────────────────────────────────────────────────────
+.warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: #fff8f6;
+  border: 1px solid #f4c4a8;
+  border-radius: 10px;
+  padding: 18px 20px;
+  max-width: 800px;
+}
+
+.warning__icon {
+  color: #e8541a;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.warning__text {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--color-dark);
+  margin: 0;
+
+  strong {
+    font-weight: 700;
+  }
+}
+
+// ── CTA section ───────────────────────────────────────────────────────────────
+.cta_section {
+  padding: 64px 24px;
+}
+
+.cta {
+  max-width: 1200px;
+  margin: 0 auto;
+  background: #066696;
+  border-radius: 16px;
+  padding: 72px 24px;
+  text-align: center;
+}
+
+.cta__title {
+  font-family: var(--font-heading);
+  font-size: 28px;
+  font-weight: 500;
+  color: white;
+  margin: 0 0 16px;
+}
+
+.cta__body {
+  font-size: 16px;
+  line-height: 1.85;
+  color: rgba(255, 255, 255, 0.8);
+  max-width: 600px;
+  margin: 0 auto 32px;
+}
+
+.cta__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 32px;
+  height: 48px;
+  background: #e8541a;
+  color: white;
+  border-radius: var(--radius-md);
+  font-size: 16px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.15s;
+
+  &:hover { background: #d14717; }
+}
+
+// ── Scroll animations ─────────────────────────────────────────────────────────
+.animate_hidden {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.animate_visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate_hidden {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+// ── Mobile ────────────────────────────────────────────────────────────────────
+@media (max-width: 768px) {
+  .hero__content {
+    padding: 64px 24px;
+  }
+
+  .hero__title {
+    font-size: 30px;
+  }
+
+  .hero__ingress {
+    font-size: 16px;
+  }
+
+  .section {
+    padding: 48px 24px;
+  }
+
+  .cta_section {
+    padding: 48px 24px;
+  }
+
+  .cta {
+    padding: 48px 20px;
+  }
+
+  .h2 {
+    font-size: 22px;
+  }
+
+  .cta__title {
+    font-size: 22px;
+  }
+
+  .perks {
+    grid-template-columns: 1fr;
+  }
+
+  .payment_grid {
+    grid-template-columns: 1fr;
+  }
+}
