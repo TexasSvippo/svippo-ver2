@@ -25,73 +25,163 @@
   line-height: 1.2;
 }
 
-/* Grid */
-.fs__grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
+.fs__nav {
+  display: flex;
+  gap: 8px;
+}
+
+.fs__nav_btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1.5px solid var(--color-border);
+  background: white;
+  font-size: 22px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-dark);
+  transition: all 0.2s;
+  line-height: 1;
+
+  &:hover {
+    background: var(--color-primary);
+    color: white;
+    border-color: var(--color-primary);
+  }
+}
+
+/* Desktop track – scrollable with snap */
+.fs__track_wrap {
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  // Negative margin + matching padding lets the next card peek
+  // through the parent .fs overflow:hidden without being clipped.
+  margin-right: -200px;
+  padding-right: 200px;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.fs__track {
+  display: flex;
   gap: 24px;
+  padding-bottom: 25px;
 }
 
 /* Cards */
 .fs__card {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  min-height: 320px;
-  border-radius: 16px;
+  width: 850px;
+  flex-shrink: 0;
+  background: white;
+  border-radius: 12px;
   overflow: hidden;
-  text-decoration: none;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  scroll-snap-align: start;
+  opacity: 0.45;
+  transition: opacity 0.3s;
+
+  &--active {
+    opacity: 1;
+  }
+}
+
+.fs__card_img_wrap {
+  overflow: hidden;
+  height: 320px;
+  background: #EAF4FB;
 }
 
 .fs__card_img {
+  width: 100%;
+  height: 100%;
   object-fit: cover;
-  object-position: center;
-  z-index: 0;
-}
-
-.fs__card_overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.45);
-  z-index: 1;
 }
 
 .fs__card_body {
-  position: relative;
-  z-index: 2;
-  padding: 28px;
+  padding: 40px 36px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  justify-content: center;
+  gap: 12px;
+  background: white;
 }
 
-.fs__card_tag {
-  display: inline-block;
-  width: fit-content;
-  padding: 4px 12px;
-  border-radius: var(--radius-full);
-  font-size: 11px;
+.fs__card_label {
+  font-size: 12px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.1em;
+  color: var(--color-primary);
 }
 
 .fs__card_title {
-  font-size: 20px;
-  font-weight: 700;
-  color: white;
-  line-height: 1.3;
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--color-dark);
+  line-height: 1.2;
+  font-family: 'inter';
 }
 
-.fs__card_subtitle {
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.8);
-  line-height: 1.5;
+.fs__card_desc {
+  font-size: 18px;
+  color: var(--color-gray);
+  line-height: 1.7;
+  letter-spacing: -0.5px;
 }
 
 .fs__card_cta {
-  margin-top: 6px;
+  display: inline-flex;
+  align-items: center;
+  padding: 12px 24px;
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--color-dark);
+  color: var(--color-dark);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  width: fit-content;
+  margin-top: 8px;
+  transition: all 0.2s;
+
+  &:hover {
+    background: var(--color-dark);
+    color: white;
+  }
+}
+
+/* Dots – mobil only */
+.fs__dots {
+  display: none;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 24px;
+  padding: 0 24px;
+}
+
+.fs__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: none;
+  background: var(--color-border);
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &--active {
+    background: var(--color-primary);
+    width: 24px;
+    border-radius: 4px;
+  }
 }
 
 /* Mobil */
@@ -100,11 +190,58 @@
     padding: 60px 0;
   }
 
+  .fs__inner {
+    padding: 0;
+  }
+
   .fs__header {
+    padding: 0 24px;
     margin-bottom: 32px;
   }
 
-  .fs__grid {
+  .fs__nav {
+    display: none;
+  }
+
+  .fs__dots {
+    display: flex;
+  }
+
+  .fs__track_wrap {
+    margin-right: 0;
+    padding-right: 0;
+    padding-left: 24px;
+    scroll-padding-left: 24px;
+  }
+
+  .fs__track {
+    gap: 16px;
+
+    // padding-right on flex overflow containers is silently dropped by browsers;
+    // a ::after pseudo-element is the reliable workaround.
+    &::after {
+      content: '';
+      display: block;
+      min-width: 24px;
+      flex-shrink: 0;
+    }
+  }
+
+  .fs__card {
+    width: 85vw;
     grid-template-columns: 1fr;
+    opacity: 1;
+  }
+
+  .fs__card_img_wrap {
+    height: 210px;
+  }
+
+  .fs__card_body {
+    padding: 20px 24px;
+  }
+
+  .fs__card_title {
+    font-size: 20px;
   }
 }
