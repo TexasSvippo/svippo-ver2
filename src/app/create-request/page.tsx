@@ -232,7 +232,7 @@ function CreateRequestPage() {
           ))}
         </div>
 
-        <div className={styles.create__card}>
+        <div className={`${styles.create__card} staticcard`}>
 
           {/* Steg 1 – Kategori */}
           {step === 0 && (
