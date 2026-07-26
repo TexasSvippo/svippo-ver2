@@ -43,7 +43,7 @@ type Application = {
   id: string
   user_id: string
   status: string
-  description: string
+  bio: string
   created_at: string
   user_name: string
   user_email: string
@@ -118,7 +118,7 @@ export default function AdminPage() {
       supabase.from('requests').select('id', { count: 'exact', head: true }),
       supabase.from('orders').select('id', { count: 'exact', head: true }),
       supabase.from('svippare_profiles').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
-      supabase.from('svippare_profiles').select('id, user_id, status, description, created_at').eq('status', 'pending').order('created_at', { ascending: false }),
+      supabase.from('svippare_profiles').select('id, user_id, status, bio, created_at').eq('status', 'pending').order('created_at', { ascending: false }),
       supabase.from('users').select('id, name, email, account_type, role, created_at').order('created_at', { ascending: false }).limit(20),
       supabase.from('orders').select('id, service_title, buyer_name, seller_name, status, project_status, created_at').order('created_at', { ascending: false }).limit(10),
       supabase.from('services').select('id, title, user_name, subcategory, created_at').order('created_at', { ascending: false }).limit(50),
@@ -160,7 +160,7 @@ export default function AdminPage() {
         id: a.id,
         user_id: a.user_id,
         status: a.status,
-        description: a.description ?? '',
+        bio: a.bio ?? '',
         created_at: a.created_at,
         user_name: usersById[a.user_id]?.name ?? '–',
         user_email: usersById[a.user_id]?.email ?? '–',
@@ -397,7 +397,7 @@ export default function AdminPage() {
                       <tr key={app.id}>
                         <td><strong>{app.user_name}</strong></td>
                         <td>{app.user_email}</td>
-                        <td className={styles.table__desc}>{app.description || '–'}</td>
+                        <td className={styles.table__desc}>{app.bio || '–'}</td>
                         <td>{fmt(app.created_at)}</td>
                         <td>
                           {feedback[app.id] ? (
