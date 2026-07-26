@@ -1,0 +1,19 @@
+// Scoped override for Sanity Studio only.
+//
+// The site's global `img, svg { max-width: 100%; display: block; }` rule
+// (src/styles/globals.scss) is unscoped and leaks into Sanity's own UI,
+// since CSS Modules don't isolate bare tag selectors. Sanity sizes some of
+// its icons via `width/height: 1em` on a flex-wrapper whose computed width
+// sometimes ends up narrower than that 1em value — normally harmless, but
+// our max-width:100% then caps the icon's WIDTH to that narrow wrapper
+// while its HEIGHT stays free, producing a squished, non-square icon
+// (measured 9x15px instead of the correct 15x15px on the Google/GitHub
+// login icons).
+//
+// This file is only ever loaded as part of the /studio route bundle and
+// only targets #sanity (Sanity Studio's own root, which doesn't exist
+// anywhere else in the app), so it cannot affect the rest of the site.
+// The global rule in globals.scss is intentionally left untouched.
+#sanity svg {
+  max-width: none;
+}
