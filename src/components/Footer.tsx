@@ -1,4 +1,7 @@
+'use client'
+
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { Mail, Phone, Clock } from 'lucide-react'
 import styles from './Footer.module.scss'
 
@@ -39,6 +42,12 @@ function LinkedInIcon({ size = 16 }: { size?: number }) {
 }
 
 export default function Footer() {
+  const pathname = usePathname()
+
+  // Sanity Studio (/studio) is a full-screen app that owns the whole viewport —
+  // the site chrome must not render on top of it
+  if (pathname?.startsWith('/studio')) return null
+
   return (
     <footer className={styles.footer}>
       <div className="container">
