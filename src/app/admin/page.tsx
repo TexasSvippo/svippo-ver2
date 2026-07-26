@@ -182,6 +182,19 @@ export default function AdminPage() {
     const { error } = await supabase.from('svippare_profiles').update({ status: 'approved' }).eq('id', app.id)
     if (error) { setFeedback(f => ({ ...f, [app.id]: 'Fel vid godkännande.' })); return }
     await supabase.from('users').update({ account_type: 'svippare' }).eq('id', app.user_id)
+
+    await supabase.from('notifications').insert({
+      user_id: app.user_id,
+      type: 'svippare_approved',
+      actor_name: 'Svippo',
+      message: 'Din ansökan om att bli Svippare har godkänts!',
+      action_url: '/profile',
+      read: false,
+      dismissed: false,
+      email_sent: false,
+      created_at: new Date().toISOString(),
+    })
+
     setApplications(prev => prev.filter(a => a.id !== app.id))
     setStats(s => ({ ...s, pending: Math.max(0, s.pending - 1) }))
     setFeedback(f => ({ ...f, [app.id]: '✓ Godkänd' }))
@@ -196,6 +209,19 @@ export default function AdminPage() {
   const handleReject = async (app: Application) => {
     const { error } = await supabase.from('svippare_profiles').update({ status: 'rejected' }).eq('id', app.id)
     if (error) { setFeedback(f => ({ ...f, [app.id]: 'Fel vid nekande.' })); return }
+
+    await supabase.from('notifications').insert({
+      user_id: app.user_id,
+      type: 'svippare_rejected',
+      actor_name: 'Svippo',
+      message: 'Din ansökan om att bli Svippare har nekats.',
+      action_url: '/profile',
+      read: false,
+      dismissed: false,
+      email_sent: false,
+      created_at: new Date().toISOString(),
+    })
+
     setApplications(prev => prev.filter(a => a.id !== app.id))
     setStats(s => ({ ...s, pending: Math.max(0, s.pending - 1) }))
     setFeedback(f => ({ ...f, [app.id]: '✓ Nekad' }))

@@ -5,7 +5,7 @@ const resend = new Resend(process.env.RESEND_API_KEY)
 const FROM_ADDRESS = 'Svippo <noreply@svippo.se>'
 
 type SendEmailParams = {
-  to: string
+  to: string | string[]
   subject: string
   html: string
 }

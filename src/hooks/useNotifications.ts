@@ -19,6 +19,8 @@ export type NotificationType =
   | 'dispute_opened'
   | 'auto_confirmed'
   | 'interest_rejected'
+  | 'svippare_approved'
+  | 'svippare_rejected'
 
 export type Notification = {
   id: string

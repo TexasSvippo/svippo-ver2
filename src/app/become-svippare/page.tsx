@@ -172,6 +172,12 @@ export default function BliSvipparePage() {
         }
       })
 
+      fetch('/api/become-svippare/notify-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id }),
+      }).catch(err => console.error('Admin notification email error:', err))
+
       router.push('/profile?svippare=pending')
       router.refresh()
     } catch (err) {
