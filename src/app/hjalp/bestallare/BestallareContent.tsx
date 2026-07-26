@@ -149,8 +149,8 @@ export default function BestallareContent() {
         className={`${styles.section} ${styles.animate_hidden}`}
       >
         <div className={styles.container}>
-          <span className={styles.tag}>Hur det fungerar</span>
-          <h2 className={styles.h2}>Hitta hjälp på fyra steg</h2>
+          <span className={styles.tagtop}>Hur det fungerar</span>
+          <h2 className={styles.headh2}>Hitta hjälp på fyra steg</h2>
           <div className={styles.steps} ref={stepsContainerRef}>
             {stepsData.map((step, i) => (
               <div

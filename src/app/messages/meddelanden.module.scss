@@ -92,6 +92,12 @@
   }
 }
 
+@media (max-width: 768px) {
+  .conv_row{
+    padding: 16px 0px;
+  }
+}
+
 .conv_avatar {
   position: relative;
   width: 48px;

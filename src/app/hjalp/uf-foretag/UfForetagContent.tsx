@@ -137,7 +137,7 @@ export default function UfForetagContent() {
       {/* 1. Hero */}
       <section className={styles.hero}>
         <Image
-          src="/images/om-oss-hero.png"
+          src="/images/uf-foretagare.jpg"
           alt="UF-företag på Svippo"
           fill
           className={styles.hero__img}
@@ -163,7 +163,7 @@ export default function UfForetagContent() {
         <div className={styles.container}>
           <div className={styles.intro}>
             <div className={styles.intro__text}>
-              <span className={styles.tag}>Svippo + UF</span>
+              <span className={styles.tag}>Svippo ❤️ UF</span>
               <h2 className={styles.h2}>Det perfekta komplement till ditt UF-företag</h2>
               <p className={styles.body}>
                 UF ger dig kunskapen och strukturen — Svippo ger dig kunderna. Tillsammans är det ett kraftfullt sätt att testa och växa ditt företag på riktigt.

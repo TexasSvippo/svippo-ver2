@@ -124,7 +124,7 @@ export default function ForetagContent() {
       {/* 1. Hero */}
       <section className={styles.hero}>
         <Image
-          src="/images/om-oss-hero.png"
+          src="/images/company-hero.png"
           alt="Företag på Svippo"
           fill
           className={styles.hero__img}
