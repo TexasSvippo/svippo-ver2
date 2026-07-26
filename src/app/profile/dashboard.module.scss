@@ -498,13 +498,14 @@
 
   .dash__tips_grid {
     display: flex;
+    flex-direction: row;
     overflow-x: auto;
-    gap: 1rem;
-    padding-bottom: 4px;
     scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     -ms-overflow-style: none;
+    gap: 12px;
+    padding-bottom: 8px;
 
     &::-webkit-scrollbar {
       display: none;
@@ -512,9 +513,7 @@
   }
 
   .dash__tip_card {
-    flex: 0 0 240px;
-    width: 240px;
-    min-width: 260px;
+    min-width: calc(100% - 40px);
     flex-shrink: 0;
     scroll-snap-align: start;
   }
