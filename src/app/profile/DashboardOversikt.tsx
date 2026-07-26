@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { Briefcase, ShoppingBag, Star, FileText, ShoppingCart, MessageCircle, Package, CheckCircle, Wallet, Rocket } from 'lucide-react'
 import { sanityClient } from '@/sanity/client'
 import { blogPostsQuery } from '@/sanity/queries'
+import { formatConversationTime, type Conversation } from '@/lib/conversations'
 import styles from './dashboard.module.scss'
 
 type Service  = { id: string; title: string; subcategory: string; price_type: string; price: number }
@@ -14,6 +15,24 @@ type Placed   = { id: string; service_title: string; seller_name: string; status
 type Request  = { id: string; title: string; subcategory: string; location?: string; budget: number; budget_type: string; status?: string }
 type Interest = { id: string; request_title: string; svippar_name: string; price: number }
 type Notif    = { id: string; type: string; order_id: string; service_title: string; message: string; read: boolean }
+
+// Färgkodning per notifikationstyp: blå = svippare/utförare-relaterat,
+// orange = beställare-relaterat, grön = godkänt/avslutat (etablerad success-färg).
+const NOTIF_COLORS: Record<string, { bg: string; color: string }> = {
+  new_order:               { bg: '#e6f1fb', color: '#066696' },
+  new_interest:            { bg: '#e6f1fb', color: '#066696' },
+  project_completed:       { bg: '#e6f1fb', color: '#066696' },
+  delivery_marked:         { bg: '#e6f1fb', color: '#066696' },
+  new_request_in_category: { bg: '#e6f1fb', color: '#066696' },
+  project_update:          { bg: '#e6f1fb', color: '#066696' },
+  order_accepted:          { bg: '#fff0eb', color: '#e8541a' },
+  order_rejected:          { bg: '#fff0eb', color: '#e8541a' },
+  price_proposal:          { bg: '#fff0eb', color: '#e8541a' },
+  request_review:          { bg: '#fff0eb', color: '#e8541a' },
+  price_approved:          { bg: '#e6f9f0', color: '#1a7a4a' },
+  new_review:              { bg: '#e6f9f0', color: '#1a7a4a' },
+}
+const DEFAULT_NOTIF_COLOR = { bg: 'var(--color-gray-light)', color: 'var(--color-gray)' }
 
 type BlogPost = {
   _id: string
@@ -37,6 +56,7 @@ type Props = {
   myRequests: Request[]
   interests: Interest[]
   notifications: Notif[]
+  conversations: Conversation[]
   userId: string
   onDismissNotif: (id: string) => void
   onNavigate: (section: string) => void
@@ -59,10 +79,13 @@ function orderStatus(status: string, projectStatus: string) {
   return { text: 'Nekad', cls: styles['dash__badge--red'] }
 }
 
+const truncate = (text: string, max: number) =>
+  text.length > max ? `${text.slice(0, max).trimEnd()}…` : text
+
 export default function DashboardOversikt({
   displayName, avatarUrl, dbAccountType, svippareStatus, canCreateService,
   services, incomingOrders, placedOrders, myRequests, interests,
-  notifications, userId, onDismissNotif, onNavigate,
+  notifications, conversations, userId, onDismissNotif, onNavigate,
 }: Props) {
   const router = useRouter()
   const [tips, setTips] = useState<BlogPost[]>([])
@@ -104,26 +127,63 @@ export default function DashboardOversikt({
         )}
       </div>
 
-      {/* ── Notifications ──────────────────────────────────────────────────── */}
-      {notifications.length > 0 && (
-        <div className={styles.dash__notifs}>
-          {notifications.map(n => (
-            <div key={n.id} className={styles.dash__notif}>
-              <span>
-                {n.type === 'project_completed' ? '🎉'
-                  : n.type === 'new_order' ? <Package size={16} />
-                  : n.type === 'order_accepted' ? <CheckCircle size={16} />
-                  : <Wallet size={16} />}
-              </span>
-              <p className={styles.dash__notif_msg}>{n.message}</p>
-              <div className={styles.dash__notif_actions}>
-                {n.type === 'new_order'         && <Link href={`/order/${n.order_id}`}    className="btn btn-primary" style={{ fontSize: 13, padding: '6px 12px' }}>Se beställning</Link>}
-                {n.type === 'project_completed' && <Link href={`/my-order/${n.order_id}`} className="btn btn-primary" style={{ fontSize: 13, padding: '6px 12px' }}>Lämna recension</Link>}
-                <button className={styles.dash__notif_close} onClick={() => onDismissNotif(n.id)}>✕</button>
-              </div>
+      {/* ── Notifications + Meddelanden ───────────────────────────────────── */}
+      {(notifications.length > 0 || conversations.length > 0) && (
+        <div className={styles.dash__notifs_row}>
+          {notifications.length > 0 && (
+            <div className={styles.dash__notifs}>
+              {notifications.slice(0, 4).map(n => {
+                const notifColor = NOTIF_COLORS[n.type] ?? DEFAULT_NOTIF_COLOR
+                return (
+                <div key={n.id} className={styles.dash__notif}>
+                  <span className={styles.dash__notif_icon} style={{ background: notifColor.bg, color: notifColor.color }}>
+                    {n.type === 'project_completed' ? '🎉'
+                      : n.type === 'new_order' ? <Package size={16} />
+                      : n.type === 'order_accepted' ? <CheckCircle size={16} />
+                      : <Wallet size={16} />}
+                  </span>
+                  <p className={styles.dash__notif_msg}>{n.message}</p>
+                  <div className={styles.dash__notif_actions}>
+                    {n.type === 'new_order'         && <Link href={`/order/${n.order_id}`}    className="btn btn-primary" style={{ fontSize: 13, padding: '6px 12px' }}>Se beställning</Link>}
+                    {n.type === 'project_completed' && <Link href={`/my-order/${n.order_id}`} className="btn btn-primary" style={{ fontSize: 13, padding: '6px 12px' }}>Lämna recension</Link>}
+                    <button className={styles.dash__notif_close} onClick={() => onDismissNotif(n.id)}>✕</button>
+                  </div>
+                </div>
+                )
+              })}
+              <Link href="/notifications" className={styles.dash__notifs_all}>Se alla notifikationer →</Link>
             </div>
-          ))}
-          <Link href="/notifications" className={styles.dash__notifs_all}>Se alla notifikationer →</Link>
+          )}
+
+          {conversations.length > 0 && (
+            <div className={styles.dash__messages}>
+              <h2 className={styles.dash__messages_title}><MessageCircle size={18} color="#05334A" />Senaste meddelanden</h2>
+              {conversations.slice(0, 3).map(conv => (
+                <Link key={conv.id} href={`/messages/${conv.id}`} className={styles.dash__message_row}>
+                  <div className={styles.dash__message_avatar}>
+                    {conv.otherPartyAvatar
+                      ? // eslint-disable-next-line @next/next/no-img-element
+                        <img src={conv.otherPartyAvatar} alt={conv.otherPartyName} className={styles.dash__message_avatar_img} />
+                      : <span>{conv.otherPartyName.charAt(0).toUpperCase()}</span>
+                    }
+                  </div>
+                  <div className={styles.dash__message_info}>
+                    <div className={styles.dash__message_top}>
+                      <strong className={styles.dash__message_name}>{conv.otherPartyName}</strong>
+                      <span className={styles.dash__message_time}>{formatConversationTime(conv.last_message_at)}</span>
+                    </div>
+                    <p className={styles.dash__message_preview}>
+                      {truncate(conv.last_message_preview ?? 'Ingen aktivitet än', 60)}
+                    </p>
+                  </div>
+                  {conv.unreadCount > 0 && (
+                    <span className={styles.dash__message_badge}>{conv.unreadCount}</span>
+                  )}
+                </Link>
+              ))}
+              <Link href="/messages" className={styles.dash__notifs_all}>Se alla meddelanden →</Link>
+            </div>
+          )}
         </div>
       )}
 

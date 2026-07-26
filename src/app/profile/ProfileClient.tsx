@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import useAuth from '@/hooks/useAuth'
 import { useNotifications } from '@/hooks/useNotifications'
+import { fetchConversations as fetchConversationsForUser, type Conversation } from '@/lib/conversations'
 import { categories } from '@/data/categories'
 import styles from './profile.module.scss'
 import { Home, Wrench, Bell, Inbox, Users, Eye, Send, Star, Trophy, Settings, Zap, Pencil, Trash2, CheckCircle, Clock, XCircle, MessageCircle, ClipboardList, Wallet, Package, Tag, MapPin, Globe } from 'lucide-react'
@@ -123,6 +124,7 @@ export default function ProfileClient({ initialAccountType }: Props) {
   const [myRequests, setMyRequests] = useState<Request[]>([])
   const [interests, setInterests] = useState<Interest[]>([])
   const [notifications, setNotifications] = useState<Notification[]>([])
+  const [conversations, setConversations] = useState<Conversation[]>([])
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([])
   const [watchedRequests, setWatchedRequests] = useState<Request[]>([])
   const [selectedWatchCategory, setSelectedWatchCategory] = useState('')
@@ -138,6 +140,8 @@ export default function ProfileClient({ initialAccountType }: Props) {
   // Inkomna beställningar – filter state
   const [incomingTypeFilter, setIncomingTypeFilter] = useState<'all' | 'services' | 'requests'>('all')
   const [incomingStatusFilter, setIncomingStatusFilter] = useState<'all' | 'action' | 'active' | 'done'>('all')
+
+  const unreadMessagesCount = conversations.reduce((sum, c) => sum + (c.unreadCount || 0), 0)
 
   const resolvedAccountType = dbAccountType ?? accountType
   const isCompanyType = resolvedAccountType === 'foretag' || resolvedAccountType === 'uf-foretag'
@@ -191,6 +195,9 @@ export default function ProfileClient({ initialAccountType }: Props) {
       setInterests(interestsRes.data ?? [])
       setNotifications(notifsRes.data ?? [])
       setSubscriptions(subsRes.data ?? [])
+
+      const convs = await fetchConversationsForUser(user.id)
+      setConversations(convs)
 
       // Hämta vilka orders användaren redan recenserat
       const { data: myReviews } = await supabase
@@ -416,6 +423,14 @@ export default function ProfileClient({ initialAccountType }: Props) {
             <span>Översikt</span>
           </button>
 
+          <Link href="/messages" className={styles.profile__nav_item}>
+            <span className={styles.profile__nav_icon}><MessageCircle size={16} /></span>
+            <span>Meddelanden</span>
+            {unreadMessagesCount > 0 && (
+              <span className={styles.profile__nav_badge}>{unreadMessagesCount}</span>
+            )}
+          </Link>
+
           {['Tjänster', 'Förfrågningar', 'Min profil'].map(group => {
             const visibleItems = NAV_ITEMS.filter(item => item.group === group).filter(item => {
               if (!item.svippareOnly) return true
@@ -486,6 +501,7 @@ export default function ProfileClient({ initialAccountType }: Props) {
               myRequests={myRequests}
               interests={interests}
               notifications={notifications}
+              conversations={conversations}
               userId={user.id}
               onDismissNotif={dismissNotif}
               onNavigate={(s) => setActiveSection(s as Section)}

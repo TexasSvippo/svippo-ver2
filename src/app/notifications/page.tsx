@@ -25,6 +25,24 @@ const getIcon = (type: string): ReactNode => {
   return icons[type] ?? <Bell size={18} />
 }
 
+// Färgkodning per notifikationstyp: blå = svippare/utförare-relaterat,
+// orange = beställare-relaterat, grön = godkänt/avslutat (etablerad success-färg).
+const NOTIF_COLORS: Record<string, { bg: string; color: string }> = {
+  new_order:               { bg: '#e6f1fb', color: '#066696' },
+  new_interest:            { bg: '#e6f1fb', color: '#066696' },
+  project_completed:       { bg: '#e6f1fb', color: '#066696' },
+  project_update:          { bg: '#e6f1fb', color: '#066696' },
+  new_request_in_category: { bg: '#e6f1fb', color: '#066696' },
+  order_accepted:          { bg: '#fff0eb', color: '#e8541a' },
+  order_rejected:          { bg: '#fff0eb', color: '#e8541a' },
+  price_proposal:          { bg: '#fff0eb', color: '#e8541a' },
+  request_review:          { bg: '#fff0eb', color: '#e8541a' },
+  price_approved:          { bg: '#e6f9f0', color: '#1a7a4a' },
+  new_review:              { bg: '#e6f9f0', color: '#1a7a4a' },
+}
+const DEFAULT_NOTIF_COLOR = { bg: 'var(--color-gray-light)', color: 'var(--color-gray)' }
+const getNotifColor = (type: string) => NOTIF_COLORS[type] ?? DEFAULT_NOTIF_COLOR
+
 const getActionBtn = (notif: Notification, onRead: (id: string) => void) => {
   const actions: Record<string, { href: string; label: string; className: string }> = {
     project_completed: { href: `/my-order/${notif.order_id}`, label: 'Lämna recension', className: 'btn btn-primary' },
@@ -144,7 +162,12 @@ export default function NotificationsPage() {
                 key={notif.id}
                 className={`${styles.notif_item} card ${!notif.read ? styles['notif_item--unread'] : ''}`}
               >
-                <span className={styles.notif_icon}>{getIcon(notif.type)}</span>
+                <span
+                  className={styles.notif_icon}
+                  style={{ background: getNotifColor(notif.type).bg, color: getNotifColor(notif.type).color }}
+                >
+                  {getIcon(notif.type)}
+                </span>
                 <div className={styles.notif_content}>
                   <NotificationMessage message={notif.message} />
                   <div className={styles.notif_bottom_row}>
