@@ -468,4 +468,9 @@ h1, h2, h3, h4, h5, h6 {
     overflow-x: hidden;
     max-width: 100%;
   }
+
+  // 60px navbar + 60px mobil sökfältsrad – kompenserar för position:fixed navbar
+  body {
+    padding-top: 120px;
+  }
 }

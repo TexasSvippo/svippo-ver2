@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import useAuth, { type AccountType } from '@/hooks/useAuth'
 import CreateModal from './CreateModal'
@@ -121,6 +121,7 @@ export default function Navbar() {
   const [openMobileGroup, setOpenMobileGroup] = useState<string | null>(null)
   const router = useRouter()
   const pathname = usePathname()
+  const scrollYRef = useRef(0)
 
   // Stäng dropdowns vid klick utanför
   useEffect(() => {
@@ -150,10 +151,16 @@ export default function Navbar() {
     if (!mobileMenuOpen) setOpenMobileGroup(null)
   }, [mobileMenuOpen])
 
-  // Lås body-scroll när mobilmenyn är öppen
+  // Lås body-scroll när mobilmenyn är öppen (iOS-säker position:fixed-teknik)
   useEffect(() => {
-    document.body.style.overflow = mobileMenuOpen ? 'hidden' : ''
-    return () => { document.body.style.overflow = '' }
+    if (mobileMenuOpen) {
+      scrollYRef.current = window.scrollY
+      document.body.style.cssText = `position: fixed; top: -${scrollYRef.current}px; left: 0; right: 0; overflow: hidden;`
+    } else {
+      const y = scrollYRef.current
+      document.body.style.cssText = ''
+      window.scrollTo(0, y)
+    }
   }, [mobileMenuOpen])
 
   // Stäng mobilmenyn med Escape
