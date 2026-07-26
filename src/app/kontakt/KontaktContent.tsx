@@ -115,6 +115,7 @@ export default function KontaktContent() {
                     className={styles.input}
                     value={name}
                     onChange={e => setName(e.target.value)}
+                    placeholder="Ditt namn"
                     required
                   />
                 </div>
@@ -127,6 +128,7 @@ export default function KontaktContent() {
                     className={styles.input}
                     value={email}
                     onChange={e => setEmail(e.target.value)}
+                    placeholder="din@email.se"
                     required
                   />
                 </div>
@@ -155,6 +157,7 @@ export default function KontaktContent() {
                     rows={4}
                     value={message}
                     onChange={e => setMessage(e.target.value)}
+                    placeholder="Beskriv ditt ärende så hjälper vi dig så snabbt vi kan..."
                     required
                   />
                 </div>

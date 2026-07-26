@@ -101,6 +101,9 @@ export default function Footer() {
         {/* Kontakt */}
         <div className={styles.col}>
           <h4 className={styles.heading}>Kontakt</h4>
+          <Link href="/kontakt" className={styles.contact_link}>
+            <Mail size={14} /> Kontakta oss
+          </Link>
           <a href="mailto:kontakt@svippo.se" className={styles.contact_link}>
             <Mail size={14} /> kontakt@svippo.se
           </a>
