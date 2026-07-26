@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import useAuth from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
 import styles from './requestdetail.module.scss'
-import { MapPin, CheckCircle, Users, MessageCircle, Shield, ClipboardList, Pencil, Trash2 } from 'lucide-react'
+import { MapPin, CheckCircle, Users, MessageCircle, Shield, ClipboardList, Pencil, Trash2, Lock } from 'lucide-react'
 
 type Request = {
   id: string
@@ -35,6 +35,8 @@ export default function RequestDetailClient({ request }: Props) {
   const router = useRouter()
   const [showInterestForm, setShowInterestForm] = useState(false)
   const [showLoginPrompt, setShowLoginPrompt] = useState(false)
+  const [showUpgradePrompt, setShowUpgradePrompt] = useState(false)
+  const [showPendingPrompt, setShowPendingPrompt] = useState(false)
   const [message, setMessage] = useState('')
   const [price, setPrice] = useState('')
   const [saving, setSaving] = useState(false)
@@ -46,12 +48,13 @@ export default function RequestDetailClient({ request }: Props) {
   const [interestsCount, setInterestsCount] = useState(0)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
-  // Samma mönster som canCreateService i useAuth.ts: företag/UF-företag kan
-  // alltid agera, svippare måste vara godkänd (svippare_profiles.status === 'approved').
-  const canApplyInterest =
-    dbAccountType === 'foretag' ||
-    dbAccountType === 'uf-foretag' ||
-    (dbAccountType === 'svippare' && svippareStatus === 'approved')
+  const handleClick = () => {
+    if (!user) { setShowLoginPrompt(true); return }
+    if (dbAccountType === 'bestellare') { setShowUpgradePrompt(true); return }
+    if (dbAccountType === 'svippare' && svippareStatus !== 'approved') { setShowPendingPrompt(true); return }
+    setErrorMsg(null)
+    setShowInterestForm(true)
+  }
 
   useEffect(() => {
     if (!user) return
@@ -314,18 +317,14 @@ export default function RequestDetailClient({ request }: Props) {
                     <div className={styles.success_box} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
                       <CheckCircle size={16} /> {alreadySubmitted && !success ? 'Du har redan anmält ditt intresse för detta uppdrag.' : 'Din intresseanmälan är skickad!'}
                     </div>
-                  ) : (!user || canApplyInterest) ? (
+                  ) : (
                     <button
                       className={`btn btn-orange ${styles.order_btn}`}
-                      onClick={() => {
-                        if (!user) { setShowLoginPrompt(true); return }
-                        setErrorMsg(null)
-                        setShowInterestForm(true)
-                      }}
+                      onClick={handleClick}
                     >
                       <Users size={16} /> Jag kan hjälpa!
                     </button>
-                  ) : null}
+                  )}
                   {user && dbAccountType !== 'bestellare' && (
                     <button
                       className={`btn btn-outline ${styles.question_btn}`}
@@ -448,6 +447,60 @@ export default function RequestDetailClient({ request }: Props) {
                 disabled={saving || !message}
               >
                 {saving ? 'Skickar...' : 'Skicka intresseanmälan'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Uppgradera till Svippare-popup */}
+      {showUpgradePrompt && (
+        <div className="modal-backdrop" onClick={() => setShowUpgradePrompt(false)}>
+          <div className="modal-box" onClick={e => e.stopPropagation()}>
+            <div style={{ textAlign: 'center', marginBottom: '16px' }}><Lock size={40} /></div>
+            <h2 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '8px', textAlign: 'center' }}>
+              Du kan inte anmäla intresse
+            </h2>
+            <p style={{ color: 'var(--color-gray)', textAlign: 'center', marginBottom: '20px' }}>
+              För att anmäla intresse på förfrågningar behöver du vara godkänd Svippare, företag eller UF-företag.
+            </p>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <Link href="/become-svippare" className="btn btn-primary" style={{ flex: 1, justifyContent: 'center' }}>
+                Ansök om att bli Svippare
+              </Link>
+              <button
+                className="btn btn-outline"
+                style={{ flex: 1, justifyContent: 'center' }}
+                onClick={() => setShowUpgradePrompt(false)}
+              >
+                Stäng
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Ansökan granskas-popup */}
+      {showPendingPrompt && (
+        <div className="modal-backdrop" onClick={() => setShowPendingPrompt(false)}>
+          <div className="modal-box" onClick={e => e.stopPropagation()}>
+            <div style={{ textAlign: 'center', marginBottom: '16px' }}><Lock size={40} /></div>
+            <h2 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '8px', textAlign: 'center' }}>
+              Din ansökan granskas
+            </h2>
+            <p style={{ color: 'var(--color-gray)', textAlign: 'center', marginBottom: '20px' }}>
+              Din ansökan om att bli Svippare granskas just nu — du kan skicka intresseanmälningar så snart den är godkänd.
+            </p>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <Link href="/profile" className="btn btn-primary" style={{ flex: 1, justifyContent: 'center' }}>
+                Till din profil
+              </Link>
+              <button
+                className="btn btn-outline"
+                style={{ flex: 1, justifyContent: 'center' }}
+                onClick={() => setShowPendingPrompt(false)}
+              >
+                Stäng
               </button>
             </div>
           </div>

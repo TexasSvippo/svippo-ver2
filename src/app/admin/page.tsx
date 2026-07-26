@@ -83,6 +83,7 @@ export default function AdminPage() {
   const [section, setSection] = useState<Section>('overview')
   const [stats, setStats] = useState<Stats>({ users: 0, services: 0, requests: 0, orders: 0, pending: 0 })
   const [applications, setApplications] = useState<Application[]>([])
+  const [applicationsError, setApplicationsError] = useState<string | null>(null)
   const [users, setUsers] = useState<UserRow[]>([])
   const [orders, setOrders] = useState<OrderRow[]>([])
   const [services, setServices] = useState<ServiceRow[]>([])
@@ -110,36 +111,63 @@ export default function AdminPage() {
 
   const loadAll = async () => {
     setDataLoading(true)
+    setApplicationsError(null)
     const [usersRes, servicesRes, requestsRes, ordersRes, pendingRes, appsRes, recentUsersRes, recentOrdersRes, allServicesRes] = await Promise.all([
       supabase.from('users').select('id', { count: 'exact', head: true }),
       supabase.from('services').select('id', { count: 'exact', head: true }),
       supabase.from('requests').select('id', { count: 'exact', head: true }),
       supabase.from('orders').select('id', { count: 'exact', head: true }),
       supabase.from('svippare_profiles').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
-      supabase.from('svippare_profiles').select('id, user_id, status, description, created_at, users(name, email)').eq('status', 'pending').order('created_at', { ascending: false }),
+      supabase.from('svippare_profiles').select('id, user_id, status, description, created_at').eq('status', 'pending').order('created_at', { ascending: false }),
       supabase.from('users').select('id, name, email, account_type, role, created_at').order('created_at', { ascending: false }).limit(20),
       supabase.from('orders').select('id, service_title, buyer_name, seller_name, status, project_status, created_at').order('created_at', { ascending: false }).limit(10),
       supabase.from('services').select('id, title, user_name, subcategory, created_at').order('created_at', { ascending: false }).limit(50),
     ])
+
+    if (pendingRes.error) console.error('Kunde inte hämta antal väntande ansökningar:', pendingRes.error)
+    if (appsRes.error) console.error('Kunde inte hämta väntande ansökningar:', appsRes.error)
 
     setStats({
       users: usersRes.count ?? 0,
       services: servicesRes.count ?? 0,
       requests: requestsRes.count ?? 0,
       orders: ordersRes.count ?? 0,
-      pending: pendingRes.count ?? 0,
+      pending: pendingRes.error ? 0 : (pendingRes.count ?? 0),
     })
 
-    const apps = (appsRes.data ?? []).map((a: any) => ({
-      id: a.id,
-      user_id: a.user_id,
-      status: a.status,
-      description: a.description ?? '',
-      created_at: a.created_at,
-      user_name: a.users?.name ?? '–',
-      user_email: a.users?.email ?? '–',
-    }))
-    setApplications(apps)
+    if (appsRes.error) {
+      setApplicationsError('Kunde inte hämta väntande ansökningar. Försök ladda om sidan.')
+      setApplications([])
+    } else {
+      const appRows = appsRes.data ?? []
+      const userIds = [...new Set(appRows.map(a => a.user_id))]
+
+      let usersById: Record<string, { name: string | null; email: string | null }> = {}
+      if (userIds.length > 0) {
+        const { data: appUsersData, error: appUsersError } = await supabase
+          .from('users')
+          .select('id, name, email')
+          .in('id', userIds)
+
+        if (appUsersError) {
+          console.error('Kunde inte hämta användardata för ansökningar:', appUsersError)
+        } else {
+          usersById = Object.fromEntries((appUsersData ?? []).map(u => [u.id, { name: u.name, email: u.email }]))
+        }
+      }
+
+      const apps = appRows.map((a) => ({
+        id: a.id,
+        user_id: a.user_id,
+        status: a.status,
+        description: a.description ?? '',
+        created_at: a.created_at,
+        user_name: usersById[a.user_id]?.name ?? '–',
+        user_email: usersById[a.user_id]?.email ?? '–',
+      }))
+      setApplications(apps)
+    }
+
     setUsers(recentUsersRes.data ?? [])
     setOrders(recentOrdersRes.data ?? [])
     setServices(allServicesRes.data ?? [])
@@ -341,7 +369,13 @@ export default function AdminPage() {
         {section === 'applications' && (
           <div className={styles.section}>
             <h1 className={styles.section__title}>Svippare-ansökningar</h1>
-            {dataLoading ? <p className={styles.empty}>Laddar...</p> : applications.length === 0 ? (
+            {applicationsError && (
+              <div className={styles.empty} style={{ color: '#b3261e' }}>
+                <XCircle size={32} />
+                <p>{applicationsError}</p>
+              </div>
+            )}
+            {dataLoading ? <p className={styles.empty}>Laddar...</p> : applicationsError ? null : applications.length === 0 ? (
               <div className={styles.empty}>
                 <CheckCircle size={32} />
                 <p>Inga väntande ansökningar.</p>
