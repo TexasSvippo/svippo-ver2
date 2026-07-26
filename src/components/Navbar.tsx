@@ -355,6 +355,19 @@ export default function Navbar() {
                 </div>
               </div>
 
+              <div className={styles.navbar__overlay_create_wrap}>
+                <button
+                  type="button"
+                  className={styles.navbar__overlay_create_btn}
+                  onClick={() => {
+                    setShowCreate(true)
+                    setMobileMenuOpen(false)
+                  }}
+                >
+                  Skapa inlägg
+                </button>
+              </div>
+
               <div className={styles.navbar__overlay_divider} />
 
               {overlayNavEntries.map(entry => {
