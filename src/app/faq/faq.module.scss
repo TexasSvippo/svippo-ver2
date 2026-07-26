@@ -1,0 +1,244 @@
+// ── Hero ──────────────────────────────────────────────────────────────────────
+.hero {
+  background: #066696;
+  padding: 64px 24px;
+}
+
+.hero__inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.hero__title {
+  font-family: var(--font-heading);
+  font-size: 40px;
+  font-weight: 700;
+  color: white;
+  margin: 0 0 12px;
+  line-height: 1.2;
+}
+
+.hero__subtext {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0 0 32px;
+}
+
+.search {
+  position: relative;
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.search__icon {
+  position: absolute;
+  top: 50%;
+  left: 18px;
+  transform: translateY(-50%);
+  color: var(--color-gray);
+  pointer-events: none;
+}
+
+.search__input {
+  width: 100%;
+  height: 52px;
+  padding: 0 20px 0 48px;
+  border-radius: var(--radius-full);
+  border: none;
+  background: white;
+  font-size: 15px;
+  font-family: var(--font-body);
+  color: var(--color-dark);
+  outline: none;
+
+  &::placeholder {
+    color: var(--color-gray);
+  }
+}
+
+// ── Layout ────────────────────────────────────────────────────────────────────
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.faq_section {
+  padding: 64px 0;
+}
+
+.no_results {
+  font-size: 15px;
+  color: var(--color-gray);
+  text-align: center;
+  padding: 40px 0;
+}
+
+// ── Group ─────────────────────────────────────────────────────────────────────
+.group {
+  margin-bottom: 48px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.group__title {
+  font-size: 18px;
+  font-weight: 500;
+  color: #066696;
+  border-left: 3px solid #066696;
+  padding-left: 14px;
+  margin: 0 0 16px;
+  line-height: 1.4;
+}
+
+.group__questions {
+  display: flex;
+  flex-direction: column;
+}
+
+// ── Question / accordion ──────────────────────────────────────────────────────
+.question {
+  border-bottom: 0.5px solid var(--color-border-tertiary);
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.question__row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-family: var(--font-body);
+  transition: background 0.15s;
+  border-radius: var(--radius-md);
+
+  &:hover {
+    background: var(--color-gray-light);
+  }
+
+  &--active {
+    background: var(--color-gray-light);
+  }
+}
+
+.question__text {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--color-dark);
+}
+
+.question__chevron {
+  flex-shrink: 0;
+  color: var(--color-gray);
+  transition: transform 0.2s;
+
+  &--open {
+    transform: rotate(180deg);
+  }
+}
+
+.question__answer_wrap {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.25s ease;
+
+  &--open {
+    grid-template-rows: 1fr;
+  }
+}
+
+.question__answer_inner {
+  overflow: hidden;
+}
+
+.question__answer_text {
+  font-size: 15px;
+  color: var(--color-gray);
+  line-height: 1.8;
+  margin: 0;
+  padding: 0 12px 18px;
+}
+
+// ── CTA ───────────────────────────────────────────────────────────────────────
+.cta_section {
+  padding-bottom: 80px;
+}
+
+.cta {
+  max-width: 700px;
+  margin: 0 auto;
+  text-align: center;
+  border-top: 0.5px solid var(--color-border-tertiary);
+  padding-top: 48px;
+}
+
+.cta__title {
+  font-family: var(--font-heading);
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--color-dark);
+  margin: 0 0 12px;
+}
+
+.cta__text {
+  font-size: 15px;
+  color: var(--color-gray);
+  margin: 0 0 24px;
+}
+
+.cta__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 28px;
+  height: 46px;
+  background: #066696;
+  color: white;
+  border-radius: var(--radius-md);
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.15s;
+
+  &:hover {
+    background: #055880;
+  }
+}
+
+// ── Mobile ────────────────────────────────────────────────────────────────────
+@media (max-width: 768px) {
+  .hero {
+    padding: 48px 24px;
+  }
+
+  .hero__title {
+    font-size: 28px;
+  }
+
+  .faq_section {
+    padding: 48px 0;
+  }
+
+  .group__title {
+    font-size: 16px;
+  }
+
+  .question__text {
+    font-size: 15px;
+  }
+
+  .cta_section {
+    padding-bottom: 56px;
+  }
+}
