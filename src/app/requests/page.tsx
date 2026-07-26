@@ -7,6 +7,8 @@ export const metadata = {
   description: 'Hitta uppdrag att utföra på Svippo.',
 }
 
+export const revalidate = 60
+
 export default async function ForfragningarPage() {
   // Step 1: fetch requests without users join
   const { data: requestsRaw } = await supabase
