@@ -126,7 +126,7 @@ export default function Footer() {
           <div className={styles.bottom_links}>
             <Link href="/integritetspolicy">Integritetspolicy</Link>
             <Link href="/villkor">Användarvillkor</Link>
-            <Link href="/cookie-policy">Cookie-policy</Link>
+            <Link href="/cookies">Cookie-policy</Link>
           </div>
         </div>
       </div>
