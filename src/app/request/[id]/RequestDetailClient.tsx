@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import useAuth from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
 import styles from './requestdetail.module.scss'
-import { MapPin, CheckCircle, Users, MessageCircle, Shield, ClipboardList, Pencil, Trash2, Lock } from 'lucide-react'
+import { MapPin, CheckCircle, Users, MessageCircle, Shield, ClipboardList, Pencil, Trash2 } from 'lucide-react'
 
 type Request = {
   id: string
@@ -31,7 +31,7 @@ type Props = {
 }
 
 export default function RequestDetailClient({ request }: Props) {
-  const { user, accountType } = useAuth()
+  const { user, svippareStatus } = useAuth()
   const router = useRouter()
   const [showInterestForm, setShowInterestForm] = useState(false)
   const [showLoginPrompt, setShowLoginPrompt] = useState(false)
@@ -42,18 +42,29 @@ export default function RequestDetailClient({ request }: Props) {
   const [alreadySubmitted, setAlreadySubmitted] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [userProfile, setUserProfile] = useState<{ name: string, email: string, phone: string } | null>(null)
+  const [dbAccountType, setDbAccountType] = useState<string | null>(null)
   const [interestsCount, setInterestsCount] = useState(0)
-  const [showUpgradePrompt, setShowUpgradePrompt] = useState(false)
+  const [errorMsg, setErrorMsg] = useState<string | null>(null)
+
+  // Samma mönster som canCreateService i useAuth.ts: företag/UF-företag kan
+  // alltid agera, svippare måste vara godkänd (svippare_profiles.status === 'approved').
+  const canApplyInterest =
+    dbAccountType === 'foretag' ||
+    dbAccountType === 'uf-foretag' ||
+    (dbAccountType === 'svippare' && svippareStatus === 'approved')
 
   useEffect(() => {
     if (!user) return
     const fetchProfile = async () => {
       const { data } = await supabase
         .from('users')
-        .select('name, email, phone')
+        .select('name, email, phone, account_type')
         .eq('id', user.id)
         .single()
-      if (data) setUserProfile(data)
+      if (data) {
+        setUserProfile(data)
+        setDbAccountType(data.account_type ?? null)
+      }
     }
     fetchProfile()
   }, [user])
@@ -87,8 +98,9 @@ export default function RequestDetailClient({ request }: Props) {
   const handleInterest = async () => {
     if (!user || !message) return
     setSaving(true)
+    setErrorMsg(null)
     try {
-      await supabase.from('interests').insert({
+      const { error: interestError } = await supabase.from('interests').insert({
         request_id: request.id,
         request_title: request.title,
         request_owner_id: request.user_id,
@@ -100,8 +112,9 @@ export default function RequestDetailClient({ request }: Props) {
         price: price ? Number(price) : null,
         created_at: new Date().toISOString(),
       })
+      if (interestError) throw interestError
 
-      await supabase.from('notifications').insert({
+      const { error: notifError } = await supabase.from('notifications').insert({
         user_id: request.user_id,
         type: 'new_interest',
         actor_name: userProfile?.name || user.email,
@@ -112,6 +125,7 @@ export default function RequestDetailClient({ request }: Props) {
         email_sent: false,
         created_at: new Date().toISOString(),
       })
+      if (notifError) throw notifError
 
       fetch(`/api/requests/${request.id}/notify-email`, {
         method: 'POST',
@@ -125,6 +139,12 @@ export default function RequestDetailClient({ request }: Props) {
       setShowInterestForm(false)
     } catch (err) {
       console.error(err)
+      const code = (err as { code?: string })?.code
+      if (code === '42501') {
+        setErrorMsg('Du kan inte anmäla intresse — endast godkända utförare kan göra det.')
+      } else {
+        setErrorMsg('Något gick fel. Försök igen om en liten stund.')
+      }
     } finally {
       setSaving(false)
     }
@@ -294,19 +314,19 @@ export default function RequestDetailClient({ request }: Props) {
                     <div className={styles.success_box} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
                       <CheckCircle size={16} /> {alreadySubmitted && !success ? 'Du har redan anmält ditt intresse för detta uppdrag.' : 'Din intresseanmälan är skickad!'}
                     </div>
-                  ) : (
+                  ) : (!user || canApplyInterest) ? (
                     <button
                       className={`btn btn-orange ${styles.order_btn}`}
                       onClick={() => {
                         if (!user) { setShowLoginPrompt(true); return }
-                        if (accountType === 'bestellare') { setShowUpgradePrompt(true); return }
+                        setErrorMsg(null)
                         setShowInterestForm(true)
                       }}
                     >
                       <Users size={16} /> Jag kan hjälpa!
                     </button>
-                  )}
-                  {user && accountType !== 'bestellare' && (
+                  ) : null}
+                  {user && dbAccountType !== 'bestellare' && (
                     <button
                       className={`btn btn-outline ${styles.question_btn}`}
                       onClick={handleContact}
@@ -406,6 +426,20 @@ export default function RequestDetailClient({ request }: Props) {
               </div>
             </div>
 
+            {errorMsg && (
+              <p style={{
+                color: '#b3261e',
+                background: '#fdecea',
+                border: '1px solid #f4c4c0',
+                borderRadius: 'var(--radius-md)',
+                padding: '10px 14px',
+                fontSize: '14px',
+                margin: '0 0 12px',
+              }}>
+                {errorMsg}
+              </p>
+            )}
+
             <div className={styles.drawer_footer}>
               <button className="btn btn-outline" onClick={() => setShowInterestForm(false)}>Avbryt</button>
               <button
@@ -414,33 +448,6 @@ export default function RequestDetailClient({ request }: Props) {
                 disabled={saving || !message}
               >
                 {saving ? 'Skickar...' : 'Skicka intresseanmälan'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Uppgradera till Svippare-popup */}
-      {showUpgradePrompt && (
-        <div className="modal-backdrop" onClick={() => setShowUpgradePrompt(false)}>
-          <div className="modal-box" onClick={e => e.stopPropagation()}>
-            <div style={{ textAlign: 'center', marginBottom: '16px' }}><Lock size={40} /></div>
-            <h2 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '8px', textAlign: 'center' }}>
-              Du kan inte anmäla intresse
-            </h2>
-            <p style={{ color: 'var(--color-gray)', textAlign: 'center', marginBottom: '20px' }}>
-              För att anmäla intresse på förfrågningar behöver du vara godkänd Svippare, företag eller UF-företag.
-            </p>
-            <div style={{ display: 'flex', gap: '12px' }}>
-              <Link href="/become-svippare" className="btn btn-primary" style={{ flex: 1, justifyContent: 'center' }}>
-                Ansök om att bli Svippare
-              </Link>
-              <button
-                className="btn btn-outline"
-                style={{ flex: 1, justifyContent: 'center' }}
-                onClick={() => setShowUpgradePrompt(false)}
-              >
-                Stäng
               </button>
             </div>
           </div>
