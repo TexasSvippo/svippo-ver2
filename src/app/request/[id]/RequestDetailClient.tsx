@@ -6,7 +6,8 @@ import { useRouter } from 'next/navigation'
 import useAuth from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
 import styles from './requestdetail.module.scss'
-import { MapPin, CheckCircle, Users, MessageCircle, Shield, ClipboardList, Pencil, Trash2, Lock } from 'lucide-react'
+import { MapPin, CheckCircle, Users, MessageCircle, Shield, ClipboardList, Pencil, Trash2, Lock, Flag } from 'lucide-react'
+import ReportModal from '@/components/ReportModal'
 
 type Request = {
   id: string
@@ -34,6 +35,7 @@ export default function RequestDetailClient({ request }: Props) {
   const { user, svippareStatus } = useAuth()
   const router = useRouter()
   const [showInterestForm, setShowInterestForm] = useState(false)
+  const [showReport, setShowReport] = useState(false)
   const [showLoginPrompt, setShowLoginPrompt] = useState(false)
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(false)
   const [showPendingPrompt, setShowPendingPrompt] = useState(false)
@@ -248,12 +250,29 @@ export default function RequestDetailClient({ request }: Props) {
 
           {/* Vänster */}
           <div className={styles.main}>
-            <div className={styles.badges}>
-              <span className={`${styles.badge} ${styles.badge__orange}`}>{request.subcategory}</span>
-              <span className={`${styles.badge} ${styles.badge__location}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}><MapPin size={14} /> {request.location}</span>
+            <div className={styles.badges} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <span className={`${styles.badge} ${styles.badge__orange}`}>{request.subcategory}</span>
+                <span className={`${styles.badge} ${styles.badge__location}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}><MapPin size={14} /> {request.location}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowReport(true)}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: 'none', border: 'none', color: 'var(--color-gray)', fontSize: '13px', cursor: 'pointer', padding: '4px' }}
+              >
+                <Flag size={13} /> Rapportera
+              </button>
             </div>
 
             <h1 className={styles.title}>{request.title}</h1>
+
+            <ReportModal
+              open={showReport}
+              onClose={() => setShowReport(false)}
+              targetType="request"
+              targetId={request.id}
+              reporterId={user?.id ?? null}
+            />
 
             {request.image_url && (
               <img

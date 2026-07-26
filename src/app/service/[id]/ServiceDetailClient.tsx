@@ -1,6 +1,7 @@
 'use client'
 
 import OrderModal from '@/components/OrderModal'
+import ReportModal from '@/components/ReportModal'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -106,6 +107,7 @@ export default function ServiceDetailClient({ service, reviews, avgRating, refer
 
   // ── Order / contact state ─────────────────────────────────────────────────
   const [showOrder, setShowOrder] = useState(false)
+  const [showReport, setShowReport] = useState(false)
   const [showLoginPrompt, setShowLoginPrompt] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [activeOrdersCount, setActiveOrdersCount] = useState(0)
@@ -279,10 +281,18 @@ export default function ServiceDetailClient({ service, reviews, avgRating, refer
                 {tab.label}
               </button>
             ))}
-            <button type="button" className={styles.tab_report}>
+            <button type="button" className={styles.tab_report} onClick={() => setShowReport(true)}>
               <Flag size={13} /> Rapportera
             </button>
           </div>
+
+          <ReportModal
+            open={showReport}
+            onClose={() => setShowReport(false)}
+            targetType="service"
+            targetId={service.id}
+            reporterId={user?.id ?? null}
+          />
 
           {/* Om tjänsten */}
           <div id="om-tjansten" className={styles.section}>

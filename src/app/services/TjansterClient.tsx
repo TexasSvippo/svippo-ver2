@@ -9,6 +9,7 @@ import useAuth from '@/hooks/useAuth'
 import styles from './tjanster.module.scss'
 import { MapPin, Star, Share2, Flag, MessageCircle, Pencil, Trash2 } from 'lucide-react'
 import AdCard from '@/components/AdCard'
+import ReportModal from '@/components/ReportModal'
 
 type Service = {
   id: string
@@ -80,8 +81,6 @@ function getBadgeLabel(t: string) {
   return 'Svippare'
 }
 
-const REPORT_REASONS = ['Felaktig information', 'Olämpligt innehåll', 'Spam', 'Annat']
-
 export default function TjansterClient({ services, page, totalCount, pageSize }: Props) {
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -105,8 +104,6 @@ export default function TjansterClient({ services, page, totalCount, pageSize }:
 
   // Report modal
   const [reportServiceId, setReportServiceId] = useState<string | null>(null)
-  const [reportReason, setReportReason] = useState('')
-  const [reportSending, setReportSending] = useState(false)
 
   const categoryLabel = categories.find(c => c.id === selectedCategory)?.label ?? ''
 
@@ -217,24 +214,6 @@ export default function TjansterClient({ services, page, totalCount, pageSize }:
     }).select().single()
     if (conv) router.push(`/messages/${conv.id}`)
     setOpenMenuId(null)
-  }
-
-  const handleReport = async () => {
-    if (!reportReason || !reportServiceId) return
-    setReportSending(true)
-    await supabase.from('notifications').insert({
-      user_id: user?.id ?? null,
-      type: 'report',
-      message: `Rapporterat tjänst: ${reportReason}`,
-      action_url: `/service/${reportServiceId}`,
-      order_id: reportServiceId,
-      read: false, dismissed: false, email_sent: false,
-      created_at: new Date().toISOString(),
-    })
-    setReportSending(false)
-    setReportServiceId(null)
-    setReportReason('')
-    showToast('Inlägg rapporterat – tack!')
   }
 
   // ── Render ─────────────────────────────────────────────────────────────────
@@ -568,36 +547,14 @@ export default function TjansterClient({ services, page, totalCount, pageSize }:
       </div>
 
       {/* Rapporteringsmodal */}
-      {reportServiceId && (
-        <div className={styles.report_overlay} onClick={() => setReportServiceId(null)}>
-          <div className={styles.report_modal} onClick={e => e.stopPropagation()}>
-            <div className={styles.report_modal__header}>
-              <h2>Rapportera inlägg</h2>
-              <button onClick={() => setReportServiceId(null)}>✕</button>
-            </div>
-            <div className={styles.report_modal__body}>
-              {REPORT_REASONS.map(reason => (
-                <label key={reason} className={styles.report_modal__option}>
-                  <input
-                    type="radio"
-                    name="report_reason"
-                    value={reason}
-                    checked={reportReason === reason}
-                    onChange={e => setReportReason(e.target.value)}
-                  />
-                  {reason}
-                </label>
-              ))}
-            </div>
-            <div className={styles.report_modal__footer}>
-              <button className="btn btn-outline" onClick={() => setReportServiceId(null)}>Avbryt</button>
-              <button className="btn btn-primary" onClick={handleReport} disabled={!reportReason || reportSending}>
-                {reportSending ? 'Skickar...' : 'Skicka rapport'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ReportModal
+        open={!!reportServiceId}
+        onClose={() => setReportServiceId(null)}
+        targetType="service"
+        targetId={reportServiceId ?? ''}
+        reporterId={user?.id ?? null}
+        onSubmitted={() => showToast('Inlägg rapporterat – tack!')}
+      />
 
       {/* Toast */}
       {toast && <div className={styles.toast}>{toast}</div>}

@@ -1,14 +1,15 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import useAuth from '@/hooks/useAuth'
 import { prepareImageForUpload } from '@/utils/prepareImageForUpload'
 import styles from './admin.module.scss'
-import { Users, Wrench, ClipboardList, Package, Clock, CheckCircle, XCircle, BarChart2, LogOut, Trash2, Megaphone } from 'lucide-react'
+import { Users, Wrench, ClipboardList, Package, Clock, CheckCircle, XCircle, BarChart2, LogOut, Trash2, Megaphone, Flag } from 'lucide-react'
 
-type Section = 'overview' | 'applications' | 'services' | 'users' | 'orders' | 'ads'
+type Section = 'overview' | 'applications' | 'services' | 'users' | 'orders' | 'ads' | 'reports'
 
 type AdRow = {
   id: string
@@ -38,6 +39,7 @@ type Stats = {
   requests: number
   orders: number
   pending: number
+  openReports: number
 }
 
 type Application = {
@@ -77,14 +79,29 @@ type ServiceRow = {
   created_at: string
 }
 
+type ReportRow = {
+  id: string
+  reporter_id: string | null
+  target_type: string
+  target_id: string
+  reason: string
+  message: string | null
+  status: string
+  created_at: string
+  reporter_name: string
+  reporter_email: string
+}
+
 export default function AdminPage() {
   const { user, loading: authLoading } = useAuth()
   const router = useRouter()
   const [authorized, setAuthorized] = useState(false)
   const [section, setSection] = useState<Section>('overview')
-  const [stats, setStats] = useState<Stats>({ users: 0, services: 0, requests: 0, orders: 0, pending: 0 })
+  const [stats, setStats] = useState<Stats>({ users: 0, services: 0, requests: 0, orders: 0, pending: 0, openReports: 0 })
   const [applications, setApplications] = useState<Application[]>([])
   const [applicationsError, setApplicationsError] = useState<string | null>(null)
+  const [reports, setReports] = useState<ReportRow[]>([])
+  const [reportsError, setReportsError] = useState<string | null>(null)
   const [users, setUsers] = useState<UserRow[]>([])
   const [orders, setOrders] = useState<OrderRow[]>([])
   const [services, setServices] = useState<ServiceRow[]>([])
@@ -113,7 +130,8 @@ export default function AdminPage() {
   const loadAll = async () => {
     setDataLoading(true)
     setApplicationsError(null)
-    const [usersRes, servicesRes, requestsRes, ordersRes, pendingRes, appsRes, recentUsersRes, recentOrdersRes, allServicesRes] = await Promise.all([
+    setReportsError(null)
+    const [usersRes, servicesRes, requestsRes, ordersRes, pendingRes, appsRes, recentUsersRes, recentOrdersRes, allServicesRes, openReportsCountRes, reportsRes] = await Promise.all([
       supabase.from('users').select('id', { count: 'exact', head: true }),
       supabase.from('services').select('id', { count: 'exact', head: true }),
       supabase.from('requests').select('id', { count: 'exact', head: true }),
@@ -123,10 +141,14 @@ export default function AdminPage() {
       supabase.from('users').select('id, name, email, account_type, role, created_at').order('created_at', { ascending: false }).limit(20),
       supabase.from('orders').select('id, service_title, buyer_name, seller_name, status, project_status, created_at').order('created_at', { ascending: false }).limit(10),
       supabase.from('services').select('id, title, user_name, subcategory, created_at').order('created_at', { ascending: false }).limit(50),
+      supabase.from('reports').select('id', { count: 'exact', head: true }).eq('status', 'open'),
+      supabase.from('reports').select('id, reporter_id, target_type, target_id, reason, message, status, created_at').eq('status', 'open').order('created_at', { ascending: false }),
     ])
 
     if (pendingRes.error) console.error('Kunde inte hämta antal väntande ansökningar:', pendingRes.error)
     if (appsRes.error) console.error('Kunde inte hämta väntande ansökningar:', appsRes.error)
+    if (openReportsCountRes.error) console.error('Kunde inte hämta antal öppna rapporter:', openReportsCountRes.error)
+    if (reportsRes.error) console.error('Kunde inte hämta rapporter:', reportsRes.error)
 
     setStats({
       users: usersRes.count ?? 0,
@@ -134,7 +156,43 @@ export default function AdminPage() {
       requests: requestsRes.count ?? 0,
       orders: ordersRes.count ?? 0,
       pending: pendingRes.error ? 0 : (pendingRes.count ?? 0),
+      openReports: openReportsCountRes.error ? 0 : (openReportsCountRes.count ?? 0),
     })
+
+    if (reportsRes.error) {
+      setReportsError('Kunde inte hämta rapporter. Försök ladda om sidan.')
+      setReports([])
+    } else {
+      const reportRows = reportsRes.data ?? []
+      const reporterIds = [...new Set(reportRows.map(r => r.reporter_id).filter((id): id is string => !!id))]
+
+      let reportersById: Record<string, { name: string | null; email: string | null }> = {}
+      if (reporterIds.length > 0) {
+        const { data: reportersData, error: reportersError } = await supabase
+          .from('users')
+          .select('id, name, email')
+          .in('id', reporterIds)
+
+        if (reportersError) {
+          console.error('Kunde inte hämta reporter-data för rapporter:', reportersError)
+        } else {
+          reportersById = Object.fromEntries((reportersData ?? []).map(u => [u.id, { name: u.name, email: u.email }]))
+        }
+      }
+
+      setReports(reportRows.map(r => ({
+        id: r.id,
+        reporter_id: r.reporter_id,
+        target_type: r.target_type,
+        target_id: r.target_id,
+        reason: r.reason,
+        message: r.message,
+        status: r.status,
+        created_at: r.created_at,
+        reporter_name: r.reporter_id ? (reportersById[r.reporter_id]?.name ?? '–') : 'Anonym',
+        reporter_email: r.reporter_id ? (reportersById[r.reporter_id]?.email ?? '–') : '–',
+      })))
+    }
 
     if (appsRes.error) {
       setApplicationsError('Kunde inte hämta väntande ansökningar. Försök ladda om sidan.')
@@ -232,6 +290,20 @@ export default function AdminPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ type: 'rejected', userId: app.user_id }),
     }).catch(err => console.error('Email notification error:', err))
+  }
+
+  const handleMarkReportReviewed = async (report: ReportRow) => {
+    const { error } = await supabase.from('reports').update({ status: 'reviewed' }).eq('id', report.id)
+    if (error) { setFeedback(f => ({ ...f, [report.id]: 'Fel vid uppdatering.' })); return }
+    setReports(prev => prev.filter(r => r.id !== report.id))
+    setStats(s => ({ ...s, openReports: Math.max(0, s.openReports - 1) }))
+  }
+
+  const handleDismissReport = async (report: ReportRow) => {
+    const { error } = await supabase.from('reports').update({ status: 'dismissed' }).eq('id', report.id)
+    if (error) { setFeedback(f => ({ ...f, [report.id]: 'Fel vid uppdatering.' })); return }
+    setReports(prev => prev.filter(r => r.id !== report.id))
+    setStats(s => ({ ...s, openReports: Math.max(0, s.openReports - 1) }))
   }
 
   // TODO: For delete operations to work, add RLS policies in Supabase:
@@ -351,6 +423,7 @@ export default function AdminPage() {
           {([
             { id: 'overview', label: 'Översikt', icon: <BarChart2 size={16} /> },
             { id: 'applications', label: 'Ansökningar', icon: <Clock size={16} />, badge: stats.pending || undefined },
+            { id: 'reports', label: 'Rapporter', icon: <Flag size={16} />, badge: stats.openReports || undefined },
             { id: 'services', label: 'Tjänster', icon: <Wrench size={16} /> },
             { id: 'users', label: 'Användare', icon: <Users size={16} /> },
             { id: 'orders', label: 'Beställningar', icon: <Package size={16} /> },
@@ -443,6 +516,72 @@ export default function AdminPage() {
                               </button>
                               <button className="btn btn-outline" style={{ padding: '6px 14px', fontSize: '13px', color: 'var(--color-orange)', borderColor: 'var(--color-orange)' }} onClick={() => handleReject(app)}>
                                 <XCircle size={14} /> Neka
+                              </button>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* REPORTS */}
+        {section === 'reports' && (
+          <div className={styles.section}>
+            <h1 className={styles.section__title}>Rapporter</h1>
+            {reportsError && (
+              <div className={styles.empty} style={{ color: '#b3261e' }}>
+                <XCircle size={32} />
+                <p>{reportsError}</p>
+              </div>
+            )}
+            {dataLoading ? <p className={styles.empty}>Laddar...</p> : reportsError ? null : reports.length === 0 ? (
+              <div className={styles.empty}>
+                <CheckCircle size={32} />
+                <p>Inga öppna rapporter.</p>
+              </div>
+            ) : (
+              <div className={styles.table_wrap}>
+                <table className={styles.table}>
+                  <thead>
+                    <tr>
+                      <th>Rapportör</th>
+                      <th>Typ</th>
+                      <th>Anledning</th>
+                      <th>Meddelande</th>
+                      <th>Datum</th>
+                      <th>Åtgärd</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {reports.map(report => (
+                      <tr key={report.id}>
+                        <td>
+                          <strong>{report.reporter_name}</strong>
+                          {report.reporter_email !== '–' && <div style={{ fontSize: '12px', color: 'var(--color-gray)' }}>{report.reporter_email}</div>}
+                        </td>
+                        <td>
+                          <Link href={report.target_type === 'service' ? `/service/${report.target_id}` : `/request/${report.target_id}`} target="_blank" style={{ color: 'var(--color-primary)' }}>
+                            {report.target_type === 'service' ? 'Tjänst' : 'Förfrågan'} →
+                          </Link>
+                        </td>
+                        <td>{report.reason}</td>
+                        <td className={styles.table__desc}>{report.message || '–'}</td>
+                        <td>{fmt(report.created_at)}</td>
+                        <td>
+                          {feedback[report.id] ? (
+                            <span className={styles.feedback}>{feedback[report.id]}</span>
+                          ) : (
+                            <div className={styles.action_btns}>
+                              <button className="btn btn-primary" style={{ padding: '6px 14px', fontSize: '13px' }} onClick={() => handleMarkReportReviewed(report)}>
+                                <CheckCircle size={14} /> Granskad
+                              </button>
+                              <button className="btn btn-outline" style={{ padding: '6px 14px', fontSize: '13px', color: 'var(--color-orange)', borderColor: 'var(--color-orange)' }} onClick={() => handleDismissReport(report)}>
+                                <XCircle size={14} /> Avfärda
                               </button>
                             </div>
                           )}
