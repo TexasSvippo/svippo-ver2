@@ -393,8 +393,9 @@
     left: 0;
     right: 0;
     z-index: 1000;
+    max-height: calc(100vh - 120px);
     overflow-y: auto;
-    overscroll-behavior-y: contain;
+    overscroll-behavior: contain;
     background: var(--color-bg);
 
     &--open {
