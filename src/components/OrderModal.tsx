@@ -89,6 +89,13 @@ export default function OrderModal({
     fetchProfile()
   }, [user])
 
+  useEffect(() => {
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [])
+
   const hasCustomQuestions = customQuestions.length > 0
 
   // Typ-specifikt steg
