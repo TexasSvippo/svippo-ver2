@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import useAuth from '@/hooks/useAuth'
+import { prepareImageForUpload } from '@/utils/prepareImageForUpload'
 import styles from './admin.module.scss'
 import { Users, Wrench, ClipboardList, Package, Clock, CheckCircle, XCircle, BarChart2, LogOut, Trash2, Megaphone } from 'lucide-react'
 
@@ -265,15 +266,22 @@ export default function AdminPage() {
     onConfirm: () => handleDeleteUser(id),
   })
 
-  const handleLogoUpload = async (file: File) => {
+  const handleLogoUpload = async (rawFile: File) => {
     setAdLogoUploading(true)
-    const ext = file.name.split('.').pop() ?? 'png'
-    const path = `${Date.now()}.${ext}`
-    const { error } = await supabase.storage.from('ad-logos').upload(path, file, { upsert: true })
-    if (error) { alert('Logo-uppladdning misslyckades: ' + error.message); setAdLogoUploading(false); return }
-    const { data: urlData } = supabase.storage.from('ad-logos').getPublicUrl(path)
-    setAdForm(f => ({ ...f, logo_url: urlData.publicUrl }))
-    setAdLogoUploading(false)
+    try {
+      const file = await prepareImageForUpload(rawFile)
+      const ext = file.name.split('.').pop() ?? 'jpg'
+      const path = `${Date.now()}.${ext}`
+      const { error } = await supabase.storage.from('ad-logos').upload(path, file, { upsert: true })
+      if (error) { alert('Logo-uppladdning misslyckades: ' + error.message); return }
+      const { data: urlData } = supabase.storage.from('ad-logos').getPublicUrl(path)
+      setAdForm(f => ({ ...f, logo_url: urlData.publicUrl }))
+    } catch (err) {
+      console.error('Logo compression failed:', err)
+      alert('Kunde inte bearbeta bilden. Prova en annan bild.')
+    } finally {
+      setAdLogoUploading(false)
+    }
   }
 
   const handleSaveAd = async () => {

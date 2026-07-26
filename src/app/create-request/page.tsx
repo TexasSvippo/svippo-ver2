@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase'
 import useAuth from '@/hooks/useAuth'
 import { categories } from '@/data/categories'
 import { municipalities } from '@/data/municipalities'
+import { prepareImageForUpload } from '@/utils/prepareImageForUpload'
 import styles from './createrequest.module.scss'
 import { Wallet, ClipboardList, MapPin, Clock, Calendar, Monitor } from 'lucide-react'
 
@@ -36,6 +37,7 @@ function CreateRequestPage() {
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [uploadingImage, setUploadingImage] = useState(false)
+  const [compressingImage, setCompressingImage] = useState(false)
   const [loadingEdit, setLoadingEdit] = useState(isEditing)
   const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null)
 
@@ -99,15 +101,24 @@ function CreateRequestPage() {
   const selectedCategory = categories.find(c => c.id === form.category_id)
   const update = (field: keyof FormData, value: string) => setForm(prev => ({ ...prev, [field]: value }))
 
-  const handleImage = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
-    if (file.size > 2 * 1024 * 1024) {
-      alert('Bilden är för stor! Max 2MB.')
-      return
+    setCompressingImage(true)
+    try {
+      const compressed = await prepareImageForUpload(file)
+      if (compressed.size > 10 * 1024 * 1024) {
+        alert('Bilden kunde inte komprimeras tillräckligt. Prova en annan bild.')
+        return
+      }
+      setImageFile(compressed)
+      setImagePreview(URL.createObjectURL(compressed))
+    } catch (err) {
+      console.error('Image compression failed:', err)
+      alert('Kunde inte bearbeta bilden. Prova en annan bild.')
+    } finally {
+      setCompressingImage(false)
     }
-    setImageFile(file)
-    setImagePreview(URL.createObjectURL(file))
   }
 
   const uploadImage = async (): Promise<string | null> => {
@@ -307,9 +318,15 @@ function CreateRequestPage() {
                       </div>
                     ) : (
                       <label className={styles.create__image_label}>
-                        <span>📷 Klicka för att ladda upp bild</span>
-                        <span className={styles.create__image_hint}>Max 2MB – JPG, PNG</span>
-                        <input type="file" accept="image/jpeg,image/png,image/webp" onChange={handleImage} style={{ display: 'none' }} />
+                        <span>{compressingImage ? '⏳ Bearbetar bild...' : '📷 Klicka för att ladda upp bild'}</span>
+                        <span className={styles.create__image_hint}>JPG, PNG eller HEIC – bilden komprimeras automatiskt</span>
+                        <input
+                          type="file"
+                          accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
+                          onChange={handleImage}
+                          disabled={compressingImage}
+                          style={{ display: 'none' }}
+                        />
                       </label>
                     )}
                   </div>

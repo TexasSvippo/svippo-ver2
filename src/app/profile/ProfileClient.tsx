@@ -11,6 +11,7 @@ import { categories } from '@/data/categories'
 import styles from './profile.module.scss'
 import { Home, Wrench, Bell, Inbox, Users, Eye, Send, Star, Trophy, Settings, Zap, Pencil, Trash2, CheckCircle, Clock, XCircle, MessageCircle, ClipboardList, Wallet, Package, Tag, MapPin, Globe } from 'lucide-react'
 import { renderStars } from '@/utils/renderStars'
+import { prepareImageForUpload } from '@/utils/prepareImageForUpload'
 import type { ReactNode } from 'react'
 import DashboardOversikt from './DashboardOversikt'
 import Intresseanmalningar from '@/components/profile/Intresseanmalningar'
@@ -289,11 +290,12 @@ export default function ProfileClient({ initialAccountType }: Props) {
   }
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file || !user) return
-    if (file.size > 2 * 1024 * 1024) { alert('Bilden är för stor! Max 2MB.'); return }
+    const rawFile = e.target.files?.[0]
+    if (!rawFile || !user) return
     setAvatarUploading(true)
     try {
+      const file = await prepareImageForUpload(rawFile)
+      if (file.size > 10 * 1024 * 1024) { alert('Bilden kunde inte komprimeras tillräckligt. Prova en annan bild.'); return }
       const ext = file.name.split('.').pop()
       const fileName = `${user.id}/avatar.${ext}`
       const { error: uploadError } = await supabase.storage.from('avatars').upload(fileName, file, { upsert: true })
@@ -1278,7 +1280,7 @@ export default function ProfileClient({ initialAccountType }: Props) {
                   <button className={styles.profile__avatar_upload_btn} onClick={() => avatarInputRef.current?.click()} disabled={avatarUploading}>
                     {avatarUploading ? <Clock size={16} /> : '📷'}
                   </button>
-                  <input ref={avatarInputRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={handleAvatarUpload} style={{ display: 'none' }} />
+                  <input ref={avatarInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" onChange={handleAvatarUpload} style={{ display: 'none' }} />
                 </div>
                 <span className={styles.profile__hint}>{avatarUploading ? 'Laddar upp...' : 'Klicka på kameran för att byta profilbild'}</span>
               </div>
