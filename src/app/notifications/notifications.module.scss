@@ -209,6 +209,12 @@
     column-gap: 10px;
   }
 
+  .notifications__header {
+    display: contents;
+    align-items: center;
+    justify-content: space-between;
+  }
+
   .notif_icon {
     grid-area: icon;
   }
