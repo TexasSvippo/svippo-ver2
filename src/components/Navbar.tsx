@@ -316,6 +316,12 @@ export default function Navbar() {
               </span>
             </button>
           ) : (
+            // TODO: this button's tap target is ~36px tall on mobile, under
+            // the ~44x44px touch-target guideline (found while auditing
+            // /provider/[id] for mobile issues). Not fixed here since this
+            // is the shared site-wide Navbar, not scoped to one page — a
+            // padding bump here affects every page. Low priority, not
+            // urgent; worth a small dedicated pass on its own.
             <button
               type="button"
               className={styles.navbar__menu_pill}
