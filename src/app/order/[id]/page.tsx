@@ -64,6 +64,19 @@ type Review = {
   created_at: string
 }
 
+// [MEJLPLATS] – Triggerlogik för mejlutskick
+// När Resend är aktiverat ersätts dessa med faktiska mejlutskick
+async function triggerEmail(type: string, orderId: string) {
+  try {
+    await supabase.from('orders').update({
+      email_triggers: { [type]: true, [`${type}_at`]: new Date().toISOString() }
+    }).eq('id', orderId)
+    console.log(`[MEJLPLATS] Trigger: ${type} för order ${orderId}`)
+  } catch (err) {
+    console.error('Email trigger error:', err)
+  }
+}
+
 export default function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { user } = useAuth()
   const router = useRouter()
@@ -111,7 +124,11 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
           .eq('order_id', id)
           .eq('role', 'seller')
           .single()
-        if (existingReview) setHasReviewed(true)
+        if (existingReview) {
+          setHasReviewed(true)
+        } else if (data.project_status === 'completed') {
+          setShowReviewForm(true)
+        }
 
         const { data: proposalsData } = await supabase
           .from('price_proposals')
@@ -255,6 +272,10 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
       comment: reviewText,
       created_at: new Date().toISOString(),
     })
+
+    // [MEJLPLATS] – Skicka tack-mejl till köparen
+    await triggerEmail('review_sent', order.id)
+
     setReviewSuccess(true)
     setHasReviewed(true)
     setShowReviewForm(false)
@@ -726,9 +747,61 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
               </div>
             )}
 
+            {hasReviewed && (
+              <div className={`${styles.review_card} card`}>
+                <div className={styles.payment_done} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}><Star size={16} /> Du har lämnat en recension!</div>
+              </div>
+            )}
+
           </div>
         </div>
       </div>
+
+      {/* Recensions-popup */}
+      {showReviewForm && !hasReviewed && (
+        <div className={styles.review_popup_backdrop}>
+          <div className={styles.review_popup}>
+            <h2 className={styles.review_popup__heading}>Hur var köparen?</h2>
+            <p className={styles.review_popup__sub}>
+              Lämna ett omdöme om {order.buyer_name}. Det hjälper andra utförare att veta vad de kan förvänta sig.
+            </p>
+            <div className={styles.review_popup__stars}>
+              {[1, 2, 3, 4, 5].map(n => (
+                <button
+                  key={n}
+                  className={styles.review_popup__star}
+                  onClick={() => setReviewRating(n)}
+                >
+                  {n <= reviewRating
+                    ? <Star size={32} fill="#EF9F27" color="#EF9F27" />
+                    : <Star size={32} fill="#D3D1C7" color="#D3D1C7" />}
+                </button>
+              ))}
+            </div>
+            <textarea
+              className={`form-textarea ${styles.review_popup__textarea}`}
+              placeholder={`Beskriv din upplevelse med ${order.buyer_name}...`}
+              value={reviewText}
+              onChange={e => setReviewText(e.target.value)}
+              rows={4}
+            />
+            <button
+              className="btn btn-primary"
+              style={{ width: '100%', justifyContent: 'center' }}
+              onClick={handleReview}
+              disabled={!reviewText}
+            >
+              <Star size={16} /> Skicka omdöme
+            </button>
+            <button
+              className={styles.review_popup__skip}
+              onClick={() => setShowReviewForm(false)}
+            >
+              Hoppa över
+            </button>
+          </div>
+        </div>
+      )}
 
       {showSuccessPopup && (
         <div className="modal-backdrop" onClick={() => setShowSuccessPopup(false)}>

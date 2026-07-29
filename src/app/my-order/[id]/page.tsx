@@ -177,12 +177,24 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
       created_at: new Date().toISOString(),
     })
 
+    // Endast köpares betyg av tjänsten ska räknas in i tjänstens publika
+    // snittbetyg — role='seller'-rader är säljarens betyg av köparen, en
+    // helt separat sak, och ska inte blandas in här.
     const { data: reviews } = await supabase
       .from('reviews')
       .select('rating')
       .eq('service_id', order.service_id)
+      .eq('role', 'buyer')
     if (reviews) {
       const avg = reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+      // TODO: this UPDATE silently no-ops via RLS whenever the reviewer isn't
+      // the service owner (i.e. basically always, since the buyer reviewing
+      // is never the seller who owns the service) — same silent-no-op RLS
+      // pattern seen elsewhere in this project. services.rating/reviews is
+      // therefore likely never actually recalculated in production today.
+      // Fix: move this recompute into a service-role API route (same pattern
+      // as /api/price-proposals and /api/reports/notify-email) instead of
+      // doing it client-side under the reviewer's own RLS-restricted session.
       await supabase.from('services').update({
         rating: Math.round(avg * 10) / 10,
         reviews: reviews.length,
