@@ -6,6 +6,8 @@ type SendPrisforlagMottagetParams = {
   sellerName: string
   amount: number
   note?: string | null
+  hours?: number | null
+  attachmentUrl?: string | null
   orderUrl: string
 }
 
@@ -24,13 +26,31 @@ export async function sendPrisforlagMottaget({
   sellerName,
   amount,
   note,
+  hours,
+  attachmentUrl,
   orderUrl,
 }: SendPrisforlagMottagetParams) {
+  const hoursRow = hours
+    ? `
+                  <tr>
+                    <td style="padding:12px 18px;font-size:14px;color:#888888;">Timmar</td>
+                    <td style="padding:12px 18px;font-size:14px;color:#1a1a1a;font-weight:600;text-align:right;">${hours} h (${Math.round(amount / hours)} kr/h)</td>
+                  </tr>`
+    : ''
+
   const noteRow = note
     ? `
                   <tr>
                     <td style="padding:12px 18px;font-size:14px;color:#888888;">Meddelande</td>
                     <td style="padding:12px 18px;font-size:14px;color:#1a1a1a;font-weight:600;text-align:right;">${escapeHtml(note)}</td>
+                  </tr>`
+    : ''
+
+  const attachmentRow = attachmentUrl
+    ? `
+                  <tr>
+                    <td style="padding:12px 18px;font-size:14px;color:#888888;">Bilaga</td>
+                    <td style="padding:12px 18px;font-size:14px;text-align:right;"><a href="${escapeHtml(attachmentUrl)}" style="color:#e8541a;font-weight:600;">Öppna bilaga</a></td>
                   </tr>`
     : ''
 
@@ -60,7 +80,7 @@ export async function sendPrisforlagMottaget({
                   <tr>
                     <td style="padding:12px 18px;font-size:14px;color:#888888;">Föreslaget pris</td>
                     <td style="padding:12px 18px;font-size:14px;color:#1a1a1a;font-weight:600;text-align:right;">${amount} kr</td>
-                  </tr>${noteRow}
+                  </tr>${hoursRow}${noteRow}${attachmentRow}
                 </table>
 
                 <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto;">

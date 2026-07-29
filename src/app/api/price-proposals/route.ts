@@ -11,20 +11,26 @@ export async function POST(req: NextRequest) {
   }
 
   // ── Parse body ──────────────────────────────────────────────────────────
-  let body: { order_id?: unknown; amount?: unknown; note?: unknown }
+  let body: { order_id?: unknown; amount?: unknown; note?: unknown; hours?: unknown; attachment_url?: unknown }
   try {
     body = await req.json()
   } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
   }
 
-  const { order_id, amount, note } = body
+  const { order_id, amount, note, hours, attachment_url } = body
 
   if (typeof order_id !== 'string' || !order_id) {
     return NextResponse.json({ error: 'order_id is required' }, { status: 400 })
   }
   if (typeof amount !== 'number' || amount <= 0) {
     return NextResponse.json({ error: 'amount must be a positive number' }, { status: 400 })
+  }
+  if (hours !== undefined && (typeof hours !== 'number' || hours <= 0)) {
+    return NextResponse.json({ error: 'hours must be a positive number' }, { status: 400 })
+  }
+  if (attachment_url !== undefined && typeof attachment_url !== 'string') {
+    return NextResponse.json({ error: 'attachment_url must be a string' }, { status: 400 })
   }
 
   // ── Load order ──────────────────────────────────────────────────────────
@@ -57,6 +63,8 @@ export async function POST(req: NextRequest) {
       amount,
       currency: 'SEK',
       note: note && typeof note === 'string' ? note : null,
+      hours: typeof hours === 'number' ? hours : null,
+      attachment_url: typeof attachment_url === 'string' ? attachment_url : null,
       status: 'pending',
     })
     .select()
@@ -118,6 +126,8 @@ export async function POST(req: NextRequest) {
       sellerName: order.seller_name,
       amount,
       note: proposal.note,
+      hours: proposal.hours,
+      attachmentUrl: proposal.attachment_url,
       orderUrl: `${baseUrl}/my-order/${order_id}`,
     }).catch(err => console.error('Email notification error:', err))
   }

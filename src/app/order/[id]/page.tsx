@@ -8,6 +8,7 @@ import useAuth from '@/hooks/useAuth'
 import styles from '@/styles/orderdetail.module.scss'
 import { Package, Clock, CheckCircle, XCircle, Link as LinkIcon, ClipboardList, Star, User, MessageCircle, BarChart2, Wallet, ArrowLeft, Tag, Calendar } from 'lucide-react'
 import { renderStars } from '@/utils/renderStars'
+import PriceProposalModal from '@/components/PriceProposalModal'
 
 type ProjectStatus = 'not_started' | 'in_progress' | 'almost_done' | 'awaiting_confirmation' | 'completed'
 type ServiceType = 'typ1' | 'typ2' | 'typ3'
@@ -46,6 +47,8 @@ type PriceProposal = {
   amount: number
   currency: string
   note: string | null
+  hours: number | null
+  attachment_url: string | null
   status: string
   responded_by: string | null
   responded_at: string | null
@@ -77,10 +80,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
   const [buyerAvatarUrl, setBuyerAvatarUrl] = useState<string | null>(null)
   const [hasReviewed, setHasReviewed] = useState(false)
   const [proposals, setProposals] = useState<PriceProposal[]>([])
-  const [showPriceForm, setShowPriceForm] = useState(false)
-  const [priceAmount, setPriceAmount] = useState('')
-  const [priceNote, setPriceNote] = useState('')
-  const [priceSubmitting, setPriceSubmitting] = useState(false)
+  const [showPriceModal, setShowPriceModal] = useState(false)
   const [activeTab, setActiveTab] = useState<'aktivitet' | 'detaljer'>('aktivitet')
 
   useEffect(() => {
@@ -229,39 +229,15 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
     setUpdating(false)
   }
 
-  const handleSubmitProposal = async () => {
-    if (!order || !priceAmount) return
-    setPriceSubmitting(true)
-    try {
-      const { data: { session } } = await supabase.auth.getSession()
-      const res = await fetch('/api/price-proposals', {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session?.access_token}`,
-        },
-        body: JSON.stringify({
-          order_id: order.id,
-          amount: Number(priceAmount),
-          note: priceNote || undefined,
-        }),
-      })
-      if (res.ok) {
-        const { data } = await supabase
-          .from('price_proposals')
-          .select('*')
-          .eq('order_id', order.id)
-          .order('created_at', { ascending: false })
-        setProposals(data ?? [])
-        setOrder(prev => prev ? { ...prev, price_status: 'proposal_pending' } : prev)
-        setShowPriceForm(false)
-        setPriceAmount('')
-        setPriceNote('')
-      }
-    } finally {
-      setPriceSubmitting(false)
-    }
+  const handleProposalSubmitted = async () => {
+    if (!order) return
+    const { data } = await supabase
+      .from('price_proposals')
+      .select('*')
+      .eq('order_id', order.id)
+      .order('created_at', { ascending: false })
+    setProposals(data ?? [])
+    setOrder(prev => prev ? { ...prev, price_status: 'proposal_pending' } : prev)
   }
 
   const handleReview = async () => {
@@ -503,7 +479,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                     <button className="btn btn-primary" onClick={() => router.push(`/order/${order.id}/complete`)}>
                       <CheckCircle size={16} /> Markera som klart
                     </button>
-                    <button className="btn btn-outline" onClick={() => setShowPriceForm(true)}>
+                    <button className="btn btn-outline" onClick={() => setShowPriceModal(true)}>
                       <Tag size={16} /> Föreslå nytt pris
                     </button>
                   </div>
@@ -696,35 +672,9 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                   </div>
                 )}
 
-                {showPriceForm ? (
-                  <div className={styles.price_form}>
-                    <input
-                      className={styles.price_form_input}
-                      type="number"
-                      placeholder="Belopp (kr)"
-                      min={1}
-                      value={priceAmount}
-                      onChange={e => setPriceAmount(e.target.value)}
-                    />
-                    <input
-                      className={styles.price_form_input}
-                      type="text"
-                      placeholder="Kommentar (valfritt)"
-                      value={priceNote}
-                      onChange={e => setPriceNote(e.target.value)}
-                    />
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                      <button className="btn btn-outline" onClick={() => { setShowPriceForm(false); setPriceAmount(''); setPriceNote('') }}>Avbryt</button>
-                      <button className="btn btn-primary" onClick={handleSubmitProposal} disabled={!priceAmount || priceSubmitting}>
-                        {priceSubmitting ? 'Skickar...' : 'Skicka förslag'}
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <button className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }} onClick={() => setShowPriceForm(true)}>
-                    <Tag size={16} /> Föreslå pris
-                  </button>
-                )}
+                <button className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }} onClick={() => setShowPriceModal(true)}>
+                  <Tag size={16} /> {order.price_type === 'offert' ? 'Föreslå ett pris' : 'Föreslå pris'}
+                </button>
 
                 {proposals.length > 0 && (
                   <div className={styles.price_history}>
@@ -736,12 +686,28 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                             {p.status === 'approved' ? 'Godkänt' : p.status === 'rejected' ? 'Avböjt' : 'Väntar'}
                           </span>
                         </div>
+                        {p.hours && (
+                          <p className={styles.price_history_note}>{p.hours} h × {Math.round(p.amount / p.hours)} kr/h</p>
+                        )}
                         {p.note && <p className={styles.price_history_note}>{p.note}</p>}
+                        {p.attachment_url && (
+                          <a href={p.attachment_url} target="_blank" rel="noopener noreferrer" className={styles.price_history_attachment}>
+                            <LinkIcon size={12} /> Bilaga
+                          </a>
+                        )}
                         <span className={styles.price_history_date}>{new Date(p.created_at).toLocaleDateString('sv-SE')}</span>
                       </div>
                     ))}
                   </div>
                 )}
+
+                <PriceProposalModal
+                  open={showPriceModal}
+                  onClose={() => setShowPriceModal(false)}
+                  orderId={order.id}
+                  priceType={order.price_type}
+                  onSubmitted={handleProposalSubmitted}
+                />
               </div>
             )}
 
