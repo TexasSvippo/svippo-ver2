@@ -16,7 +16,7 @@ import Image from 'next/image'
 import {
   Bell, User, Wrench, Users, Package, MessageCircle, LogOut, ChevronDown, Menu, X,
   Laptop, Camera, Book, Home, Car, Heart, Hammer, Truck, Info, Mail,
-  Eye, Send, Inbox, Star, Trophy, Settings, FileText,
+  Eye, Send, Inbox, Star, Trophy, Settings, FileText, Clock, XCircle,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
@@ -119,9 +119,16 @@ export default function Navbar() {
   const [tjansterOpen, setTjansterOpen] = useState(false)
   const [forfragningarOpen, setForfragningarOpen] = useState(false)
   const [openMobileGroup, setOpenMobileGroup] = useState<string | null>(null)
+  const [rejectionReason, setRejectionReason] = useState<string | null>(null)
   const router = useRouter()
   const pathname = usePathname()
   const scrollYRef = useRef(0)
+
+  useEffect(() => {
+    if (!user || svippareStatus !== 'rejected') { setRejectionReason(null); return }
+    supabase.from('svippare_profiles').select('rejection_reason').eq('user_id', user.id).maybeSingle()
+      .then(({ data }) => setRejectionReason(data?.rejection_reason ?? null))
+  }, [user, svippareStatus])
 
   // Stäng dropdowns vid klick utanför
   useEffect(() => {
@@ -182,7 +189,7 @@ export default function Navbar() {
 
   const overlayNavEntries = getOverlayNavEntries(accountType)
   const showPublicProfileLink = accountType === 'foretag' || accountType === 'uf-foretag' || (accountType === 'svippare' && svippareStatus === 'approved')
-  const showPublicProfilePendingNote = svippareStatus !== null && svippareStatus !== 'approved'
+  const showBestellareStatusNote = accountType === 'bestellare'
 
   // Sanity Studio (/studio) is a full-screen app that owns the whole viewport —
   // the site chrome must not render on top of it
@@ -373,14 +380,46 @@ export default function Navbar() {
                 </div>
               </div>
 
-              {showPublicProfilePendingNote && (
+              {showBestellareStatusNote && (
                 <div className={styles.navbar__overlay_pubnote}>
-                  <Info size={16} className={styles.navbar__overlay_pubnote_icon} />
-                  <p>
-                    {svippareStatus === 'rejected'
-                      ? 'Din profil syns inte publikt eftersom din ansökan inte godkändes.'
-                      : 'Din profil syns inte publikt förrän din ansökan är godkänd.'}
-                  </p>
+                  {svippareStatus === 'pending' ? (
+                    <>
+                      <Clock size={16} className={styles.navbar__overlay_pubnote_icon} />
+                      <div>
+                        <strong>Din ansökan granskas</strong>
+                        <p>Du får ett meddelande så snart den är godkänd.</p>
+                      </div>
+                    </>
+                  ) : svippareStatus === 'rejected' ? (
+                    <>
+                      <XCircle size={16} className={styles.navbar__overlay_pubnote_icon} />
+                      <div>
+                        <strong>Du har blivit nekad</strong>
+                        <p>{rejectionReason || 'Din ansökan om att bli Svippare godkändes tyvärr inte.'}</p>
+                        <div className={styles.navbar__overlay_pubnote_actions}>
+                          <Link href="/kontakt" className={`${styles.navbar__overlay_pubnote_btn} ${styles['navbar__overlay_pubnote_btn--outline']}`} onClick={() => setMobileMenuOpen(false)}>
+                            Kontakta Svippo
+                          </Link>
+                          <Link href="/become-svippare" className={`${styles.navbar__overlay_pubnote_btn} ${styles['navbar__overlay_pubnote_btn--primary']}`} onClick={() => setMobileMenuOpen(false)}>
+                            Ansök om att bli svippare på nytt
+                          </Link>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <Info size={16} className={styles.navbar__overlay_pubnote_icon} />
+                      <div>
+                        <strong>Ansök om att bli svippare</strong>
+                        <p>Erbjud dina tjänster och tjäna extra på Svippo.</p>
+                        <div className={styles.navbar__overlay_pubnote_actions}>
+                          <Link href="/become-svippare" className={`${styles.navbar__overlay_pubnote_btn} ${styles['navbar__overlay_pubnote_btn--primary']}`} onClick={() => setMobileMenuOpen(false)}>
+                            Ansök nu →
+                          </Link>
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
               )}
 

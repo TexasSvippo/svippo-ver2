@@ -131,6 +131,7 @@ export default function ProfileClient({ initialAccountType }: Props) {
   const [selectedWatchCategory, setSelectedWatchCategory] = useState('')
 
   const [dbAccountType, setDbAccountType] = useState<string | null>(initialAccountType)
+  const [rejectionReason, setRejectionReason] = useState<string | null>(null)
 
   // Placerade beställningar – filter state
   const [placedTypeFilter, setPlacedTypeFilter] = useState<'all' | 'services' | 'requests'>('all')
@@ -166,7 +167,7 @@ export default function ProfileClient({ initialAccountType }: Props) {
   useEffect(() => {
     if (!user) return
     const fetchAll = async () => {
-      const [profileRes, servicesRes, incomingRes, placedRes, requestsRes, interestsRes, notifsRes, subsRes] = await Promise.all([
+      const [profileRes, servicesRes, incomingRes, placedRes, requestsRes, interestsRes, notifsRes, subsRes, svippareProfileRes] = await Promise.all([
         supabase.from('users').select('*').eq('id', user.id).single(),
         supabase.from('services').select('*').eq('user_id', user.id),
         supabase.from('orders').select('*').eq('seller_id', user.id).order('created_at', { ascending: false }),
@@ -175,7 +176,9 @@ export default function ProfileClient({ initialAccountType }: Props) {
         supabase.from('interests').select('*').eq('request_owner_id', user.id).order('created_at', { ascending: false }),
         supabase.from('notifications').select('*').eq('user_id', user.id).eq('read', false).order('created_at', { ascending: false }),
         supabase.from('category_subscriptions').select('*').eq('user_id', user.id),
+        supabase.from('svippare_profiles').select('rejection_reason').eq('user_id', user.id).maybeSingle(),
       ])
+      setRejectionReason(svippareProfileRes.data?.rejection_reason ?? null)
       let profileData = profileRes.data
       if (!profileData?.name) {
         await new Promise(resolve => setTimeout(resolve, 1000))
@@ -416,14 +419,46 @@ export default function ProfileClient({ initialAccountType }: Props) {
           </div>
         </div>
 
-        {svippareStatus !== null && svippareStatus !== 'approved' && (
+        {isBestellare && (
           <div className={styles.profile__sidebar_pubnote}>
-            <Info size={16} className={styles.profile__sidebar_pubnote_icon} />
-            <p>
-              {svippareStatus === 'rejected'
-                ? 'Din profil syns inte publikt eftersom din ansökan inte godkändes.'
-                : 'Din profil syns inte publikt förrän din ansökan är godkänd.'}
-            </p>
+            {svippareStatus === 'pending' ? (
+              <>
+                <Clock size={16} className={styles.profile__sidebar_pubnote_icon} />
+                <div>
+                  <strong>Din ansökan granskas</strong>
+                  <p>Du får ett meddelande så snart den är godkänd.</p>
+                </div>
+              </>
+            ) : svippareStatus === 'rejected' ? (
+              <>
+                <XCircle size={16} className={styles.profile__sidebar_pubnote_icon} />
+                <div>
+                  <strong>Du har blivit nekad</strong>
+                  <p>{rejectionReason || 'Din ansökan om att bli Svippare godkändes tyvärr inte.'}</p>
+                  <div className={styles.profile__sidebar_pubnote_actions}>
+                    <Link href="/kontakt" className={`${styles.profile__sidebar_pubnote_btn} ${styles['profile__sidebar_pubnote_btn--outline']}`}>
+                      Kontakta Svippo
+                    </Link>
+                    <Link href="/become-svippare" className={`${styles.profile__sidebar_pubnote_btn} ${styles['profile__sidebar_pubnote_btn--primary']}`}>
+                      Ansök om att bli svippare på nytt
+                    </Link>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <Info size={16} className={styles.profile__sidebar_pubnote_icon} />
+                <div>
+                  <strong>Ansök om att bli svippare</strong>
+                  <p>Erbjud dina tjänster och tjäna extra på Svippo.</p>
+                  <div className={styles.profile__sidebar_pubnote_actions}>
+                    <Link href="/become-svippare" className={`${styles.profile__sidebar_pubnote_btn} ${styles['profile__sidebar_pubnote_btn--primary']}`}>
+                      Ansök nu →
+                    </Link>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         )}
 
