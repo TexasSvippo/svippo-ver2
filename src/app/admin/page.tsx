@@ -678,7 +678,12 @@ export default function AdminPage() {
         {section === 'orders' && (
           <div className={styles.section}>
             <h1 className={styles.section__title}>Senaste beställningar</h1>
-            {dataLoading ? <p className={styles.empty}>Laddar...</p> : (
+            {dataLoading ? <p className={styles.empty}>Laddar...</p> : orders.length === 0 ? (
+              <div className={styles.empty}>
+                <CheckCircle size={32} />
+                <p>Inga beställningar ännu.</p>
+              </div>
+            ) : (
               <div className={styles.table_wrap}>
                 <table className={styles.table}>
                   <thead>
