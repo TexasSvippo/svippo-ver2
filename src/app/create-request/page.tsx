@@ -174,7 +174,7 @@ function CreateRequestPage() {
           image_url: imageUrl,
         }).eq('id', editId)
       } else {
-        await supabase.from('requests').insert({
+        const { data: newRequest } = await supabase.from('requests').insert({
           title: form.title,
           description: form.description,
           status: 'open',
@@ -189,14 +189,14 @@ function CreateRequestPage() {
           user_email: user.email,
           image_url: imageUrl,
           created_at: new Date().toISOString(),
-        })
+        }).select('id').single()
 
         // Skicka notifikationer till prenumeranter
         const { data: subscribers } = await supabase
           .from('category_subscriptions')
           .select('user_id')
           .like('category_id', `${form.category_id}%`)
-    
+
 
         if (subscribers && subscribers.length > 0) {
           const notifications = subscribers
@@ -215,6 +215,12 @@ function CreateRequestPage() {
           if (notifications.length > 0) {
             await supabase.from('notifications').insert(notifications)
           }
+        }
+
+        if (newRequest) {
+          fetch(`/api/requests/${newRequest.id}/notify-subscribers`, {
+            method: 'POST',
+          }).catch(err => console.error('Category subscriber email notification error:', err))
         }
       }
 

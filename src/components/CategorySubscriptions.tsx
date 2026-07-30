@@ -14,15 +14,17 @@ export default function CategorySubscriptions() {
   const [saving, setSaving] = useState(false)
   const [showModal, setShowModal] = useState(false)
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null)
+  const [dbAccountType, setDbAccountType] = useState<string | null>(null)
 
   useEffect(() => {
     if (!user) return
     const fetch = async () => {
-      const { data } = await supabase
-        .from('category_subscriptions')
-        .select('category_id')
-        .eq('user_id', user.id)
-      setSubscribed(data?.map(s => s.category_id) ?? [])
+      const [subsRes, profileRes] = await Promise.all([
+        supabase.from('category_subscriptions').select('category_id').eq('user_id', user.id),
+        supabase.from('users').select('account_type').eq('id', user.id).single(),
+      ])
+      setSubscribed(subsRes.data?.map(s => s.category_id) ?? [])
+      setDbAccountType(profileRes.data?.account_type ?? null)
       setLoading(false)
     }
     fetch()
@@ -42,7 +44,11 @@ export default function CategorySubscriptions() {
     setSaving(false)
   }
 
-  if (!user || loading) return null
+  // "Bevaka förfrågningar" är till för utförare att hitta jobb, inte för
+  // beställare — dbAccountType (från users-tabellen, inte user_metadata,
+  // som kan vara ur synk) styr synligheten här, samma mönster som
+  // RequestDetailClient.tsx.
+  if (!user || loading || dbAccountType === 'bestellare') return null
 
   // Bygg upp en lista med underkategorier som valbara prenumerationer
   // Format: "kategori-id:underkategori"
