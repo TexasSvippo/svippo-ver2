@@ -15,6 +15,7 @@ export default function CategorySubscriptions() {
   const [showModal, setShowModal] = useState(false)
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null)
   const [dbAccountType, setDbAccountType] = useState<string | null>(null)
+  const [dbSvippareStatus, setDbSvippareStatus] = useState<string | null>(null)
 
   useEffect(() => {
     if (!user) return
@@ -24,7 +25,18 @@ export default function CategorySubscriptions() {
         supabase.from('users').select('account_type').eq('id', user.id).single(),
       ])
       setSubscribed(subsRes.data?.map(s => s.category_id) ?? [])
-      setDbAccountType(profileRes.data?.account_type ?? null)
+      const accountType = profileRes.data?.account_type ?? null
+      setDbAccountType(accountType)
+
+      if (accountType === 'svippare') {
+        const { data: svippareProfile } = await supabase
+          .from('svippare_profiles')
+          .select('status')
+          .eq('user_id', user.id)
+          .single()
+        setDbSvippareStatus(svippareProfile?.status ?? null)
+      }
+
       setLoading(false)
     }
     fetch()
@@ -47,8 +59,13 @@ export default function CategorySubscriptions() {
   // "Bevaka förfrågningar" är till för utförare att hitta jobb, inte för
   // beställare — dbAccountType (från users-tabellen, inte user_metadata,
   // som kan vara ur synk) styr synligheten här, samma mönster som
-  // RequestDetailClient.tsx.
-  if (!user || loading || dbAccountType === 'bestellare') return null
+  // RequestDetailClient.tsx. Svippare-konton måste dessutom vara
+  // godkända (svippare_profiles.status === 'approved') — en icke-
+  // godkänd svippare har inga aktiva tjänster att matcha förfrågningar
+  // mot än. foretag/uf-foretag har ingen sådan godkännandeprocess och
+  // påverkas inte.
+  const isUnapprovedSvippare = dbAccountType === 'svippare' && dbSvippareStatus !== 'approved'
+  if (!user || loading || dbAccountType === 'bestellare' || isUnapprovedSvippare) return null
 
   // Bygg upp en lista med underkategorier som valbara prenumerationer
   // Format: "kategori-id:underkategori"
