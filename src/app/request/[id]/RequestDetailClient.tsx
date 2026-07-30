@@ -52,8 +52,12 @@ export default function RequestDetailClient({ request }: Props) {
 
   const handleClick = () => {
     if (!user) { setShowLoginPrompt(true); return }
+    // Checked before the bestellare gate: account_type only flips to
+    // 'svippare' once an admin approves, so a pending/rejected applicant
+    // still has account_type === 'bestellare' here -- svippareStatus is
+    // the reliable signal that they've already applied.
+    if (svippareStatus === 'pending' || svippareStatus === 'rejected') { setShowPendingPrompt(true); return }
     if (dbAccountType === 'bestellare') { setShowUpgradePrompt(true); return }
-    if (dbAccountType === 'svippare' && svippareStatus !== 'approved') { setShowPendingPrompt(true); return }
     setErrorMsg(null)
     setShowInterestForm(true)
   }
@@ -361,7 +365,7 @@ export default function RequestDetailClient({ request }: Props) {
               <Shield size={20} />
               <div>
                 <strong>Känn dig trygg med SvippoSafe</strong>
-                <p>Vi hjälper till att hantera trassel som kan dyka upp.</p>
+                <p>Om något inte går som planerat kan du kontakta oss, vi försöker hjälpa till.</p>
               </div>
             </div>
 

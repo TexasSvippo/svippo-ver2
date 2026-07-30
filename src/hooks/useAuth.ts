@@ -55,8 +55,16 @@ export default function useAuth(): AuthState {
           .single()
 
         if (data?.status && data.status !== metadataStatus) {
+          // account_type is only flipped to 'svippare' by an admin approving
+          // the application (users table, server-side) -- the applicant's
+          // own session metadata never gets that update pushed to it, so
+          // self-heal it here the same way svippare_status already is,
+          // the moment this session notices the DB says 'approved'.
           await supabase.auth.updateUser({
-            data: { svippare_status: data.status }
+            data: {
+              svippare_status: data.status,
+              ...(data.status === 'approved' ? { account_type: 'svippare' } : {}),
+            }
           })
           setSvippareStatus(data.status as SvippareStatus)
         } else {

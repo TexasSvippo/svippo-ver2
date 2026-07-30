@@ -153,7 +153,7 @@ function CreateServiceContent() {
   if (!user) return null
 
   if (!canCreateService) {
-  if (accountType === 'svippare' && svippareStatus === 'pending') {
+  if (svippareStatus === 'pending') {
     return (
       <div className={styles.create}>
         <div className={`container ${styles.create__inner}`}>

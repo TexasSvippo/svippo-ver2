@@ -182,7 +182,7 @@ export default function Navbar() {
 
   const overlayNavEntries = getOverlayNavEntries(accountType)
   const showPublicProfileLink = accountType === 'foretag' || accountType === 'uf-foretag' || (accountType === 'svippare' && svippareStatus === 'approved')
-  const showPublicProfilePendingNote = accountType === 'svippare' && svippareStatus !== 'approved'
+  const showPublicProfilePendingNote = svippareStatus !== null && svippareStatus !== 'approved'
 
   // Sanity Studio (/studio) is a full-screen app that owns the whole viewport —
   // the site chrome must not render on top of it

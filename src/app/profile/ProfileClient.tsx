@@ -416,7 +416,7 @@ export default function ProfileClient({ initialAccountType }: Props) {
           </div>
         </div>
 
-        {dbAccountType === 'svippare' && svippareStatus !== 'approved' && (
+        {svippareStatus !== null && svippareStatus !== 'approved' && (
           <div className={styles.profile__sidebar_pubnote}>
             <Info size={16} className={styles.profile__sidebar_pubnote_icon} />
             <p>
@@ -489,7 +489,7 @@ export default function ProfileClient({ initialAccountType }: Props) {
       <main className={styles.profile__main}>
 
         {/* Pending-banner */}
-        {activeSection === 'oversikt' && accountType === 'svippare' && svippareStatus === 'pending' && (
+        {activeSection === 'oversikt' && svippareStatus === 'pending' && (
           <div className={styles.profile__pending_banner}>
             <span className={styles.profile__pending_banner_icon}><Clock size={20} /></span>
             <div className={styles.profile__pending_banner_content}>

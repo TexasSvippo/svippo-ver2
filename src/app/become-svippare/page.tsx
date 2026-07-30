@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase'
 import useAuth from '@/hooks/useAuth'
 import { categories } from '@/data/categories'
 import styles from './blisvippare.module.scss'
-import { Lock, Lightbulb } from 'lucide-react'
+import { Lock, Lightbulb, AlertCircle } from 'lucide-react'
 
 type SocialLink = {
   id: string
@@ -36,6 +36,7 @@ export default function BliSvipparePage() {
   const [step, setStep] = useState(0)
   const [saving, setSaving] = useState(false)
   const [ageError, setAgeError] = useState<string | null>(null)
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
   const [form, setForm] = useState<FormData>({
     categories: [],
@@ -55,11 +56,11 @@ export default function BliSvipparePage() {
         router.push('/login')
         return
     }
-    if (accountType === 'svippare' && svippareStatus === 'pending') {
+    if (svippareStatus === 'pending') {
         router.push('/profile?svippare=pending')
         return
     }
-    if (accountType === 'svippare' && svippareStatus === 'approved') {
+    if (svippareStatus === 'approved') {
         router.push('/profile')
         return
     }
@@ -141,8 +142,15 @@ export default function BliSvipparePage() {
 
   const handleSubmit = async () => {
     setSaving(true)
+    setSubmitError(null)
     try {
-      await supabase.from('svippare_profiles').insert({
+      // svippare_profiles.user_id has a unique constraint, so a rejected
+      // applicant re-submitting hits a duplicate-key conflict on a plain
+      // insert -- upsert on that same conflict target instead, turning a
+      // resubmission into an update of the existing row back to 'pending'
+      // (including created_at, so it reappears as a fresh application in
+      // the admin queue).
+      const { error: profileError } = await supabase.from('svippare_profiles').upsert({
         user_id: user.id,
         status: 'pending',
         categories: form.categories,
@@ -159,15 +167,22 @@ export default function BliSvipparePage() {
           .filter(Boolean),
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-      })
+      }, { onConflict: 'user_id' })
 
-      await supabase.from('users').update({
-        account_type: 'svippare',
-      }).eq('id', user.id)
+      if (profileError) {
+        console.error('svippare_profiles upsert failed:', profileError)
+        setSubmitError('Något gick fel när ansökan skulle sparas. Försök igen om en stund.')
+        setSaving(false)
+        return
+      }
 
+      // account_type stays 'bestellare' until an admin approves the
+      // application (handleApprove in admin/page.tsx) -- flipping it here
+      // would let a pending/rejected applicant appear approved before any
+      // review happened. svippare_status still gets tracked immediately so
+      // the rest of the app can show correct pending/rejected messaging.
       await supabase.auth.updateUser({
         data: {
-          account_type: 'svippare',
           svippare_status: 'pending',
         }
       })
@@ -419,6 +434,12 @@ export default function BliSvipparePage() {
                 </p>
               </div>
             </div>
+          )}
+
+          {submitError && (
+            <p className={styles.field_error} style={{ justifyContent: 'center' }}>
+              <AlertCircle size={14} /> {submitError}
+            </p>
           )}
 
           {/* Navigering */}
