@@ -370,13 +370,19 @@ export default function Navbar() {
                       Se publik profil →
                     </Link>
                   )}
-                  {showPublicProfilePendingNote && (
-                    <span className={styles.navbar__overlay_user_pubnote}>
-                      {svippareStatus === 'rejected' ? 'Profilen syns inte publikt' : 'Profilen syns inte publikt än'}
-                    </span>
-                  )}
                 </div>
               </div>
+
+              {showPublicProfilePendingNote && (
+                <div className={styles.navbar__overlay_pubnote}>
+                  <Info size={16} className={styles.navbar__overlay_pubnote_icon} />
+                  <p>
+                    {svippareStatus === 'rejected'
+                      ? 'Din profil syns inte publikt eftersom din ansökan inte godkändes.'
+                      : 'Din profil syns inte publikt förrän din ansökan är godkänd.'}
+                  </p>
+                </div>
+              )}
 
               <div className={styles.navbar__overlay_create_wrap}>
                 <button

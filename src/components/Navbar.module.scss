@@ -481,10 +481,28 @@
   }
 }
 
-.navbar__overlay_user_pubnote {
-  font-size: 12px;
-  color: var(--color-gray);
-  margin-top: 2px;
+.navbar__overlay_pubnote {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0 20px 16px;
+  padding: 12px 14px;
+  background: #fff8e1;
+  border: 1.5px solid #f59e0b;
+  border-radius: var(--radius-md);
+
+  p {
+    font-size: 12px;
+    color: var(--color-dark);
+    line-height: 1.5;
+    margin: 0;
+  }
+}
+
+.navbar__overlay_pubnote_icon {
+  flex-shrink: 0;
+  color: #b45309;
+  margin-top: 1px;
 }
 
 // Menyrader

@@ -9,7 +9,7 @@ import { useNotifications } from '@/hooks/useNotifications'
 import { fetchConversations as fetchConversationsForUser, type Conversation } from '@/lib/conversations'
 import { categories } from '@/data/categories'
 import styles from './profile.module.scss'
-import { Home, Wrench, Bell, Inbox, Users, Eye, Send, Star, Trophy, Settings, Zap, Pencil, Trash2, CheckCircle, Clock, XCircle, MessageCircle, ClipboardList, Wallet, Package, Tag, MapPin, Globe } from 'lucide-react'
+import { Home, Wrench, Bell, Inbox, Users, Eye, Send, Star, Trophy, Settings, Zap, Pencil, Trash2, CheckCircle, Clock, XCircle, MessageCircle, ClipboardList, Wallet, Package, Tag, MapPin, Globe, Info } from 'lucide-react'
 import { renderStars } from '@/utils/renderStars'
 import { prepareImageForUpload } from '@/utils/prepareImageForUpload'
 import type { ReactNode } from 'react'
@@ -413,15 +413,19 @@ export default function ProfileClient({ initialAccountType }: Props) {
                 <Eye size={14} /> Se publik profil →
               </Link>
             )}
-            {dbAccountType === 'svippare' && svippareStatus !== 'approved' && (
-              <p className={styles.profile__sidebar_pubnote}>
-                {svippareStatus === 'rejected'
-                  ? 'Din profil syns inte publikt eftersom din ansökan inte godkändes.'
-                  : 'Din profil syns inte publikt förrän din ansökan är godkänd.'}
-              </p>
-            )}
           </div>
         </div>
+
+        {dbAccountType === 'svippare' && svippareStatus !== 'approved' && (
+          <div className={styles.profile__sidebar_pubnote}>
+            <Info size={16} className={styles.profile__sidebar_pubnote_icon} />
+            <p>
+              {svippareStatus === 'rejected'
+                ? 'Din profil syns inte publikt eftersom din ansökan inte godkändes.'
+                : 'Din profil syns inte publikt förrän din ansökan är godkänd.'}
+            </p>
+          </div>
+        )}
 
         <nav className={styles.profile__nav}>
           <button
