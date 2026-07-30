@@ -692,7 +692,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
               </div>
             )}
 
-            {order.status === 'accepted' && isSeller && order.project_status !== 'completed' && (
+            {order.status === 'accepted' && isSeller && order.project_status !== 'completed' && order.project_status !== 'awaiting_confirmation' && (
               <div className={`${styles.price_card} staticcard`}>
                 <h2 className={styles.section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Tag size={18} /> Prisförslag</h2>
 
