@@ -265,7 +265,7 @@ export default function Navbar() {
                         <Link href="/requests" className={styles.navbar__dropdown_item} onClick={() => setMenuOpen(false)}>
                           <Users size={16} /> Förfrågningar
                         </Link>
-                        <Link href="/bestallningar" className={styles.navbar__dropdown_item} onClick={() => setMenuOpen(false)}>
+                        <Link href="/profile?tab=placerade" className={styles.navbar__dropdown_item} onClick={() => setMenuOpen(false)}>
                           <Package size={16} /> Beställningar
                         </Link>
                         <Link href="/messages" className={styles.navbar__dropdown_item} onClick={() => setMenuOpen(false)}>
