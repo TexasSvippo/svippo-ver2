@@ -110,6 +110,9 @@ export default function AdminPage() {
   const [feedback, setFeedback] = useState<Record<string, string>>({})
   const [dataLoading, setDataLoading] = useState(true)
   const [confirmModal, setConfirmModal] = useState<{ open: boolean; title: string; message: string; onConfirm: () => void } | null>(null)
+  const [rejectModalApp, setRejectModalApp] = useState<Application | null>(null)
+  const [rejectReason, setRejectReason] = useState('')
+  const [rejecting, setRejecting] = useState(false)
   const [ads, setAds] = useState<AdRow[]>([])
   const [showAdForm, setShowAdForm] = useState(false)
   const [editingAdId, setEditingAdId] = useState<string | null>(null)
@@ -278,15 +281,16 @@ export default function AdminPage() {
     }).catch(err => console.error('Email notification error:', err))
   }
 
-  const handleReject = async (app: Application) => {
-    const { error } = await supabase.from('svippare_profiles').update({ status: 'rejected' }).eq('id', app.id)
-    if (error) { setFeedback(f => ({ ...f, [app.id]: 'Fel vid nekande.' })); return }
+  const handleReject = async (app: Application, reason: string) => {
+    setRejecting(true)
+    const { error } = await supabase.from('svippare_profiles').update({ status: 'rejected', rejection_reason: reason }).eq('id', app.id)
+    if (error) { setFeedback(f => ({ ...f, [app.id]: 'Fel vid nekande.' })); setRejecting(false); return }
 
     await supabase.from('notifications').insert({
       user_id: app.user_id,
       type: 'svippare_rejected',
       actor_name: 'Svippo',
-      message: 'Din ansökan om att bli Svippare har nekats.',
+      message: `Din ansökan om att bli Svippare har nekats. Anledning: ${reason}`,
       action_url: '/profile',
       read: false,
       dismissed: false,
@@ -297,11 +301,14 @@ export default function AdminPage() {
     setApplications(prev => prev.filter(a => a.id !== app.id))
     setStats(s => ({ ...s, pending: Math.max(0, s.pending - 1) }))
     setFeedback(f => ({ ...f, [app.id]: '✓ Nekad' }))
+    setRejecting(false)
+    setRejectModalApp(null)
+    setRejectReason('')
 
     fetch('/api/admin/notify-email', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type: 'rejected', userId: app.user_id }),
+      body: JSON.stringify({ type: 'rejected', userId: app.user_id, reason }),
     }).catch(err => console.error('Email notification error:', err))
   }
 
@@ -527,7 +534,7 @@ export default function AdminPage() {
                               <button className="btn btn-primary" style={{ padding: '6px 14px', fontSize: '13px' }} onClick={() => handleApprove(app)}>
                                 <CheckCircle size={14} /> Godkänn
                               </button>
-                              <button className="btn btn-outline" style={{ padding: '6px 14px', fontSize: '13px', color: 'var(--color-orange)', borderColor: 'var(--color-orange)' }} onClick={() => handleReject(app)}>
+                              <button className="btn btn-outline" style={{ padding: '6px 14px', fontSize: '13px', color: 'var(--color-orange)', borderColor: 'var(--color-orange)' }} onClick={() => { setRejectModalApp(app); setRejectReason('') }}>
                                 <XCircle size={14} /> Neka
                               </button>
                             </div>
@@ -873,6 +880,35 @@ export default function AdminPage() {
                 onClick={() => { confirmModal.onConfirm(); setConfirmModal(null) }}
               >
                 Ta bort
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {rejectModalApp && (
+        <div className="modal-backdrop" onClick={() => { if (!rejecting) { setRejectModalApp(null); setRejectReason('') } }}>
+          <div className="modal-box" onClick={e => e.stopPropagation()}>
+            <h2 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '8px' }}>Neka {rejectModalApp.user_name}s ansökan</h2>
+            <p style={{ color: 'var(--color-gray)', marginBottom: '12px' }}>Varför nekas ansökan? Anledningen skickas till sökanden.</p>
+            <textarea
+              className="form-textarea"
+              placeholder="T.ex. Ofullständig ansökan, saknar relevant erfarenhet för valda kategorier..."
+              value={rejectReason}
+              onChange={e => setRejectReason(e.target.value)}
+              rows={4}
+              style={{ width: '100%', marginBottom: '20px' }}
+              autoFocus
+            />
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+              <button className="btn btn-outline" disabled={rejecting} onClick={() => { setRejectModalApp(null); setRejectReason('') }}>Avbryt</button>
+              <button
+                className="btn btn-primary"
+                style={{ background: '#dc2626', borderColor: '#dc2626' }}
+                disabled={rejecting || !rejectReason.trim()}
+                onClick={() => handleReject(rejectModalApp, rejectReason.trim())}
+              >
+                {rejecting ? 'Nekar...' : 'Bekräfta nekande'}
               </button>
             </div>
           </div>

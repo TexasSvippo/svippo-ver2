@@ -3,6 +3,7 @@ import { sendEmail } from '@/lib/email'
 type SendSvippareNekadParams = {
   to: string
   applicantName: string
+  reason?: string
 }
 
 function escapeHtml(value: string) {
@@ -17,7 +18,16 @@ function escapeHtml(value: string) {
 export async function sendSvippareNekad({
   to,
   applicantName,
+  reason,
 }: SendSvippareNekadParams) {
+  const reasonBox = reason
+    ? `
+              <div style="border-left:3px solid #e8541a;background-color:#fff8f6;border-radius:0 8px 8px 0;padding:14px 18px;margin:0 0 24px;">
+                <p style="margin:0 0 6px;font-size:12px;font-weight:700;color:#e8541a;text-transform:uppercase;letter-spacing:0.04em;">Anledning</p>
+                <p style="margin:0;font-size:14px;line-height:1.6;color:#444444;">${escapeHtml(reason)}</p>
+              </div>`
+    : ''
+
   const html = `
 <!DOCTYPE html>
 <html lang="sv">
@@ -35,7 +45,7 @@ export async function sendSvippareNekad({
               <td style="padding:32px 24px;">
                 <h1 style="margin:0 0 16px;font-size:22px;line-height:1.3;color:#1a1a1a;">Angående din ansökan som Svippare</h1>
                 <p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#444444;">Hej ${escapeHtml(applicantName)}! Tack för att du ansökte om att bli Svippare. Tyvärr kan vi inte godkänna din ansökan just nu.</p>
-
+${reasonBox}
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#F8F4EF;border-radius:8px;margin:0 0 24px;">
                   <tr>
                     <td style="padding:12px 18px;font-size:14px;color:#888888;">Status</td>

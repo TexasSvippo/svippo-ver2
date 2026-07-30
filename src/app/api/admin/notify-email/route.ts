@@ -5,7 +5,7 @@ import { sendSvippareNekad } from '@/lib/emails/svippareNekad'
 
 export async function POST(req: NextRequest) {
   try {
-    const { type, userId } = await req.json()
+    const { type, userId, reason } = await req.json()
 
     if (typeof type !== 'string' || typeof userId !== 'string') {
       return NextResponse.json({ success: false, error: 'Invalid body' }, { status: 400 })
@@ -30,6 +30,7 @@ export async function POST(req: NextRequest) {
       await sendSvippareNekad({
         to: applicant.email,
         applicantName: applicant.name ?? 'där',
+        reason: typeof reason === 'string' && reason.trim() ? reason.trim() : undefined,
       })
     } else {
       return NextResponse.json({ success: false, error: 'Unknown type' }, { status: 400 })
