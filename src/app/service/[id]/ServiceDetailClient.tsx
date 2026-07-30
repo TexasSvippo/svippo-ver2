@@ -33,6 +33,7 @@ type Service = {
   user_email: string
   user_id: string
   avatar_url?: string
+  seller_account_type?: string | null
   service_type?: 'typ1' | 'typ2' | 'typ3'
   rating: number
   reviews: number
@@ -131,6 +132,13 @@ export default function ServiceDetailClient({ service, reviews, avgRating, refer
   const isOwner = user?.id === service.user_id
   const shouldAutoOpen = searchParams.get('order') === 'true' && !isOwner
 
+  // Plain-text role label, no emoji/icon (unlike the badges on /provider/[id]).
+  const sellerRoleLabel =
+    service.seller_account_type === 'uf-foretag' ? 'UF-företag' :
+    service.seller_account_type === 'foretag' ? 'Företag' :
+    service.seller_account_type === 'svippare' ? 'Svippare' :
+    null
+
   useEffect(() => {
     if (shouldAutoOpen && user) {
       const timer = setTimeout(() => setShowOrder(true), 0)
@@ -211,6 +219,9 @@ export default function ServiceDetailClient({ service, reviews, avgRating, refer
       <div className={styles.main_header}>
         <div className={styles.badges}>
           <span className={styles.badge}>{service.subcategory}</span>
+          {sellerRoleLabel && (
+            <span className={`${styles.badge} ${styles['badge--role']}`}>{sellerRoleLabel}</span>
+          )}
           {service.offers_rut && (
             <span className={`${styles.badge} ${styles['badge--rut']}`}><CheckCircle size={13} /> RUT-avdrag</span>
           )}
@@ -240,6 +251,9 @@ export default function ServiceDetailClient({ service, reviews, avgRating, refer
           <div className={styles.main_body_header}>
             <div className={styles.badges}>
               <span className={styles.badge}>{service.subcategory}</span>
+              {sellerRoleLabel && (
+                <span className={`${styles.badge} ${styles['badge--role']}`}>{sellerRoleLabel}</span>
+              )}
               {service.offers_rut && (
                 <span className={`${styles.badge} ${styles['badge--rut']}`}>
                   <CheckCircle size={13} /> RUT-avdrag

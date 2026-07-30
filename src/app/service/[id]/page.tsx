@@ -31,7 +31,7 @@ export default async function ServiceDetailPage({ params }: Props) {
   const { id } = await params
 
   const [{ data: serviceRaw }, { data: reviews }, { data: references }] = await Promise.all([
-    supabase.from('services').select('*, users(avatar_url)').eq('id', id).single(),
+    supabase.from('services').select('*, users(avatar_url, account_type)').eq('id', id).single(),
     supabase
       .from('reviews')
       .select('*')
@@ -46,8 +46,8 @@ export default async function ServiceDetailPage({ params }: Props) {
   ])
 
   const service = serviceRaw ? (() => {
-    const { users: svcUsers, ...svcRest } = serviceRaw as typeof serviceRaw & { users: { avatar_url: string | null } | null }
-    return { ...svcRest, avatar_url: svcUsers?.avatar_url ?? null }
+    const { users: svcUsers, ...svcRest } = serviceRaw as typeof serviceRaw & { users: { avatar_url: string | null; account_type: string | null } | null }
+    return { ...svcRest, avatar_url: svcUsers?.avatar_url ?? null, seller_account_type: svcUsers?.account_type ?? null }
   })() : null
 
   if (!service) notFound()
