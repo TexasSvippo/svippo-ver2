@@ -28,6 +28,7 @@ type Props = {
   customQuestions: CustomQuestion[]
   offersRut?: boolean
   offersRot?: boolean
+  requiresScheduling?: boolean
   onClose: () => void
 }
 
@@ -44,6 +45,7 @@ export default function OrderModal({
   customQuestions,
   offersRut = false,
   offersRot = false,
+  requiresScheduling = true,
   onClose,
 }: Props) {
   const { user } = useAuth()
@@ -104,9 +106,13 @@ export default function OrderModal({
     serviceType === 'typ2' ? 'Tidslinje' :
     'Upphämtning & leverans'
 
+  // A typ1 seller can opt out of forcing a date/place up front -- buyer and
+  // seller agree on scheduling in conversation afterward instead.
+  const skipTypeStep = serviceType === 'typ1' && !requiresScheduling
+
   const STEPS = [
     'Kontaktinfo',
-    typeStepLabel,
+    ...(skipTypeStep ? [] : [typeStepLabel]),
     ...(hasCustomQuestions ? ['Utförarens frågor'] : []),
     'Bekräfta',
   ]

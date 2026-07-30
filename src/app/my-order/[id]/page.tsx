@@ -7,7 +7,7 @@ import { supabase } from '@/lib/supabase'
 import useAuth from '@/hooks/useAuth'
 import styles from './Myorderdetail.module.scss'
 import orderStyles from '@/styles/orderdetail.module.scss'
-import { Clock, CheckCircle, XCircle, Link as LinkIcon, ClipboardList, FileText, MessageCircle, BarChart2, Package, Wrench, User, Shield, Star, ArrowLeft, Tag } from 'lucide-react'
+import { Clock, CheckCircle, XCircle, Link as LinkIcon, ClipboardList, FileText, MessageCircle, BarChart2, Package, Wrench, User, Shield, Star, ArrowLeft, Tag, Calendar } from 'lucide-react'
 
 type ProjectStatus = 'not_started' | 'in_progress' | 'almost_done' | 'awaiting_confirmation' | 'completed'
 
@@ -337,10 +337,25 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
 
   const projectStatus = order.project_status || 'not_started'
   const currentStepIndex = STATUS_STEPS.findIndex(s => s.key === ((projectStatus === 'almost_done' || projectStatus === 'awaiting_confirmation') ? 'in_progress' : projectStatus))
+  const serviceType = order.service_type ?? 'typ1'
   const isTyp3 = order.service_type === 'typ3'
   const isDelivered = !!order.delivered_at
   const hasDispute = !!order.dispute_status
   const isCancelled = order.status === 'rejected' || (order.status as string) === 'cancelled' || (order.project_status as string) === 'cancelled'
+
+  const preferredDate = order.answers?.['Önskat datum']
+  const preferredTime = order.answers?.['Önskad tid']
+  const address = order.answers?.['Adress']
+  const desiredDeadline = order.answers?.['Önskat slutdatum']
+  const milestones = order.answers?.['Föreslagna milstolpar']
+  const pickupAddress = order.answers?.['Upphämtningsadress']
+  const deliveryAddress = order.answers?.['Leveransadress']
+  const pickupDate = order.answers?.['Datum']
+  const pickupTime = order.answers?.['Tid']
+  const typeSpecificKeys = ['Önskat datum', 'Önskad tid', 'Adress', 'Önskat slutdatum', 'Föreslagna milstolpar', 'Upphämtningsadress', 'Leveransadress', 'Datum', 'Tid']
+  const filteredAnswers = order.answers
+    ? Object.fromEntries(Object.entries(order.answers).filter(([key]) => !typeSpecificKeys.includes(key)))
+    : {}
 
   const dotColor = projectStatus === 'completed' ? 'green'
     : projectStatus === 'awaiting_confirmation' ? 'blue'
@@ -603,11 +618,44 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
                   <div className={`${orderStyles.field_value} ${orderStyles.field_message}`}>{order.message}</div>
                 </div>
 
-                {order.answers && Object.keys(order.answers).length > 0 && (
+                {serviceType === 'typ1' && (preferredDate || address) && (
+                  <div className={`${orderStyles.orderdetail__type_info} card`}>
+                    <h2 className={orderStyles.section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>📅 Datum & plats</h2>
+                    <div className={orderStyles.type_info_grid}>
+                      {preferredDate && <div className={orderStyles.type_info_item}><span className={orderStyles.type_info_label}>Önskat datum</span><strong>{preferredDate}</strong></div>}
+                      {preferredTime && <div className={orderStyles.type_info_item}><span className={orderStyles.type_info_label}>Önskad tid</span><strong>{preferredTime}</strong></div>}
+                      {address && <div className={orderStyles.type_info_item}><span className={orderStyles.type_info_label}>Adress</span><strong>{address}</strong></div>}
+                    </div>
+                  </div>
+                )}
+
+                {serviceType === 'typ2' && (desiredDeadline || milestones) && (
+                  <div className={`${orderStyles.orderdetail__type_info} card`}>
+                    <h2 className={orderStyles.section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Calendar size={18} /> Tidslinje</h2>
+                    <div className={orderStyles.type_info_grid}>
+                      {desiredDeadline && <div className={orderStyles.type_info_item}><span className={orderStyles.type_info_label}>Önskat slutdatum</span><strong>{desiredDeadline}</strong></div>}
+                      {milestones && <div className={`${orderStyles.type_info_item} ${orderStyles['type_info_item--full']}`}><span className={orderStyles.type_info_label}>Föreslagna milstolpar</span><p className={orderStyles.type_info_text}>{milestones}</p></div>}
+                    </div>
+                  </div>
+                )}
+
+                {serviceType === 'typ3' && (pickupAddress || deliveryAddress) && (
+                  <div className={`${orderStyles.orderdetail__type_info} card`}>
+                    <h2 className={orderStyles.section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Package size={18} /> Upphämtning & leverans</h2>
+                    <div className={orderStyles.type_info_grid}>
+                      {pickupAddress && <div className={orderStyles.type_info_item}><span className={orderStyles.type_info_label}>Upphämtning</span><strong>{pickupAddress}</strong></div>}
+                      {deliveryAddress && <div className={orderStyles.type_info_item}><span className={orderStyles.type_info_label}>Leverans</span><strong>{deliveryAddress}</strong></div>}
+                      {pickupDate && <div className={orderStyles.type_info_item}><span className={orderStyles.type_info_label}>Datum</span><strong>{pickupDate}</strong></div>}
+                      {pickupTime && <div className={orderStyles.type_info_item}><span className={orderStyles.type_info_label}>Tid</span><strong>{pickupTime}</strong></div>}
+                    </div>
+                  </div>
+                )}
+
+                {Object.keys(filteredAnswers).length > 0 && (
                   <div className={`${styles.myorder__message} card`}>
                     <h2 className={orderStyles.section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><FileText size={18} /> Dina svar</h2>
                     <div className={orderStyles.answers}>
-                      {Object.entries(order.answers).map(([key, value]) => (
+                      {Object.entries(filteredAnswers).map(([key, value]) => (
                         <div key={key} className={orderStyles.answer_row}>
                           <span className={orderStyles.answer_key}>{key}</span>
                           <span className={orderStyles.answer_value}>{value}</span>

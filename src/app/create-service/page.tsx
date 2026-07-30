@@ -34,6 +34,7 @@ type FormData = {
   custom_questions: CustomQuestion[]
   offers_rut: boolean
   offers_rot: boolean
+  requires_scheduling: boolean
 }
 
 const STEPS = ['Kategori', 'Detaljer', 'Pris & plats', 'Egna frågor', 'Granska']
@@ -71,6 +72,7 @@ function CreateServiceContent() {
     custom_questions: [],
     offers_rut: false,
     offers_rot: false,
+    requires_scheduling: true,
   })
 
   const [locationSearch, setLocationSearch] = useState('')
@@ -97,6 +99,7 @@ function CreateServiceContent() {
         custom_questions: data.custom_questions || [],
         offers_rut: data.offers_rut || false,
         offers_rot: data.offers_rot || false,
+        requires_scheduling: data.requires_scheduling ?? true,
       })
       setLocationSearch(data.location !== 'Online' ? data.location || '' : '')
       } else {
@@ -136,6 +139,7 @@ function CreateServiceContent() {
           custom_questions: data.custom_questions || [],
           offers_rut: data.offers_rut || false,
           offers_rot: data.offers_rot || false,
+          requires_scheduling: data.requires_scheduling ?? true,
         })
         setLocationSearch(data.location !== 'Online' ? data.location || '' : '')
         setStep(1)
@@ -231,6 +235,7 @@ function CreateServiceContent() {
             custom_questions: [],
             offers_rut: false,
             offers_rot: false,
+            requires_scheduling: true,
             rating: 0,
             reviews: 0,
             created_at: new Date().toISOString(),
@@ -262,6 +267,7 @@ function CreateServiceContent() {
           custom_questions: form.custom_questions,
           offers_rut: form.offers_rut,
           offers_rot: form.offers_rot,
+          requires_scheduling: form.requires_scheduling,
         }).eq('id', editId)
       } else if (savedServiceId) {
         // Update the draft created in step 0→1 with the full form data
@@ -276,6 +282,7 @@ function CreateServiceContent() {
           custom_questions: form.custom_questions,
           offers_rut: form.offers_rut,
           offers_rot: form.offers_rot,
+          requires_scheduling: form.requires_scheduling,
         }).eq('id', savedServiceId)
       } else {
         // Fallback: full insert (shouldn't normally be reached)
@@ -297,6 +304,7 @@ function CreateServiceContent() {
           custom_questions: form.custom_questions,
           offers_rut: form.offers_rut,
           offers_rot: form.offers_rot,
+          requires_scheduling: form.requires_scheduling,
           rating: 0,
           reviews: 0,
           created_at: new Date().toISOString(),
@@ -547,6 +555,22 @@ function CreateServiceContent() {
             <div className={styles.create__content}>
               <h1 className={styles.create__title}>Egna frågor</h1>
               <p className={styles.create__subtitle}>Lägg till frågor du vill ställa till dina beställare. Max 5 frågor.</p>
+
+              {selectedCategory?.service_type === 'typ1' && (
+                <div className={styles.create__field}>
+                  <label className={styles.create__checkbox_label}>
+                    <input
+                      type="checkbox"
+                      checked={form.requires_scheduling}
+                      onChange={e => setForm(prev => ({ ...prev, requires_scheduling: e.target.checked }))}
+                    />
+                    Kräver bokat datum vid beställning
+                  </label>
+                  <p className={styles.create__online_hint} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Lightbulb size={14} /> Om avstängt hoppar beställaren över datum/tid/adress-steget — ni kommer överens om upplägget i chatten istället.
+                  </p>
+                </div>
+              )}
 
               {form.custom_questions.length > 0 && (
                 <div className={styles.create__custom_questions}>

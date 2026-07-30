@@ -40,6 +40,7 @@ type Service = {
   custom_questions?: CustomQuestion[]
   offers_rut?: boolean
   offers_rot?: boolean
+  requires_scheduling?: boolean
 }
 
 type Review = {
@@ -761,6 +762,7 @@ export default function ServiceDetailClient({ service, reviews, avgRating, refer
           customQuestions={service.custom_questions || []}
           offersRut={service.offers_rut}
           offersRot={service.offers_rot}
+          requiresScheduling={service.requires_scheduling ?? true}
           onClose={() => setShowOrder(false)}
         />
       )}

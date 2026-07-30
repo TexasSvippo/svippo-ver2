@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import styles from './intresseanmalningar.module.scss'
 import { Star, User, CheckCircle, XCircle, Mail, ChevronDown, X, SlidersHorizontal, Check } from 'lucide-react'
+import { categories } from '@/data/categories'
 
 type IncomingInterest = {
   id: string
@@ -166,10 +167,24 @@ export default function Intresseanmalningar({ userId }: Props) {
 
       const { data: requestData } = await supabase
         .from('requests')
-        .select('budget_type')
+        .select('budget_type, category_id')
         .eq('id', interest.request_id)
         .maybeSingle()
-      const budgetType = requestData?.budget_type ?? 'offert'
+      // requests.budget_type is 'fast' | 'prisforslag' (create-request's own
+      // vocabulary), but orders.price_type is constrained to
+      // 'fastpris' | 'timpris' | 'offert' -- passing budget_type straight
+      // through always violated that CHECK constraint and made the insert
+      // below fail silently (no error handling on this insert), so
+      // accepting an interest never actually created an order.
+      const budgetType =
+        requestData?.budget_type === 'fast' ? 'fastpris' :
+        requestData?.budget_type === 'prisforslag' ? 'offert' :
+        'offert'
+      // Requests don't reference an actual services row, so there's no
+      // services.service_type to copy -- derive it the same way
+      // create-service does: from the (request's) category's static type.
+      const selectedCat = categories.find(c => c.id === requestData?.category_id)
+      const serviceType = selectedCat?.service_type ?? 'typ1'
 
       const { data: order } = await supabase.from('orders').insert({
         service_id: interest.request_id,
@@ -188,10 +203,13 @@ export default function Intresseanmalningar({ userId }: Props) {
         project_status: 'not_started',
         payment_status: 'unpaid',
         from_request: true,
+        service_type: serviceType,
         created_at: new Date().toISOString(),
         price_type: budgetType,
         initial_price: budgetType === 'fastpris' && interest.price ? interest.price : null,
-        hourly_rate: budgetType === 'timpris' && interest.price ? interest.price : null,
+        // budget_type has no hourly-rate concept in the request flow (only
+        // 'fast'/'prisforslag'), so this is never a timpris order.
+        hourly_rate: null,
         price_status: interest.price ? 'price_approved' : 'no_price',
       }).select().single()
 
