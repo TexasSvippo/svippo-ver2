@@ -408,10 +408,17 @@ export default function ProfileClient({ initialAccountType }: Props) {
           <div>
             <strong className={styles.profile__sidebar_name}>{displayName || 'Inget namn'}</strong>
             <p className={styles.profile__sidebar_email}>{user.email}</p>
-            {(dbAccountType === 'svippare' || dbAccountType === 'foretag' || dbAccountType === 'uf-foretag') && (
+            {(dbAccountType === 'foretag' || dbAccountType === 'uf-foretag' || (dbAccountType === 'svippare' && svippareStatus === 'approved')) && (
               <Link href={`/provider/${user.id}`} className={styles.profile__sidebar_publink} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                 <Eye size={14} /> Se publik profil →
               </Link>
+            )}
+            {dbAccountType === 'svippare' && svippareStatus !== 'approved' && (
+              <p className={styles.profile__sidebar_pubnote}>
+                {svippareStatus === 'rejected'
+                  ? 'Din profil syns inte publikt eftersom din ansökan inte godkändes.'
+                  : 'Din profil syns inte publikt förrän din ansökan är godkänd.'}
+              </p>
             )}
           </div>
         </div>

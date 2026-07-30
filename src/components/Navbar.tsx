@@ -109,7 +109,7 @@ function getOverlayNavEntries(accountType: AccountType | null): OverlayEntry[] {
 }
 
 export default function Navbar() {
-  const { user, loading, accountType, avatarUrl, name } = useAuth()
+  const { user, loading, accountType, avatarUrl, name, svippareStatus } = useAuth()
   const { unreadCount } = useNotifications()
   const [menuOpen, setMenuOpen] = useState(false)
   const [megaOpen, setMegaOpen] = useState(false)
@@ -181,7 +181,8 @@ export default function Navbar() {
   }
 
   const overlayNavEntries = getOverlayNavEntries(accountType)
-  const showPublicProfileLink = accountType === 'svippare' || accountType === 'foretag' || accountType === 'uf-foretag'
+  const showPublicProfileLink = accountType === 'foretag' || accountType === 'uf-foretag' || (accountType === 'svippare' && svippareStatus === 'approved')
+  const showPublicProfilePendingNote = accountType === 'svippare' && svippareStatus !== 'approved'
 
   // Sanity Studio (/studio) is a full-screen app that owns the whole viewport —
   // the site chrome must not render on top of it
@@ -368,6 +369,11 @@ export default function Navbar() {
                     <Link href={`/provider/${user.id}`} className={styles.navbar__overlay_user_link} onClick={() => setMobileMenuOpen(false)}>
                       Se publik profil →
                     </Link>
+                  )}
+                  {showPublicProfilePendingNote && (
+                    <span className={styles.navbar__overlay_user_pubnote}>
+                      {svippareStatus === 'rejected' ? 'Profilen syns inte publikt' : 'Profilen syns inte publikt än'}
+                    </span>
                   )}
                 </div>
               </div>
