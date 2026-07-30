@@ -8,7 +8,7 @@ import { categories, RUT_SUBCATEGORIES, ROT_SUBCATEGORIES } from '@/data/categor
 import type { ServiceType } from '@/data/categories'
 import { municipalities } from '@/data/municipalities'
 import styles from './createservice.module.scss'
-import { Clock, Lock, Tag, ClipboardList, MapPin, Monitor, Lightbulb, CheckCircle, Pencil, FileText } from 'lucide-react'
+import { Clock, Lock, Tag, ClipboardList, MapPin, Monitor, Lightbulb, CheckCircle, Pencil, FileText, Calendar, ToggleRight, ToggleLeft } from 'lucide-react'
 import ReferenceImageUploader from '@/components/ReferenceImageUploader'
 import RichTextEditor from '@/components/RichTextEditor'
 
@@ -556,22 +556,6 @@ function CreateServiceContent() {
               <h1 className={styles.create__title}>Egna frågor</h1>
               <p className={styles.create__subtitle}>Lägg till frågor du vill ställa till dina beställare. Max 5 frågor.</p>
 
-              {selectedCategory?.service_type === 'typ1' && (
-                <div className={styles.create__field}>
-                  <label className={styles.create__checkbox_label}>
-                    <input
-                      type="checkbox"
-                      checked={form.requires_scheduling}
-                      onChange={e => setForm(prev => ({ ...prev, requires_scheduling: e.target.checked }))}
-                    />
-                    Kräver bokat datum vid beställning
-                  </label>
-                  <p className={styles.create__online_hint} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <Lightbulb size={14} /> Om avstängt hoppar beställaren över datum/tid/adress-steget — ni kommer överens om upplägget i chatten istället.
-                  </p>
-                </div>
-              )}
-
               {form.custom_questions.length > 0 && (
                 <div className={styles.create__custom_questions}>
                   {form.custom_questions.map((q, index) => (
@@ -688,6 +672,26 @@ function CreateServiceContent() {
                       Lägg till fråga
                     </button>
                   </div>
+                </div>
+              )}
+
+              {selectedCategory?.service_type === 'typ1' && (
+                <div className={styles.create__scheduling_section}>
+                  <button
+                    type="button"
+                    className={`${styles.create__scheduling_toggle} ${form.requires_scheduling ? styles['create__scheduling_toggle--active'] : ''}`}
+                    onClick={() => setForm(prev => ({ ...prev, requires_scheduling: !prev.requires_scheduling }))}
+                  >
+                    <Calendar size={20} className={`${styles.create__scheduling_icon} ${form.requires_scheduling ? styles['create__scheduling_icon--active'] : ''}`} />
+                    <span className={styles.create__scheduling_label}>Kräv bokat datum vid beställningen</span>
+                    {form.requires_scheduling
+                      ? <ToggleRight size={28} className={`${styles.create__scheduling_switch} ${styles['create__scheduling_switch--active']}`} />
+                      : <ToggleLeft size={28} className={styles.create__scheduling_switch} />
+                    }
+                  </button>
+                  <p className={styles.create__online_hint} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Lightbulb size={14} /> Om avstängt hoppar beställaren över datum/tid/adress-steget — ni kommer överens om upplägget i chatten istället.
+                  </p>
                 </div>
               )}
 
