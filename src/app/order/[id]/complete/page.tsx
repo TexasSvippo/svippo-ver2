@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import useAuth from '@/hooks/useAuth'
 import styles from './complete.module.scss'
-import { AlertCircle, ArrowLeft, CheckCircle, ExternalLink, FileText, User, Wallet } from 'lucide-react'
+import { AlertCircle, ArrowLeft, CheckCircle, Clock, ExternalLink, FileText, User, Wallet } from 'lucide-react'
 
 type Order = {
   id: string
@@ -20,6 +20,7 @@ type Order = {
   service_type: 'typ1' | 'typ2' | 'typ3'
   price_type: string | null
   active_price: number | null
+  hourly_rate: number | null
   price_status: string | null
   conversation_id: string | null
   delivered_at?: string | null
@@ -91,20 +92,39 @@ export default function CompleteOrderPage({ params }: { params: Promise<{ id: st
 
   const handlePriceStep = async () => {
     if (!order) return
-    const { price_type, active_price } = order
+    const { price_type, active_price, hourly_rate } = order
     setPriceSubmitting(true)
     try {
-      if (price_type === 'timpris' && active_price) {
-        const amount = active_price * Number(hours)
-        await postPriceProposal(amount, `${hours} timmar à ${active_price} kr/h`)
+      if (price_type === 'timpris' && hourly_rate) {
+        const amount = hourly_rate * Number(hours)
+        await postPriceProposal(amount, `${hours} timmar à ${hourly_rate} kr/h`)
       } else if (price_type === 'offert' && active_price == null) {
         await postPriceProposal(Number(customAmount))
       }
+      // Wait for the buyer to actually approve instead of advancing right
+      // away — a fire-and-forget proposal here let orders reach "completed"
+      // with no approved price at all. Polling below picks up the approval.
+      setOrder(prev => prev ? { ...prev, price_status: 'proposal_pending' } : prev)
     } finally {
       setPriceSubmitting(false)
     }
-    setStep(2)
   }
+
+  // Poll while a proposal is pending so the seller advances automatically
+  // once the buyer approves (or can retry after a rejection).
+  useEffect(() => {
+    if (!order || order.price_status !== 'proposal_pending') return
+    const interval = setInterval(async () => {
+      const { data } = await supabase.from('orders').select('*').eq('id', order.id).single()
+      if (data && data.price_status !== 'proposal_pending') {
+        setOrder(data)
+        if (data.price_status === 'price_approved') {
+          setStep(2)
+        }
+      }
+    }, 3000)
+    return () => clearInterval(interval)
+  }, [order?.id, order?.price_status])
 
   const handleComplete = async (withMessage: boolean) => {
     if (!order) return
@@ -173,16 +193,33 @@ export default function CompleteOrderPage({ params }: { params: Promise<{ id: st
   if (authLoading || pageLoading) return <div className={styles.loading}>Laddar...</div>
   if (!order) return null
 
-  const { price_type, active_price } = order
-  const hourlyRate = active_price ?? 0
-  const calculatedTotal = hourlyRate * (Number(hours) || 0)
+  const { price_type, active_price, hourly_rate } = order
+  // hourly_rate is the originally agreed kr/h rate, set once and never
+  // overwritten. active_price instead holds the TOTAL amount from the most
+  // recently approved proposal — reusing it here mislabeled a total (e.g.
+  // 2250 kr) as if it were the per-hour rate.
+  const calculatedTotal = (hourly_rate ?? 0) * (Number(hours) || 0)
 
   // ── Step 1 content – resolved before render ──────────────────────────────
   let step1: React.ReactNode = null
   if (step === 1) {
     const hasClearedPrice = active_price != null
+    const isPendingApproval = order.price_status === 'proposal_pending'
+    const wasRejected = order.price_status === 'price_rejected'
 
-    if (hasClearedPrice && price_type !== 'timpris') {
+    if (isPendingApproval) {
+      step1 = (
+        <div className={`${styles.card} staticcard`}>
+          <h2 className={styles.card__heading}>Väntar på köparens godkännande</h2>
+          <p className={styles.card__sub}>
+            Vi har skickat ditt prisförslag till {order.buyer_name}. Du kan gå vidare så snart köparen har godkänt priset.
+          </p>
+          <div className={styles.coming_soon_box} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontStyle: 'normal' }}>
+            <Clock size={16} /> Väntar på att köparen godkänner prisförslaget...
+          </div>
+        </div>
+      )
+    } else if (hasClearedPrice && price_type !== 'timpris') {
       step1 = (
         <div className={`${styles.card} staticcard`}>
           <h2 className={styles.card__heading}>Bekräfta slutpriset</h2>
@@ -200,8 +237,13 @@ export default function CompleteOrderPage({ params }: { params: Promise<{ id: st
       step1 = (
         <div className={`${styles.card} staticcard`}>
           <h2 className={styles.card__heading}>Registrera nedlagd tid</h2>
+          {wasRejected && (
+            <div className={styles.invoice_box}>
+              <AlertCircle size={16} /> Köparen avböjde ditt tidigare prisförslag. Skicka ett nytt.
+            </div>
+          )}
           <p className={styles.card__sub}>
-            {active_price ? `Timpris: ${active_price} kr/h` : 'Ange antal timmar nedlagda på uppdraget.'}
+            {hourly_rate ? `Timpris: ${hourly_rate} kr/h` : 'Ange antal timmar nedlagda på uppdraget.'}
           </p>
           <input
             className={styles.input}
@@ -212,10 +254,10 @@ export default function CompleteOrderPage({ params }: { params: Promise<{ id: st
             value={hours}
             onChange={e => setHours(e.target.value)}
           />
-          {active_price && Number(hours) > 0 && (
+          {hourly_rate && Number(hours) > 0 && (
             <div className={styles.calc}>
               {calculatedTotal} kr
-              <span>({hours} h × {active_price} kr/h)</span>
+              <span>({hours} h × {hourly_rate} kr/h)</span>
             </div>
           )}
           <div className={styles.actions}>
@@ -233,6 +275,11 @@ export default function CompleteOrderPage({ params }: { params: Promise<{ id: st
       step1 = (
         <div className={`${styles.card} staticcard`}>
           <h2 className={styles.card__heading}>Registrera slutbelopp</h2>
+          {wasRejected && (
+            <div className={styles.invoice_box}>
+              <AlertCircle size={16} /> Köparen avböjde ditt tidigare förslag. Skicka ett nytt belopp.
+            </div>
+          )}
           <p className={styles.card__sub}>Vad blev det totala priset för uppdraget?</p>
           <input
             className={styles.input}

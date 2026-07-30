@@ -173,7 +173,7 @@ export default function ProfileClient({ initialAccountType }: Props) {
         supabase.from('orders').select('*').eq('buyer_id', user.id).order('created_at', { ascending: false }),
         supabase.from('requests').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
         supabase.from('interests').select('*').eq('request_owner_id', user.id).order('created_at', { ascending: false }),
-        supabase.from('notifications').select('*').eq('user_id', user.id).eq('read', false),
+        supabase.from('notifications').select('*').eq('user_id', user.id).eq('read', false).order('created_at', { ascending: false }),
         supabase.from('category_subscriptions').select('*').eq('user_id', user.id),
       ])
       let profileData = profileRes.data

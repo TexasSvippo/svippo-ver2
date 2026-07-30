@@ -292,6 +292,9 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
   const isSeller = user?.id === order.seller_id
   const isBuyer = user?.id === order.buyer_id
   const isCancelled = (order.status as string) === 'cancelled' || (order.project_status as string) === 'cancelled'
+  // Fastpris orders auto-approve their price at order creation, so they're
+  // exempt from this gate — only timpris/offert can genuinely lack one.
+  const priceApproved = order.price_type === 'fastpris' || order.price_status === 'price_approved'
   const projectStatus = order.project_status
   const serviceType = order.service_type ?? 'typ1'
   const isTyp3 = serviceType === 'typ3'
@@ -497,12 +500,24 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
 
                 {order.status === 'accepted' && projectStatus !== 'completed' && projectStatus !== 'awaiting_confirmation' && (
                   <div className={`${styles.tab_actions} staticcard`}>
-                    <button className="btn btn-primary" onClick={() => router.push(`/order/${order.id}/complete`)}>
+                    <button
+                      className="btn btn-primary"
+                      onClick={() => router.push(`/order/${order.id}/complete`)}
+                      disabled={!priceApproved}
+                      title={!priceApproved ? 'Ett prisförslag måste godkännas av köparen innan uppdraget kan slutföras' : undefined}
+                    >
                       <CheckCircle size={16} /> Markera som klart
                     </button>
                     <button className="btn btn-outline" onClick={() => setShowPriceModal(true)}>
                       <Tag size={16} /> Föreslå nytt pris
                     </button>
+                    {!priceApproved && (
+                      <p className={styles.tab_actions__info}>
+                        {order.price_status === 'proposal_pending'
+                          ? 'Väntar på att köparen godkänner prisförslaget innan uppdraget kan slutföras.'
+                          : 'Skicka ett prisförslag och invänta köparens godkännande innan uppdraget kan slutföras.'}
+                      </p>
+                    )}
                   </div>
                 )}
 

@@ -328,6 +328,13 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
 
   const pendingProposal = proposals.find(p => p.status === 'pending') ?? null
 
+  // Symmetric with the seller-side gate in order/[id]/page.tsx — under
+  // normal flow this is already unreachable (the seller can't advance to
+  // awaiting_confirmation/delivered without an approved price for
+  // timpris/offert), but kept here as defense-in-depth in case that state
+  // is ever reached some other way.
+  const priceApproved = order.price_type === 'fastpris' || order.price_status === 'price_approved'
+
   const projectStatus = order.project_status || 'not_started'
   const currentStepIndex = STATUS_STEPS.findIndex(s => s.key === ((projectStatus === 'almost_done' || projectStatus === 'awaiting_confirmation') ? 'in_progress' : projectStatus))
   const isTyp3 = order.service_type === 'typ3'
@@ -525,7 +532,7 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
                       <button
                         className="btn btn-primary"
                         onClick={handleConfirmDelivery}
-                        disabled={confirmingDelivery}
+                        disabled={confirmingDelivery || !priceApproved}
                       >
                         {confirmingDelivery ? 'Bekräftar...' : <><CheckCircle size={16} /> Bekräfta leverans</>}
                       </button>
@@ -540,13 +547,18 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
                     <button
                       className="btn btn-primary"
                       onClick={handleConfirmCompletion}
-                      disabled={confirmingDelivery}
+                      disabled={confirmingDelivery || !priceApproved}
                     >
                       {confirmingDelivery ? 'Bekräftar...' : <><CheckCircle size={16} /> Bekräfta slutfört</>}
                     </button>
                     <button className="btn btn-outline" onClick={() => setShowDisputeForm(true)}>
                       ⚠️ Rapportera problem
                     </button>
+                    {!priceApproved && (
+                      <p className={orderStyles.tab_actions__info}>
+                        Ett prisförslag måste godkännas innan uppdraget kan bekräftas som slutfört.
+                      </p>
+                    )}
                   </div>
                 )}
               </>
@@ -654,7 +666,7 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
                       <button
                         className="btn btn-primary"
                         onClick={handleConfirmDelivery}
-                        disabled={confirmingDelivery}
+                        disabled={confirmingDelivery || !priceApproved}
                       >
                         {confirmingDelivery ? 'Bekräftar...' : <><CheckCircle size={16} /> Ja, allt är okej!</>}
                       </button>
@@ -666,6 +678,11 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
                         ⚠️ Något stämmer inte
                       </button>
                     </div>
+                    {!priceApproved && (
+                      <p className={styles.delivery_auto_hint}>
+                        Ett prisförslag måste godkännas innan leveransen kan bekräftas.
+                      </p>
+                    )}
                     <p className={styles.delivery_auto_hint}>
                       Om du inte svarar bekräftas uppdraget automatiskt inom 24 timmar.
                     </p>
