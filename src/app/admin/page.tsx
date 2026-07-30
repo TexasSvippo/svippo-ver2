@@ -7,7 +7,7 @@ import { supabase } from '@/lib/supabase'
 import useAuth from '@/hooks/useAuth'
 import { prepareImageForUpload } from '@/utils/prepareImageForUpload'
 import styles from './admin.module.scss'
-import { Users, Wrench, ClipboardList, Package, Clock, CheckCircle, XCircle, BarChart2, LogOut, Trash2, Megaphone, Flag } from 'lucide-react'
+import { Users, Wrench, ClipboardList, Package, Clock, CheckCircle, XCircle, BarChart2, LogOut, Trash2, Megaphone, Flag, Wallet } from 'lucide-react'
 
 type Section = 'overview' | 'applications' | 'services' | 'users' | 'orders' | 'ads' | 'reports'
 
@@ -69,6 +69,7 @@ type OrderRow = {
   status: string
   project_status: string
   created_at: string
+  active_price: number | null
 }
 
 type ServiceRow = {
@@ -104,6 +105,7 @@ export default function AdminPage() {
   const [reportsError, setReportsError] = useState<string | null>(null)
   const [users, setUsers] = useState<UserRow[]>([])
   const [orders, setOrders] = useState<OrderRow[]>([])
+  const [totalSales, setTotalSales] = useState(0)
   const [services, setServices] = useState<ServiceRow[]>([])
   const [feedback, setFeedback] = useState<Record<string, string>>({})
   const [dataLoading, setDataLoading] = useState(true)
@@ -131,7 +133,7 @@ export default function AdminPage() {
     setDataLoading(true)
     setApplicationsError(null)
     setReportsError(null)
-    const [usersRes, servicesRes, requestsRes, ordersRes, pendingRes, appsRes, recentUsersRes, recentOrdersRes, allServicesRes, openReportsCountRes, reportsRes] = await Promise.all([
+    const [usersRes, servicesRes, requestsRes, ordersRes, pendingRes, appsRes, recentUsersRes, recentOrdersRes, allServicesRes, openReportsCountRes, reportsRes, salesRes] = await Promise.all([
       supabase.from('users').select('id', { count: 'exact', head: true }),
       supabase.from('services').select('id', { count: 'exact', head: true }),
       supabase.from('requests').select('id', { count: 'exact', head: true }),
@@ -139,16 +141,27 @@ export default function AdminPage() {
       supabase.from('svippare_profiles').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
       supabase.from('svippare_profiles').select('id, user_id, status, bio, created_at').eq('status', 'pending').order('created_at', { ascending: false }),
       supabase.from('users').select('id, name, email, account_type, role, created_at').order('created_at', { ascending: false }).limit(20),
-      supabase.from('orders').select('id, service_title, buyer_name, seller_name, status, project_status, created_at').order('created_at', { ascending: false }).limit(10),
+      supabase.from('orders').select('id, service_title, buyer_name, seller_name, status, project_status, created_at, active_price').order('created_at', { ascending: false }).limit(10),
       supabase.from('services').select('id, title, user_name, subcategory, created_at').order('created_at', { ascending: false }).limit(50),
       supabase.from('reports').select('id', { count: 'exact', head: true }).eq('status', 'open'),
       supabase.from('reports').select('id, reporter_id, target_type, target_id, reason, message, status, created_at').eq('status', 'open').order('created_at', { ascending: false }),
+      // Total försäljning: summan av slutpris (active_price) för alla FÄRDIGLEVERERADE
+      // ordrar (project_status='completed') — faktisk levererad försäljning, inte bara
+      // avtalad-men-ej-klar affär. Fetchar alla matchande rader (inte bara de senaste
+      // 10 som visas i tabellen) eftersom summan ska spegla ALLA ordrar.
+      supabase.from('orders').select('active_price').eq('project_status', 'completed').not('active_price', 'is', null),
     ])
 
     if (pendingRes.error) console.error('Kunde inte hämta antal väntande ansökningar:', pendingRes.error)
     if (appsRes.error) console.error('Kunde inte hämta väntande ansökningar:', appsRes.error)
     if (openReportsCountRes.error) console.error('Kunde inte hämta antal öppna rapporter:', openReportsCountRes.error)
     if (reportsRes.error) console.error('Kunde inte hämta rapporter:', reportsRes.error)
+    if (salesRes.error) {
+      console.error('Kunde inte hämta total försäljning:', salesRes.error)
+      setTotalSales(0)
+    } else {
+      setTotalSales((salesRes.data ?? []).reduce((sum, o) => sum + (o.active_price ?? 0), 0))
+    }
 
     setStats({
       users: usersRes.count ?? 0,
@@ -678,6 +691,17 @@ export default function AdminPage() {
         {section === 'orders' && (
           <div className={styles.section}>
             <h1 className={styles.section__title}>Senaste beställningar</h1>
+
+            <div className={styles.stats} style={{ marginBottom: 20 }}>
+              <div className={`${styles.stat_card} ${styles['stat_card--green']}`}>
+                <div className={styles.stat_card__icon}><Wallet size={20} /></div>
+                <div className={styles.stat_card__info}>
+                  <strong>{dataLoading ? '–' : `${totalSales.toLocaleString('sv-SE')} kr`}</strong>
+                  <span>Total försäljning (levererade ordrar)</span>
+                </div>
+              </div>
+            </div>
+
             {dataLoading ? <p className={styles.empty}>Laddar...</p> : orders.length === 0 ? (
               <div className={styles.empty}>
                 <CheckCircle size={32} />
@@ -693,6 +717,7 @@ export default function AdminPage() {
                       <th>Säljare</th>
                       <th>Status</th>
                       <th>Projektstatus</th>
+                      <th>Slutpris</th>
                       <th>Datum</th>
                     </tr>
                   </thead>
@@ -704,6 +729,7 @@ export default function AdminPage() {
                         <td>{o.seller_name}</td>
                         <td><span className={`${styles.badge} ${styles[`badge--${o.status}`]}`}>{o.status}</span></td>
                         <td><span className={styles.badge}>{o.project_status || '–'}</span></td>
+                        <td>{o.active_price != null ? `${o.active_price.toLocaleString('sv-SE')} kr` : '–'}</td>
                         <td>{fmt(o.created_at)}</td>
                       </tr>
                     ))}
