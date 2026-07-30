@@ -50,6 +50,7 @@ export default async function PublicProfilePage({ params }: Props) {
       .eq('user_id', id)
       .eq('status', 'approved')
       .single()
+    if (!data) notFound()
     svippareProfile = data
   }
 
