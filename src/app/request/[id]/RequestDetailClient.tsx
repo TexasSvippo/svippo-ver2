@@ -373,7 +373,13 @@ export default function RequestDetailClient({ request }: Props) {
                   <strong>Detta är din förfrågan</strong>
                   <p>Se vilka Svippare som visat intresse.</p>
                 </div>
-                <Link href="/intresseanmalningar" className="btn btn-outline" style={{ width: '100%', justifyContent: 'center' }}>
+                {/* TODO: this links to the full Intresseanmälningar list, not
+                    scoped to this specific request -- Intresseanmalningar.tsx
+                    only accepts userId today, with no request-id filtering.
+                    A future improvement would be supporting
+                    ?tab=intresse&request=<id> to auto-expand/filter to this
+                    request instead of leaving the user to find it themselves. */}
+                <Link href="/profile?tab=intresse" className="btn btn-outline" style={{ width: '100%', justifyContent: 'center' }}>
                   Se intresseanmälningar
                 </Link>
                 <div className={styles.owner_actions}>
