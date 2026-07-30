@@ -110,17 +110,14 @@ export default function CompleteOrderPage({ params }: { params: Promise<{ id: st
     }
   }
 
-  // Poll while a proposal is pending so the seller advances automatically
-  // once the buyer approves (or can retry after a rejection).
+  // Poll while a proposal is pending so the seller's view updates once the
+  // buyer responds (approved -> locked price view; rejected -> retry).
   useEffect(() => {
     if (!order || order.price_status !== 'proposal_pending') return
     const interval = setInterval(async () => {
       const { data } = await supabase.from('orders').select('*').eq('id', order.id).single()
       if (data && data.price_status !== 'proposal_pending') {
         setOrder(data)
-        if (data.price_status === 'price_approved') {
-          setStep(2)
-        }
       }
     }, 3000)
     return () => clearInterval(interval)
@@ -203,8 +200,8 @@ export default function CompleteOrderPage({ params }: { params: Promise<{ id: st
   // ── Step 1 content – resolved before render ──────────────────────────────
   let step1: React.ReactNode = null
   if (step === 1) {
-    const hasClearedPrice = active_price != null
     const isPendingApproval = order.price_status === 'proposal_pending'
+    const isApproved = order.price_status === 'price_approved'
     const wasRejected = order.price_status === 'price_rejected'
 
     if (isPendingApproval) {
@@ -219,15 +216,20 @@ export default function CompleteOrderPage({ params }: { params: Promise<{ id: st
           </div>
         </div>
       )
-    } else if (hasClearedPrice && price_type !== 'timpris') {
+    } else if (isApproved) {
+      // A price is already approved — either just now, or from an earlier
+      // "Föreslå nytt pris" round during the project. Don't force the seller
+      // through the editable form again (that was the loop bug: revisiting
+      // this step always re-showed the timpris hours form and demanded a
+      // brand new proposal even when one was already approved).
       step1 = (
         <div className={`${styles.card} staticcard`}>
-          <h2 className={styles.card__heading}>Bekräfta slutpriset</h2>
-          <p className={styles.card__sub}>Stämmer priset nedan?</p>
+          <h2 className={styles.card__heading}>Godkänt pris</h2>
+          <p className={styles.card__sub}>Köparen har godkänt slutpriset för uppdraget.</p>
           <div className={styles.price_highlight}>{active_price} kr</div>
           <div className={styles.actions}>
             <button className="btn btn-primary" onClick={() => setStep(2)}>
-              <CheckCircle size={16} /> Stämmer – gå vidare
+              <CheckCircle size={16} /> Nästa – gå vidare
             </button>
             <Link href={`/order/${orderId}`} className={styles.link_btn}>Justera priset</Link>
           </div>
@@ -271,7 +273,7 @@ export default function CompleteOrderPage({ params }: { params: Promise<{ id: st
           </div>
         </div>
       )
-    } else if (price_type === 'offert' && !hasClearedPrice) {
+    } else if (price_type === 'offert') {
       step1 = (
         <div className={`${styles.card} staticcard`}>
           <h2 className={styles.card__heading}>Registrera slutbelopp</h2>
