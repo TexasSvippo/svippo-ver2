@@ -769,17 +769,25 @@
 .dash__promo--pending {
   background: #fff8e1;
   border-color: #fde68a;
+
+  .dash__promo_icon, .dash__promo_title { color: #b45309; }
 }
 
-.dash__promo_pending_text {
-  font-size: 0.95rem;
-  font-weight: 500;
-  color: #b45309;
-  margin: 0;
+.dash__promo--rejected {
+  background: #FCEBEB;
+  border-color: #F09595;
+
+  .dash__promo_icon, .dash__promo_title { color: #A32D2D; }
 }
 
 .dash__promo_icon {
   color: #05334A;
+  flex-shrink: 0;
+}
+
+.dash__promo_actions {
+  display: flex;
+  gap: 10px;
   flex-shrink: 0;
 }
 
@@ -822,6 +830,14 @@
   &:hover { opacity: 0.88; }
 }
 
+.dash__promo_btn--outline {
+  background: white;
+  border: 1.5px solid #F09595;
+  color: #A32D2D;
+
+  &:hover { background: #FCEBEB; opacity: 1; }
+}
+
 @media (max-width: 640px) {
   .dash__promo {
     flex-direction: column;
@@ -832,5 +848,10 @@
     align-self: stretch;
     text-align: center;
     white-space: normal;
+  }
+
+  .dash__promo_actions {
+    flex-direction: column;
+    width: 100%;
   }
 }

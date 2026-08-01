@@ -9,7 +9,7 @@ import { useNotifications } from '@/hooks/useNotifications'
 import { fetchConversations as fetchConversationsForUser, type Conversation } from '@/lib/conversations'
 import { categories } from '@/data/categories'
 import styles from './profile.module.scss'
-import { Home, Wrench, Bell, Inbox, Users, Eye, Send, Star, Trophy, Settings, Zap, Pencil, Trash2, CheckCircle, Clock, XCircle, MessageCircle, ClipboardList, Wallet, Package, Tag, MapPin, Globe, Info } from 'lucide-react'
+import { Home, Wrench, Bell, Inbox, Users, Eye, Send, Star, Trophy, Settings, Zap, Pencil, Trash2, CheckCircle, Clock, XCircle, MessageCircle, ClipboardList, Wallet, Package, Tag, MapPin, Globe } from 'lucide-react'
 import { renderStars } from '@/utils/renderStars'
 import { prepareImageForUpload } from '@/utils/prepareImageForUpload'
 import type { ReactNode } from 'react'
@@ -147,7 +147,6 @@ export default function ProfileClient({ initialAccountType }: Props) {
 
   const resolvedAccountType = dbAccountType ?? accountType
   const isCompanyType = resolvedAccountType === 'foretag' || resolvedAccountType === 'uf-foretag'
-  const isBestellare = resolvedAccountType === 'bestellare'
 
   const [karriarOrders, setKarriarOrders] = useState<KarriarOrder[]>([])
   const [karriarReviews, setKarriarReviews] = useState<{ rating: number }[]>([])
@@ -419,49 +418,6 @@ export default function ProfileClient({ initialAccountType }: Props) {
           </div>
         </div>
 
-        {isBestellare && (
-          <div className={styles.profile__sidebar_pubnote}>
-            {svippareStatus === 'pending' ? (
-              <>
-                <Clock size={16} className={styles.profile__sidebar_pubnote_icon} />
-                <div>
-                  <strong>Din ansökan granskas</strong>
-                  <p>Du får ett meddelande så snart den är godkänd.</p>
-                </div>
-              </>
-            ) : svippareStatus === 'rejected' ? (
-              <>
-                <XCircle size={16} className={styles.profile__sidebar_pubnote_icon} />
-                <div>
-                  <strong>Du har blivit nekad</strong>
-                  <p>{rejectionReason || 'Din ansökan om att bli Svippare godkändes tyvärr inte.'}</p>
-                  <div className={styles.profile__sidebar_pubnote_actions}>
-                    <Link href="/kontakt" className={`${styles.profile__sidebar_pubnote_btn} ${styles['profile__sidebar_pubnote_btn--outline']}`}>
-                      Kontakta Svippo
-                    </Link>
-                    <Link href="/become-svippare" className={`${styles.profile__sidebar_pubnote_btn} ${styles['profile__sidebar_pubnote_btn--primary']}`}>
-                      Ansök om att bli svippare på nytt
-                    </Link>
-                  </div>
-                </div>
-              </>
-            ) : (
-              <>
-                <Info size={16} className={styles.profile__sidebar_pubnote_icon} />
-                <div>
-                  <strong>Ansök om att bli svippare</strong>
-                  <p>Erbjud dina tjänster och tjäna extra på Svippo.</p>
-                  <div className={styles.profile__sidebar_pubnote_actions}>
-                    <Link href="/become-svippare" className={`${styles.profile__sidebar_pubnote_btn} ${styles['profile__sidebar_pubnote_btn--primary']}`}>
-                      Ansök nu →
-                    </Link>
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
-        )}
-
         <nav className={styles.profile__nav}>
           <button
             className={`${styles.profile__nav_item} ${activeSection === 'oversikt' ? styles['profile__nav_item--active'] : ''}`}
@@ -523,17 +479,6 @@ export default function ProfileClient({ initialAccountType }: Props) {
       {/* Huvudinnehåll */}
       <main className={styles.profile__main}>
 
-        {/* Pending-banner */}
-        {activeSection === 'oversikt' && svippareStatus === 'pending' && (
-          <div className={styles.profile__pending_banner}>
-            <span className={styles.profile__pending_banner_icon}><Clock size={20} /></span>
-            <div className={styles.profile__pending_banner_content}>
-              <strong>Din Svippare-ansökan granskas</strong>
-              <p>Vi håller på att granska din ansökan. Du får ett meddelande så snart den är godkänd. Tills dess kan du beställa tjänster som vanligt.</p>
-            </div>
-          </div>
-        )}
-
         {/* ÖVERSIKT */}
         {activeSection === 'oversikt' && (
           <div className={styles.profile__section}>
@@ -542,6 +487,7 @@ export default function ProfileClient({ initialAccountType }: Props) {
               avatarUrl={avatarUrl}
               dbAccountType={dbAccountType}
               svippareStatus={svippareStatus}
+              rejectionReason={rejectionReason}
               canCreateService={canCreateService}
               services={services}
               incomingOrders={incomingOrders}

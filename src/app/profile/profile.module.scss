@@ -76,71 +76,6 @@
   &:hover { opacity: 0.7; }
 }
 
-.profile__sidebar_pubnote {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  margin: 0 24px;
-  padding: 12px 14px;
-  background: #fff8e1;
-  border: 1.5px solid #f59e0b;
-  border-radius: var(--radius-md);
-
-  strong {
-    display: block;
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--color-dark);
-    margin-bottom: 2px;
-  }
-
-  p {
-    font-size: 12px;
-    color: var(--color-dark);
-    line-height: 1.5;
-    margin: 0;
-  }
-}
-
-.profile__sidebar_pubnote_actions {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-top: 10px;
-}
-
-.profile__sidebar_pubnote_btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  font-weight: 600;
-  padding: 7px 10px;
-  border-radius: var(--radius-sm);
-  text-decoration: none;
-  text-align: center;
-  line-height: 1.3;
-
-  &--primary {
-    background: var(--color-primary);
-    color: white;
-    &:hover { opacity: 0.9; }
-  }
-
-  &--outline {
-    background: white;
-    border: 1.5px solid #f59e0b;
-    color: #b45309;
-    &:hover { background: #fff3d6; }
-  }
-}
-
-.profile__sidebar_pubnote_icon {
-  flex-shrink: 0;
-  color: #b45309;
-  margin-top: 1px;
-}
-
 // Nav
 .profile__nav {
   display: flex;
@@ -660,44 +595,6 @@
   margin-top: 4px;
   &:hover { text-decoration: underline; }
 }
-
-// Pending-banner
-.profile__pending_banner {
-  display: flex;
-  align-items: flex-start;
-  gap: 16px;
-  padding: 16px 20px;
-  background: #fff8e1;
-  border: 1.5px solid #f59e0b;
-  border-radius: var(--radius-md);
-  margin-bottom: 8px;
-}
-
-.profile__pending_banner_icon {
-  font-size: 24px;
-  flex-shrink: 0;
-}
-
-.profile__pending_banner_content {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-
-  strong {
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--color-dark);
-  }
-
-  p {
-    font-size: 13px;
-    color: var(--color-gray);
-    line-height: 1.5;
-    margin: 0;
-  }
-}
-
-
 
 // ================================
 // VÄLKOMSTBANNER

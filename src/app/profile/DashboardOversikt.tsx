@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Briefcase, ShoppingBag, Star, FileText, ShoppingCart, MessageCircle, Package, CheckCircle, Wallet, Rocket } from 'lucide-react'
+import { Briefcase, ShoppingBag, Star, FileText, ShoppingCart, MessageCircle, Package, CheckCircle, Wallet, Rocket, Clock, XCircle } from 'lucide-react'
 import { sanityClient } from '@/sanity/client'
 import { blogPostsQuery } from '@/sanity/queries'
 import { formatConversationTime, type Conversation } from '@/lib/conversations'
@@ -49,6 +49,7 @@ type Props = {
   avatarUrl?: string | null
   dbAccountType: string | null
   svippareStatus?: string | null
+  rejectionReason?: string | null
   canCreateService: boolean
   services: Service[]
   incomingOrders: Order[]
@@ -83,7 +84,7 @@ const truncate = (text: string, max: number) =>
   text.length > max ? `${text.slice(0, max).trimEnd()}…` : text
 
 export default function DashboardOversikt({
-  displayName, avatarUrl, dbAccountType, svippareStatus, canCreateService,
+  displayName, avatarUrl, dbAccountType, svippareStatus, rejectionReason, canCreateService,
   services, incomingOrders, placedOrders, myRequests, interests,
   notifications, conversations, userId, onDismissNotif, onNavigate,
 }: Props) {
@@ -113,6 +114,7 @@ export default function DashboardOversikt({
   // ── Svippare CTA logic ────────────────────────────────────────────────────
   const showSvippareCta    = isBestellare && !svippareStatus
   const showPendingBanner  = isBestellare && svippareStatus === 'pending'
+  const showRejectedBanner = isBestellare && svippareStatus === 'rejected'
 
   return (
     <div className={styles.dash}>
@@ -187,12 +189,35 @@ export default function DashboardOversikt({
         </div>
       )}
 
-      {/* ── Svippare CTA / pending banner ──────────────────────────────────── */}
+      {/* ── Svippare CTA / status banner ─────────────────────────────────── */}
       {showPendingBanner && (
         <div className={`${styles.dash__promo} ${styles['dash__promo--pending']}`}>
-          <p className={styles.dash__promo_pending_text}>
-            ⏳ Din ansökan granskas – vi återkommer inom kort!
-          </p>
+          <Clock size={32} className={styles.dash__promo_icon} />
+          <div className={styles.dash__promo_content}>
+            <h2 className={styles.dash__promo_title}>Din ansökan granskas</h2>
+            <p className={styles.dash__promo_text}>
+              Du får ett meddelande så snart den är godkänd.
+            </p>
+          </div>
+        </div>
+      )}
+      {showRejectedBanner && (
+        <div className={`${styles.dash__promo} ${styles['dash__promo--rejected']}`}>
+          <XCircle size={32} className={styles.dash__promo_icon} />
+          <div className={styles.dash__promo_content}>
+            <h2 className={styles.dash__promo_title}>Du har blivit nekad</h2>
+            <p className={styles.dash__promo_text}>
+              {rejectionReason || 'Din ansökan om att bli Svippare godkändes tyvärr inte.'}
+            </p>
+          </div>
+          <div className={styles.dash__promo_actions}>
+            <Link href="/kontakt" className={`${styles.dash__promo_btn} ${styles['dash__promo_btn--outline']}`}>
+              Kontakta Svippo
+            </Link>
+            <Link href="/become-svippare" className={styles.dash__promo_btn}>
+              Ansök om att bli svippare på nytt
+            </Link>
+          </div>
         </div>
       )}
       {showSvippareCta && (
@@ -201,7 +226,7 @@ export default function DashboardOversikt({
           <div className={styles.dash__promo_content}>
             <h2 className={styles.dash__promo_title}>Börja tjäna pengar på Svippo</h2>
             <p className={styles.dash__promo_text}>
-              Bli Svippare och sälj dina tjänster till tusentals kunder. Du bestämmer själv pris, tid och plats.
+              Bli Svippare och sälj dina tjänster till kunder på Svippo. Du bestämmer själv pris, tid och plats.
             </p>
           </div>
           <Link href="/become-svippare" className={styles.dash__promo_btn}>
