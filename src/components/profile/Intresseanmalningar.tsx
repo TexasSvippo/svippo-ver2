@@ -149,6 +149,10 @@ export default function Intresseanmalningar({ userId }: Props) {
 
       // Update accepted interest in local state immediately after DB write
       setIncomingInterests(prev => prev.map(i => i.id === interest.id ? { ...i, status: 'accepted' } : i))
+      // Close the drawer instead of trying to keep its separate selectedInterest
+      // snapshot in sync -- the underlying list re-renders correctly from
+      // incomingInterests above, so there's nothing stale left to show.
+      setSelectedInterest(null)
 
       const { data: existingOrder } = await supabase
         .from('orders')
@@ -304,6 +308,7 @@ export default function Intresseanmalningar({ userId }: Props) {
 
     // Update local state immediately after DB write
     setIncomingInterests(prev => prev.map(i => i.id === interest.id ? { ...i, status: 'rejected' } : i))
+    setSelectedInterest(null)
 
     await supabase.from('notifications').insert({
       user_id: interest.svippar_id,

@@ -48,6 +48,8 @@ type PriceProposal = {
   amount: number
   currency: string
   note: string | null
+  hours: number | null
+  attachment_url: string | null
   status: string
   responded_by: string | null
   responded_at: string | null
@@ -465,7 +467,7 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
 
             {activeTab === 'aktivitet' && (
               <>
-                <div className={`${styles.myorder__header} card`}>
+                <div className={`${styles.myorder__header} staticcard`}>
                   <div className={styles.header_top}>
                     <div>
                       <span className={orderStyles.label}>Din beställning av</span>
@@ -528,6 +530,16 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
                   <div className={`${orderStyles.tab_actions} staticcard`}>
                     {pendingProposal ? (
                       <>
+                        <div className={styles.price_pending_amount}>{pendingProposal.amount} kr</div>
+                        {pendingProposal.hours && (
+                          <p className={styles.price_pending_note}>{pendingProposal.hours} h × {Math.round(pendingProposal.amount / pendingProposal.hours)} kr/h</p>
+                        )}
+                        {pendingProposal.note && <p className={styles.price_pending_note}>{pendingProposal.note}</p>}
+                        {pendingProposal.attachment_url && (
+                          <a href={pendingProposal.attachment_url} target="_blank" rel="noopener noreferrer" className={styles.price_pending_attachment}>
+                            <FileText size={14} /> Se bifogad fil
+                          </a>
+                        )}
                         <button
                           className="btn btn-primary"
                           onClick={() => handleProposalAction(pendingProposal.id, 'approve')}
@@ -581,7 +593,7 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
 
             {activeTab === 'detaljer' && (
               <>
-                <div className={`${styles.myorder__header} card`}>
+                <div className={`${styles.myorder__header} staticcard`}>
                   <div className={styles.header_top}>
                     <div>
                       <span className={orderStyles.label}>Din beställning av</span>
@@ -613,13 +625,13 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
                   </div>
                 )}
 
-                <div className={`${styles.myorder__message} card`}>
+                <div className={`${styles.myorder__message} staticcard`}>
                   <h2 className={orderStyles.section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><ClipboardList size={18} /> Ditt meddelande</h2>
                   <div className={`${orderStyles.field_value} ${orderStyles.field_message}`}>{order.message}</div>
                 </div>
 
                 {serviceType === 'typ1' && (preferredDate || address) && (
-                  <div className={`${orderStyles.orderdetail__type_info} card`}>
+                  <div className={`${orderStyles.orderdetail__type_info} staticcard`}>
                     <h2 className={orderStyles.section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>📅 Datum & plats</h2>
                     <div className={orderStyles.type_info_grid}>
                       {preferredDate && <div className={orderStyles.type_info_item}><span className={orderStyles.type_info_label}>Önskat datum</span><strong>{preferredDate}</strong></div>}
@@ -630,7 +642,7 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
                 )}
 
                 {serviceType === 'typ2' && (desiredDeadline || milestones) && (
-                  <div className={`${orderStyles.orderdetail__type_info} card`}>
+                  <div className={`${orderStyles.orderdetail__type_info} staticcard`}>
                     <h2 className={orderStyles.section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Calendar size={18} /> Tidslinje</h2>
                     <div className={orderStyles.type_info_grid}>
                       {desiredDeadline && <div className={orderStyles.type_info_item}><span className={orderStyles.type_info_label}>Önskat slutdatum</span><strong>{desiredDeadline}</strong></div>}
@@ -640,7 +652,7 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
                 )}
 
                 {serviceType === 'typ3' && (pickupAddress || deliveryAddress) && (
-                  <div className={`${orderStyles.orderdetail__type_info} card`}>
+                  <div className={`${orderStyles.orderdetail__type_info} staticcard`}>
                     <h2 className={orderStyles.section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Package size={18} /> Upphämtning & leverans</h2>
                     <div className={orderStyles.type_info_grid}>
                       {pickupAddress && <div className={orderStyles.type_info_item}><span className={orderStyles.type_info_label}>Upphämtning</span><strong>{pickupAddress}</strong></div>}
@@ -652,7 +664,7 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
                 )}
 
                 {Object.keys(filteredAnswers).length > 0 && (
-                  <div className={`${styles.myorder__message} card`}>
+                  <div className={`${styles.myorder__message} staticcard`}>
                     <h2 className={orderStyles.section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><FileText size={18} /> Dina svar</h2>
                     <div className={orderStyles.answers}>
                       {Object.entries(filteredAnswers).map(([key, value]) => (
@@ -666,7 +678,7 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
                 )}
 
                 {order.custom_answers && Object.keys(order.custom_answers).length > 0 && (
-                  <div className={`${styles.myorder__message} card`}>
+                  <div className={`${styles.myorder__message} staticcard`}>
                     <h2 className={orderStyles.section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><MessageCircle size={18} /> Svar på utförarens frågor</h2>
                     <div className={orderStyles.answers}>
                       {Object.entries(order.custom_answers).map(([key, value]) => (
@@ -680,7 +692,7 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
                 )}
 
                 {order.status === 'accepted' && !isTyp3 && (
-                  <div className={`${styles.myorder__progress} card`}>
+                  <div className={`${styles.myorder__progress} staticcard`}>
                     <h2 className={orderStyles.section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><BarChart2 size={18} /> Projektstatus</h2>
                     <p className={orderStyles.progress_hint}>Följ hur {order.seller_name} arbetar med ditt projekt.</p>
                     <div className={orderStyles.progress_steps}>
@@ -705,7 +717,7 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
                 )}
 
                 {isTyp3 && isDelivered && projectStatus !== 'completed' && (
-                  <div className={`${styles.myorder__delivery} card`}>
+                  <div className={`${styles.myorder__delivery} staticcard`}>
                     <h2 className={orderStyles.section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Package size={18} /> Leverans</h2>
                     <p className={orderStyles.progress_hint}>
                       {order.seller_name} har markerat uppdraget som levererat. Stämmer allt?
@@ -744,7 +756,7 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
           {/* Höger */}
           <div className={styles.myorder__sidebar}>
 
-            <div className={`${styles.seller_card} card`}>
+            <div className={`${styles.seller_card} staticcard`}>
               <h2 className={orderStyles.section_title} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Wrench size={18} /> Utförare</h2>
               <div className={orderStyles.customer_avatar}>{order.seller_name?.charAt(0).toUpperCase()}</div>
               <strong className={orderStyles.customer_name}>{order.seller_name}</strong>
@@ -756,7 +768,7 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
 
             {/* CHATT */}
             {!isCancelled && order.status === 'accepted' && (
-              <div className={`${styles.svipposafe_card} card`}>
+              <div className={`${styles.svipposafe_card} staticcard`}>
                 <div className={styles.svipposafe__header}>
                   <MessageCircle size={18} />
                   <strong>Meddelanden</strong>
@@ -772,7 +784,7 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
 
             {/* Prisförslag */}
             {!isCancelled && order.status === 'accepted' && (
-              <div className={`${styles.price_card} card`}>
+              <div className={`${styles.price_card} staticcard`}>
                 <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px', fontFamily: 'var(--font-heading)', fontSize: '18px', fontWeight: 700, color: 'var(--color-dark)', margin: 0 }}>
                   <Tag size={18} /> Prisförslag
                 </h2>
@@ -786,7 +798,15 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
                 {order.price_status === 'proposal_pending' && pendingProposal && (
                   <div className={styles.price_pending_card}>
                     <div className={styles.price_pending_amount}>{pendingProposal.amount} kr</div>
+                    {pendingProposal.hours && (
+                      <p className={styles.price_pending_note}>{pendingProposal.hours} h × {Math.round(pendingProposal.amount / pendingProposal.hours)} kr/h</p>
+                    )}
                     {pendingProposal.note && <p className={styles.price_pending_note}>{pendingProposal.note}</p>}
+                    {pendingProposal.attachment_url && (
+                      <a href={pendingProposal.attachment_url} target="_blank" rel="noopener noreferrer" className={styles.price_pending_attachment}>
+                        <FileText size={14} /> Se bifogad fil
+                      </a>
+                    )}
                     <div className={styles.price_pending_actions}>
                       <button
                         className="btn btn-primary"
@@ -833,7 +853,7 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
 
             {/* SvippoSafe */}
             {!isCancelled && order.status === 'accepted' && projectStatus !== 'completed' && !hasDispute && (
-              <div className={`${styles.svipposafe_card} card`}>
+              <div className={`${styles.svipposafe_card} staticcard`}>
                 <div className={styles.svipposafe__header}>
                   <Shield size={18} />
                   <strong>SvippoSafe</strong>
@@ -879,7 +899,7 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
             )}
 
             {disputeSent && (
-              <div className={`${styles.svipposafe_card} card`}>
+              <div className={`${styles.svipposafe_card} staticcard`}>
                 <div className={styles.dispute_sent}>
                   <CheckCircle size={18} />
                   <div>
@@ -891,7 +911,7 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
             )}
 
             {(alreadyReviewed || reviewSuccess) && (
-              <div className={`${orderStyles.review_card} card`}>
+              <div className={`${orderStyles.review_card} staticcard`}>
                 <div className={orderStyles.payment_done} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}><Star size={16} /> Du har lämnat en recension!</div>
               </div>
             )}

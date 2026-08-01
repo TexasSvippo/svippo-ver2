@@ -133,9 +133,22 @@ export async function PATCH(
       })
       .eq('id', id)
 
+    // If an earlier proposal on this order was already approved (this reject
+    // is for a later, superseding proposal), active_price still points at
+    // that earlier approved amount -- restore price_status to match it
+    // instead of leaving the order stuck as if nothing were approved.
+    const { data: priorApproved } = await supabaseAdmin
+      .from('price_proposals')
+      .select('id')
+      .eq('order_id', proposal.order_id)
+      .eq('status', 'approved')
+      .neq('id', id)
+      .limit(1)
+      .maybeSingle()
+
     await supabaseAdmin
       .from('orders')
-      .update({ price_status: 'price_rejected' })
+      .update({ price_status: priorApproved ? 'price_approved' : 'price_rejected' })
       .eq('id', proposal.order_id)
 
     const content = `${order.buyer_name} avböjde prisförslaget på ${proposal.amount} kr`
