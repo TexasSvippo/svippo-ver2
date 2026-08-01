@@ -123,7 +123,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
           .select('id')
           .eq('order_id', id)
           .eq('role', 'seller')
-          .single()
+          .maybeSingle()
         if (existingReview) {
           setHasReviewed(true)
         } else if (data.project_status === 'completed') {
