@@ -3,6 +3,9 @@ import { supabase } from '@/lib/supabase'
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
 import { notFound } from 'next/navigation'
 import ServiceDetailClient from './ServiceDetailClient'
+import { stripToOgDescription } from '@/utils/ogDescription'
+
+const OG_FALLBACK_IMAGE = '/images/Svippo-og-img.png'
 
 type Props = {
   params: Promise<{ id: string }>
@@ -10,20 +13,34 @@ type Props = {
 
 export async function generateMetadata({ params }: Props) {
   const { id } = await params
-  const { data: serviceRaw } = await supabase
-    .from('services')
-    .select('*, users(avatar_url)')
-    .eq('id', id)
-    .single()
+  const [{ data: serviceRaw }, { data: firstReference }] = await Promise.all([
+    supabase
+      .from('services')
+      .select('*, users(avatar_url)')
+      .eq('id', id)
+      .single(),
+    supabase
+      .from('service_references')
+      .select('image_url')
+      .eq('service_id', id)
+      .order('sort_order')
+      .limit(1)
+      .maybeSingle(),
+  ])
 
   const { users: serviceUsers, ...serviceRest } = serviceRaw as typeof serviceRaw & { users: { avatar_url: string | null } | null }
   const service = serviceRaw ? { ...serviceRest, avatar_url: serviceUsers?.avatar_url ?? null } : null
 
   if (!service) return { title: 'Tjänst hittades inte – Svippo' }
 
+  const title = `${service.title} – Svippo`
+  const description = stripToOgDescription(service.description, `Se ${service.title} på Svippo.`)
+  const image = firstReference?.image_url ?? service.avatar_url ?? OG_FALLBACK_IMAGE
+
   return {
-    title: `${service.title} – Svippo`,
-    description: service.description?.slice(0, 160),
+    title,
+    description,
+    openGraph: { title, description, images: [image] },
   }
 }
 

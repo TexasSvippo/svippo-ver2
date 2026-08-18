@@ -1,6 +1,9 @@
 import { supabase } from '@/lib/supabase'
 import { notFound } from 'next/navigation'
 import PublicProfileClient from './PublicProfileClient'
+import { stripToOgDescription } from '@/utils/ogDescription'
+
+const OG_FALLBACK_IMAGE = '/images/Svippo-og-img.png'
 
 type Props = {
   params: Promise<{ id: string }>
@@ -10,7 +13,7 @@ export async function generateMetadata({ params }: Props) {
   const { id } = await params
   const { data: profile } = await supabase
     .from('users')
-    .select('name, bio, account_type')
+    .select('name, bio, account_type, avatar_url')
     .eq('id', id)
     .single()
 
@@ -21,9 +24,14 @@ export async function generateMetadata({ params }: Props) {
     profile.account_type === 'uf-foretag' ? 'UF-företag' :
     'Svippare'
 
+  const title = `${profile.name} – ${typeLabel} på Svippo`
+  const description = stripToOgDescription(profile.bio, `Se ${profile.name}s tjänster på Svippo.`)
+  const image = profile.avatar_url ?? OG_FALLBACK_IMAGE
+
   return {
-    title: `${profile.name} – ${typeLabel} på Svippo`,
-    description: profile.bio?.slice(0, 160) ?? `Se ${profile.name}s tjänster på Svippo.`,
+    title,
+    description,
+    openGraph: { title, description, images: [image] },
   }
 }
 
