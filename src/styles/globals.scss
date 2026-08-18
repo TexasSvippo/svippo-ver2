@@ -262,6 +262,20 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* ================================
+   SKELETON (loading.tsx-placeholders)
+   ================================ */
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.skeleton {
+  background-color: var(--color-gray-light);
+  border-radius: var(--radius-sm);
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+/* ================================
    FORMULÄR
    ================================ */
 .form-group {

@@ -4,8 +4,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import AdCard from './AdCard'
 import ServiceCard from './ServiceCard'
-import { useState, useEffect } from 'react'
-import { supabase } from '@/lib/supabase'
+import { useState } from 'react'
 import styles from './ServiceList.module.scss'
 
 type Service = {
@@ -33,56 +32,13 @@ type Request = {
   avatar_url?: string | null
 }
 
-export default function ServiceList() {
+type Props = {
+  services: Service[]
+  requests: Request[]
+}
+
+export default function ServiceList({ services, requests }: Props) {
   const [activeTab, setActiveTab] = useState<'services' | 'requests'>('services')
-  const [services, setServices] = useState<Service[]>([])
-  const [requests, setRequests] = useState<Request[]>([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true)
-
-      const [servicesRes, requestsRes] = await Promise.all([
-        supabase
-          .from('services')
-          .select('*, users(avatar_url)')
-          .eq('status', 'active')
-          .order('created_at', { ascending: false })
-          .limit(6),
-        supabase
-          .from('requests')
-          .select('*')
-          .eq('status', 'open')
-          .order('created_at', { ascending: false })
-          .limit(6),
-      ])
-
-      const fetchedServices = (servicesRes.data ?? []).map(s => {
-        const { users, ...rest } = s as typeof s & { users: { avatar_url: string | null } | null }
-        return { ...rest, avatar_url: users?.avatar_url ?? null }
-      })
-
-      // Fetch request avatars separately to avoid users-join RLS issue
-      const reqList = requestsRes.data ?? []
-      const reqUserIds = [...new Set(reqList.map((r: { user_id?: string }) => r.user_id).filter(Boolean))]
-      const { data: reqUsersData } = reqUserIds.length > 0
-        ? await supabase.from('users').select('id, avatar_url').in('id', reqUserIds)
-        : { data: [] }
-      const reqAvatarMap = Object.fromEntries((reqUsersData ?? []).map((u: { id: string; avatar_url: string | null }) => [u.id, u.avatar_url]))
-
-      const fetchedRequests = reqList.map((r: Request & { user_id?: string }) => ({
-        ...r,
-        avatar_url: r.user_id ? (reqAvatarMap[r.user_id] ?? null) : null,
-      }))
-
-      setServices(fetchedServices)
-      setRequests(fetchedRequests)
-      setLoading(false)
-    }
-
-    fetchData()
-  }, [])
 
   return (
     <section className={styles.servicelist}>
@@ -112,73 +68,67 @@ export default function ServiceList() {
           </Link>
         </div>
 
-        {loading ? (
-          <div className={styles.servicelist__loading}>Laddar...</div>
-        ) : (
-          <>
-            {/* Tjänster */}
-            {activeTab === 'services' && (
-              <div className={styles.servicelist__list}>
-                {services.length === 0 ? (
-                  <div className={styles.servicelist__empty}>
-                    <p>Inga tjänster hittades ännu.</p>
-                    <Link href="/create-service" className="btn btn-primary">Skapa första tjänsten</Link>
-                  </div>
-                ) : (
-                  services.flatMap((s, idx) => {
-                    const card = <ServiceCard key={s.id} {...s} />
-                    // Insert AdCard after index 2 (or after the last card if fewer than 3)
-                    const adInsertAfter = services.length >= 3 ? 2 : services.length - 1
-                    if (idx === adInsertAfter) {
-                      return [card, <AdCard key="ad-card" />]
-                    }
-                    return [card]
-                  })
-                )}
+        {/* Tjänster */}
+        {activeTab === 'services' && (
+          <div className={styles.servicelist__list}>
+            {services.length === 0 ? (
+              <div className={styles.servicelist__empty}>
+                <p>Inga tjänster hittades ännu.</p>
+                <Link href="/create-service" className="btn btn-primary">Skapa första tjänsten</Link>
               </div>
+            ) : (
+              services.flatMap((s, idx) => {
+                const card = <ServiceCard key={s.id} {...s} />
+                // Insert AdCard after index 2 (or after the last card if fewer than 3)
+                const adInsertAfter = services.length >= 3 ? 2 : services.length - 1
+                if (idx === adInsertAfter) {
+                  return [card, <AdCard key="ad-card" />]
+                }
+                return [card]
+              })
             )}
+          </div>
+        )}
 
-            {/* Förfrågningar */}
-            {activeTab === 'requests' && (
-              <div className={styles.servicelist__list}>
-                {requests.length === 0 ? (
-                  <div className={styles.servicelist__empty}>
-                    <p>Inga förfrågningar hittades ännu.</p>
-                    <Link href="/create-request" className="btn btn-orange">Skapa en förfrågan</Link>
-                  </div>
-                ) : (
-                  requests.map((r) => (
-                    <Link href={`/request/${r.id}`} key={r.id} className={`${styles.service_card} card`}>
-                      <div className={styles.service_card__avatar}>
-                        {r.avatar_url
-                          ? <Image src={r.avatar_url} alt={r.user_name} width={52} height={52} className={styles.service_card__avatar_img} />
-                          : <div className={`${styles.service_card__avatar_placeholder} ${styles['service_card__avatar_placeholder--orange']}`}>
-                              {r.user_name?.charAt(0).toUpperCase() || '?'}
-                            </div>
-                        }
-                      </div>
-                      <div className={styles.service_card__info}>
-                        <div className={styles.service_card__meta}>
-                          <span className={styles.service_card__name}>{r.user_name}</span>
-                          <span className={styles.service_card__distance}>· {r.location}</span>
-                        </div>
-                        <p className={styles.service_card__title}>{r.title}</p>
-                        <span className={`${styles.service_card__category} ${styles['service_card__category--request']}`}>{r.subcategory}</span>
-                      </div>
-                      <div className={styles.service_card__price}>
-                        <span className={styles.service_card__price_type}>
-                          {r.budget_type === 'prisforslag' ? '' : 'budget:'}
-                        </span>
-                        <strong>
-                          {r.budget_type === 'prisforslag' ? 'Prisförslag' : `${r.budget}kr`}
-                        </strong>
-                      </div>
-                    </Link>
-                  ))
-                )}
+        {/* Förfrågningar */}
+        {activeTab === 'requests' && (
+          <div className={styles.servicelist__list}>
+            {requests.length === 0 ? (
+              <div className={styles.servicelist__empty}>
+                <p>Inga förfrågningar hittades ännu.</p>
+                <Link href="/create-request" className="btn btn-orange">Skapa en förfrågan</Link>
               </div>
+            ) : (
+              requests.map((r) => (
+                <Link href={`/request/${r.id}`} key={r.id} className={`${styles.service_card} card`}>
+                  <div className={styles.service_card__avatar}>
+                    {r.avatar_url
+                      ? <Image src={r.avatar_url} alt={r.user_name} width={52} height={52} className={styles.service_card__avatar_img} />
+                      : <div className={`${styles.service_card__avatar_placeholder} ${styles['service_card__avatar_placeholder--orange']}`}>
+                          {r.user_name?.charAt(0).toUpperCase() || '?'}
+                        </div>
+                    }
+                  </div>
+                  <div className={styles.service_card__info}>
+                    <div className={styles.service_card__meta}>
+                      <span className={styles.service_card__name}>{r.user_name}</span>
+                      <span className={styles.service_card__distance}>· {r.location}</span>
+                    </div>
+                    <p className={styles.service_card__title}>{r.title}</p>
+                    <span className={`${styles.service_card__category} ${styles['service_card__category--request']}`}>{r.subcategory}</span>
+                  </div>
+                  <div className={styles.service_card__price}>
+                    <span className={styles.service_card__price_type}>
+                      {r.budget_type === 'prisforslag' ? '' : 'budget:'}
+                    </span>
+                    <strong>
+                      {r.budget_type === 'prisforslag' ? 'Prisförslag' : `${r.budget}kr`}
+                    </strong>
+                  </div>
+                </Link>
+              ))
             )}
-          </>
+          </div>
         )}
 
       </div>
