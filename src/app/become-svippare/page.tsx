@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import useAuth from '@/hooks/useAuth'
 import { categories } from '@/data/categories'
@@ -29,6 +30,7 @@ type FormData = {
 }
 
 const STEPS = ['Kategorier', 'Personuppgifter', 'Din profil', 'Granska']
+const TERMS_VERSION = '1.0'
 
 export default function BliSvipparePage() {
   const { user, loading, accountType, svippareStatus } = useAuth()
@@ -37,6 +39,7 @@ export default function BliSvipparePage() {
   const [saving, setSaving] = useState(false)
   const [ageError, setAgeError] = useState<string | null>(null)
   const [submitError, setSubmitError] = useState<string | null>(null)
+  const [termsAccepted, setTermsAccepted] = useState(false)
 
   const [form, setForm] = useState<FormData>({
     categories: [],
@@ -72,6 +75,14 @@ export default function BliSvipparePage() {
 
   if (loading || !user) return <div className={styles.loading}>Laddar...</div>
 
+  // HIGH PRIORITY, NOT YET FIXED: the age check below (parseAgeFromPersonnummer
+  // / handlePersonalNumberChange / ageError) is client-side only -- handleSubmit
+  // never re-validates it, and there is no server-side/DB-level enforcement, so
+  // it's trivially bypassable. Villkor för utförare 2.2 requires the applicant
+  // be 18+, and Svippo has a DAC7 reporting obligation to Skatteverket for
+  // svippare -- an underage applicant slipping through is a real compliance
+  // risk, not just a UX gap. Needs a real server-side check before this can be
+  // considered enforced.
   const parseAgeFromPersonnummer = (pnr: string): number | null => {
     const cleaned = pnr.trim().replace(/\s/g, '')
     let year: number, month: number, day: number
@@ -141,6 +152,10 @@ export default function BliSvipparePage() {
   }
 
   const handleSubmit = async () => {
+    if (!termsAccepted) {
+      setSubmitError('Du måste godkänna villkoren för utförare för att skicka in din ansökan.')
+      return
+    }
     setSaving(true)
     setSubmitError(null)
     try {
@@ -165,6 +180,9 @@ export default function BliSvipparePage() {
         social_links: form.social_links
           .map(l => l.url.trim())
           .filter(Boolean),
+        terms_accepted: true,
+        terms_accepted_at: new Date().toISOString(),
+        terms_version: TERMS_VERSION,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       }, { onConflict: 'user_id' })
@@ -433,6 +451,20 @@ export default function BliSvipparePage() {
                   Som privatperson rekommenderar vi att du använder en <strong>faktureringstjänst utan eget företag</strong> för att ta betalt och redovisa dina inkomster korrekt.
                 </p>
               </div>
+
+              <div className={styles.checkbox_field}>
+                <input
+                  id="accept-svippare-terms"
+                  type="checkbox"
+                  className={styles.checkbox}
+                  checked={termsAccepted}
+                  onChange={e => setTermsAccepted(e.target.checked)}
+                />
+                <label htmlFor="accept-svippare-terms" className={styles.checkbox_label}>
+                  Jag har läst och godkänner Svippos{' '}
+                  <Link href="/villkor/utforare" target="_blank" rel="noopener noreferrer">villkor för utförare</Link>
+                </label>
+              </div>
             </div>
           )}
 
@@ -468,7 +500,7 @@ export default function BliSvipparePage() {
                 className="btn btn-primary"
                 type="button"
                 onClick={handleSubmit}
-                disabled={saving}
+                disabled={saving || !termsAccepted}
               >
                 {saving ? 'Skickar...' : '🚀 Skicka ansökan'}
               </button>

@@ -388,6 +388,37 @@
   }
 }
 
+// Checkbox
+.checkbox_field {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 20px 0 0;
+}
+
+.checkbox {
+  width: 16px;
+  height: 16px;
+  margin-top: 3px;
+  flex-shrink: 0;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+}
+
+.checkbox_label {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--color-dark);
+  cursor: pointer;
+
+  a {
+    color: var(--color-primary);
+    font-weight: 600;
+
+    &:hover { text-decoration: underline; }
+  }
+}
+
 // Navigering
 .nav {
   display: flex;
