@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import useAuth from '@/hooks/useAuth'
 import { categories } from '@/data/categories'
+import { parseAgeFromPersonnummer } from '@/utils/personnummer'
 import styles from './blisvippare.module.scss'
 import { Lock, Lightbulb, AlertCircle } from 'lucide-react'
 
@@ -30,7 +31,6 @@ type FormData = {
 }
 
 const STEPS = ['Kategorier', 'Personuppgifter', 'Din profil', 'Granska']
-const TERMS_VERSION = '1.0'
 
 export default function BliSvipparePage() {
   const { user, loading, accountType, svippareStatus } = useAuth()
@@ -74,42 +74,6 @@ export default function BliSvipparePage() {
     }, [loading, user, accountType, svippareStatus])
 
   if (loading || !user) return <div className={styles.loading}>Laddar...</div>
-
-  // HIGH PRIORITY, NOT YET FIXED: the age check below (parseAgeFromPersonnummer
-  // / handlePersonalNumberChange / ageError) is client-side only -- handleSubmit
-  // never re-validates it, and there is no server-side/DB-level enforcement, so
-  // it's trivially bypassable. Villkor för utförare 2.2 requires the applicant
-  // be 18+, and Svippo has a DAC7 reporting obligation to Skatteverket for
-  // svippare -- an underage applicant slipping through is a real compliance
-  // risk, not just a UX gap. Needs a real server-side check before this can be
-  // considered enforced.
-  const parseAgeFromPersonnummer = (pnr: string): number | null => {
-    const cleaned = pnr.trim().replace(/\s/g, '')
-    let year: number, month: number, day: number
-
-    if (/^\d{8}[-+]?\d{4}$/.test(cleaned)) {
-      year = parseInt(cleaned.substring(0, 4), 10)
-      month = parseInt(cleaned.substring(4, 6), 10)
-      day = parseInt(cleaned.substring(6, 8), 10)
-    } else if (/^\d{6}[-+]?\d{4}$/.test(cleaned)) {
-      const yy = parseInt(cleaned.substring(0, 2), 10)
-      month = parseInt(cleaned.substring(2, 4), 10)
-      day = parseInt(cleaned.substring(4, 6), 10)
-      const currentYear2d = new Date().getFullYear() % 100
-      year = yy <= currentYear2d ? 2000 + yy : 1900 + yy
-    } else {
-      return null
-    }
-
-    const birth = new Date(year, month - 1, day)
-    if (isNaN(birth.getTime())) return null
-
-    const today = new Date()
-    let age = today.getFullYear() - birth.getFullYear()
-    const m = today.getMonth() - birth.getMonth()
-    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--
-    return age
-  }
 
   const handlePersonalNumberChange = (value: string) => {
     setForm(prev => ({ ...prev, personal_number: value }))
@@ -159,51 +123,32 @@ export default function BliSvipparePage() {
     setSaving(true)
     setSubmitError(null)
     try {
-      // svippare_profiles.user_id has a unique constraint, so a rejected
-      // applicant re-submitting hits a duplicate-key conflict on a plain
-      // insert -- upsert on that same conflict target instead, turning a
-      // resubmission into an update of the existing row back to 'pending'
-      // (including created_at, so it reappears as a fresh application in
-      // the admin queue).
-      const { error: profileError } = await supabase.from('svippare_profiles').upsert({
-        user_id: user.id,
-        status: 'pending',
-        categories: form.categories,
-        location: form.city,
-        bio: form.bio,
-        experience: form.experience,
-        website: form.website,
-        personal_number: form.personal_number,
-        address: form.address,
-        postal_code: form.postal_code,
-        city: form.city,
-        social_links: form.social_links
-          .map(l => l.url.trim())
-          .filter(Boolean),
-        terms_accepted: true,
-        terms_accepted_at: new Date().toISOString(),
-        terms_version: TERMS_VERSION,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      }, { onConflict: 'user_id' })
+      const { data: { session } } = await supabase.auth.getSession()
+      const res = await fetch('/api/become-svippare/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+        body: JSON.stringify({
+          categories: form.categories,
+          personal_number: form.personal_number,
+          address: form.address,
+          postal_code: form.postal_code,
+          city: form.city,
+          bio: form.bio,
+          experience: form.experience,
+          website: form.website,
+          social_links: form.social_links,
+        }),
+      })
+      const result = await res.json()
 
-      if (profileError) {
-        console.error('svippare_profiles upsert failed:', profileError)
-        setSubmitError('Något gick fel när ansökan skulle sparas. Försök igen om en stund.')
+      if (!res.ok) {
+        setSubmitError(result.error ?? 'Något gick fel när ansökan skulle sparas. Försök igen om en stund.')
         setSaving(false)
         return
       }
-
-      // account_type stays 'bestellare' until an admin approves the
-      // application (handleApprove in admin/page.tsx) -- flipping it here
-      // would let a pending/rejected applicant appear approved before any
-      // review happened. svippare_status still gets tracked immediately so
-      // the rest of the app can show correct pending/rejected messaging.
-      await supabase.auth.updateUser({
-        data: {
-          svippare_status: 'pending',
-        }
-      })
 
       fetch('/api/become-svippare/notify-email', {
         method: 'POST',
