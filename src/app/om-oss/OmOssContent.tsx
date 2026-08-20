@@ -110,6 +110,7 @@ export default function OmOssContent() {
 
       {/* 2. Historia */}
       <section
+        id="var-historia"
         ref={historiaRef}
         className={`${styles.section} ${styles.animate_hidden}`}
       >

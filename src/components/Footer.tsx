@@ -80,7 +80,7 @@ export default function Footer() {
         <div className={styles.col}>
           <h4 className={styles.heading}>Svippo</h4>
           <Link href="/om-oss">Om oss</Link>
-          <Link href="/var-historia">Vår historia</Link>
+          <Link href="/om-oss#var-historia">Vår historia</Link>
           <Link href="/blogg">Blogg</Link>
         </div>
 
