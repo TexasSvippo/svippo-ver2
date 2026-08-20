@@ -5,7 +5,7 @@ import ScrollToTop from '@/components/ScrollToTop'
 import '@/styles/globals.scss'
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://svippo-ver2.vercel.app'),
+  metadataBase: new URL('https://svippo.se'),
   openGraph: {
     images: ['/images/Svippo-og-img.png'],
   },

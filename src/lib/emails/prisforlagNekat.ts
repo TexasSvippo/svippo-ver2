@@ -32,7 +32,7 @@ export async function sendPrisforlagNekat({
           <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background-color:#ffffff;border-radius:12px;overflow:hidden;">
             <tr>
               <td style="background-color:#066696;padding:32px 24px;text-align:center;">
-                <img src="https://svippo-ver2.vercel.app/images/Svippo-vit.svg" alt="Svippo" width="130" style="display:block;margin:0 auto;">
+                <img src="https://svippo.se/images/Svippo-vit.svg" alt="Svippo" width="130" style="display:block;margin:0 auto;">
               </td>
             </tr>
             <tr>
