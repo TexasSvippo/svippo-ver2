@@ -9,7 +9,7 @@ import { useNotifications } from '@/hooks/useNotifications'
 import { fetchConversations as fetchConversationsForUser, type Conversation } from '@/lib/conversations'
 import { categories } from '@/data/categories'
 import styles from './profile.module.scss'
-import { Home, Wrench, Bell, Inbox, Users, Eye, Send, Star, Trophy, Settings, Zap, Pencil, Trash2, CheckCircle, Clock, XCircle, MessageCircle, ClipboardList, Wallet, Package, Tag, MapPin, Globe } from 'lucide-react'
+import { Home, Wrench, Bell, Inbox, Users, Eye, Send, Star, Trophy, Settings, Zap, Pencil, Trash2, CheckCircle, Clock, XCircle, MessageCircle, ClipboardList, Wallet, Package, Tag, MapPin, Globe, AlertTriangle } from 'lucide-react'
 import { renderStars } from '@/utils/renderStars'
 import { prepareImageForUpload } from '@/utils/prepareImageForUpload'
 import type { ReactNode } from 'react'
@@ -107,6 +107,8 @@ export default function ProfileClient({ initialAccountType }: Props) {
   const [saving, setSaving] = useState(false)
   const [success, setSuccess] = useState(false)
   const [editing, setEditing] = useState(false)
+  const [deletingAccount, setDeletingAccount] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
 
   const [companyBio, setCompanyBio] = useState('')
   const [companyOrgNumber, setCompanyOrgNumber] = useState('')
@@ -289,6 +291,40 @@ export default function ProfileClient({ initialAccountType }: Props) {
     setSaving(false)
     setSuccess(true)
     setEditing(false)
+  }
+
+  const handleDeleteAccount = async () => {
+    if (!user) return
+    if (!confirm('Är du säker? Detta går inte att ångra.')) return
+
+    setDeletingAccount(true)
+    setDeleteError(null)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const res = await fetch('/api/profile/delete-account', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${session?.access_token}` },
+      })
+      const result = await res.json()
+
+      if (!res.ok) {
+        setDeleteError(result.error ?? 'Något gick fel när kontot skulle raderas. Försök igen om en stund.')
+        setDeletingAccount(false)
+        return
+      }
+
+      await supabase.auth.signOut()
+      // Hard navigation, not router.push: this component's own effect
+      // (`if (!loading && !user) router.push('/login')`, above) fires the
+      // instant signOut() nulls the user, and can race a client-side
+      // router.push('/') and win, landing on /login instead. A full
+      // navigation tears this page down immediately and sidesteps that.
+      window.location.href = '/'
+    } catch (err) {
+      console.error(err)
+      setDeleteError('Något gick fel när kontot skulle raderas. Försök igen om en stund.')
+      setDeletingAccount(false)
+    }
   }
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1431,6 +1467,28 @@ export default function ProfileClient({ initialAccountType }: Props) {
                 </div>
               </div>
             )}
+
+            <div className={`${styles.profile__danger_zone} card`}>
+              <div className={styles.profile__danger_zone_header}>
+                <AlertTriangle size={18} />
+                <h2 className={styles.profile__section_title} style={{ fontSize: '20px' }}>Farlig zon</h2>
+              </div>
+              <p className={styles.profile__hint}>
+                Att radera ditt konto går inte att ångra. Din profil och ditt inloggningskonto tas bort permanent.
+              </p>
+              {deleteError && (
+                <div className={styles.profile__danger_zone_error} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <XCircle size={16} /> {deleteError}
+                </div>
+              )}
+              <button
+                className={`btn btn-outline ${styles.profile__danger_zone_btn}`}
+                onClick={handleDeleteAccount}
+                disabled={deletingAccount}
+              >
+                <Trash2 size={16} /> {deletingAccount ? 'Raderar...' : 'Radera mitt konto'}
+              </button>
+            </div>
           </div>
         )}
 
