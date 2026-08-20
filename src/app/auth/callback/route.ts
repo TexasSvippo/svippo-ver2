@@ -2,11 +2,17 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
+import { completeRegistration } from '@/lib/completeRegistration'
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
-  const accountType = searchParams.get('account_type') ?? 'bestellare'
+  // Google OAuth has no account_type of its own, so it's appended to
+  // redirectTo as a query param instead (see login/page.tsx,
+  // register/page.tsx's handleGoogleSignIn). Email/password signups stash
+  // it (and name/city/org_number) directly in user_metadata at signUp()
+  // time instead -- preferred below when present.
+  const queryAccountType = searchParams.get('account_type') ?? 'bestellare'
 
   if (code) {
     const cookieStore = await cookies()
@@ -35,17 +41,19 @@ export async function GET(request: NextRequest) {
         .single()
 
       if (!existingUser) {
-        const fullName = (data.user.user_metadata?.full_name ?? data.user.user_metadata?.name ?? '') as string
-        const avatarUrl = (data.user.user_metadata?.avatar_url ?? data.user.user_metadata?.picture ?? null) as string | null
+        const meta = data.user.user_metadata ?? {}
+        const fullName = (meta.full_name ?? meta.name ?? '') as string
+        const avatarUrl = (meta.avatar_url ?? meta.picture ?? null) as string | null
+        const accountType = (meta.account_type as string | undefined) ?? queryAccountType
 
-        await supabaseAdmin.from('users').insert({
-          id: data.user.id,
+        await completeRegistration({
+          userId: data.user.id,
+          email: data.user.email!,
+          accountType,
           name: fullName,
-          email: data.user.email,
-          avatar_url: avatarUrl,
-          account_type: accountType,
-          is_approved: accountType !== 'bestellare',
-          created_at: new Date().toISOString(),
+          city: (meta.city as string | undefined) ?? null,
+          orgNumber: (meta.org_number as string | undefined) ?? null,
+          avatarUrl,
         })
 
         await supabase.auth.updateUser({ data: { account_type: accountType } })

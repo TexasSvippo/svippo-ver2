@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
+import { completeRegistration } from '@/lib/completeRegistration'
 
 export async function POST(req: NextRequest) {
   try {
@@ -28,35 +29,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 })
     }
 
-    const isApproved = accountType !== 'bestellare'
-
-    const { error: userError } = await supabaseAdmin.from('users').insert({
-      id: userId,
-      name,
+    const result = await completeRegistration({
+      userId,
       email,
+      accountType,
+      name,
       city: typeof city === 'string' ? city : null,
-      account_type: accountType,
-      is_approved: isApproved,
-      created_at: new Date().toISOString(),
+      orgNumber: typeof orgNumber === 'string' ? orgNumber : null,
     })
 
-    // 23505 = unique_violation on users_pkey -- the row already exists.
-    // Harmless: useAuth's self-heal can fire from more than one mounted
-    // instance (e.g. Navbar and a page both call useAuth()) for the same
-    // freshly-confirmed session, so a second, redundant completion attempt
-    // is expected and should be treated as success, not an error.
-    if (userError && userError.code !== '23505') {
-      return NextResponse.json({ success: false, error: userError.message }, { status: 500 })
-    }
-
-    if (accountType === 'foretag' || accountType === 'uf-foretag') {
-      await supabaseAdmin.from('company_profiles').insert({
-        user_id: userId,
-        org_number: accountType === 'foretag' && typeof orgNumber === 'string' ? orgNumber : null,
-        city: typeof city === 'string' ? city : null,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      })
+    if (!result.success) {
+      return NextResponse.json({ success: false, error: result.error }, { status: 500 })
     }
 
     return NextResponse.json({ success: true })

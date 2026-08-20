@@ -147,13 +147,14 @@ export default function RegisterPage() {
       email,
       password,
       options: {
-        // OBS: får INTE peka på /profile -- ProfileClient redirectar
-        // omedelbart till /login så fort den ser (loading:false, user:null),
-        // vilket kan hinna före än att supabase-js hunnit tolka
-        // sessionen ur URL-hashen (verifierat: den client-side
-        // navigeringen kastar bort hashen permanent, sessionen går
-        // förlorad). Startsidan har ingen sådan utloggad-redirect.
-        emailRedirectTo: `${window.location.origin}/`,
+        // Går via samma server-side /auth/callback som redan gör detta
+        // korrekt för Google-inloggning: exchangeCodeForSession skriver
+        // sessionen till cookies INNAN redirecten till /profile skickas,
+        // så webbläsaren har en giltig, beständig session redan i den
+        // första requesten -- till skillnad från att låta klienten tolka
+        // sessionen ur en URL-hash på en vanlig sida (verifierat att det
+        // bara ger en tillfällig, icke-beständig session i minnet).
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
         data: {
           account_type: dbAccountType,
           name,
