@@ -7,6 +7,37 @@ import type { User } from '@supabase/supabase-js'
 export type AccountType = 'bestellare' | 'svippare' | 'foretag' | 'uf-foretag'
 export type SvippareStatus = 'pending' | 'approved' | 'rejected' | null
 
+// Best-effort: konton skapade innan user_metadata stashades vid signUp (se
+// register/page.tsx) saknar namn/kontotyp här och kan inte självläkas --
+// register/complete avvisar dem med 400 precis som väntat, inget att göra
+// åt förutom att den enskilda användaren registrerar om sig.
+async function completeRegistrationFromMetadata(user: User): Promise<boolean> {
+  const { data: sessionData } = await supabase.auth.getSession()
+  const token = sessionData.session?.access_token
+  if (!token) return false
+
+  const meta = user.user_metadata ?? {}
+  if (typeof meta.name !== 'string' || typeof meta.account_type !== 'string') return false
+
+  const res = await fetch('/api/register/complete', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      userId: user.id,
+      email: user.email,
+      accountType: meta.account_type,
+      name: meta.name,
+      city: meta.city,
+      orgNumber: meta.org_number,
+    }),
+  })
+
+  return res.ok
+}
+
 interface AuthState {
   user: User | null
   loading: boolean
@@ -79,6 +110,27 @@ export default function useAuth(): AuthState {
           .select('avatar_url, name')
           .eq('id', user.id)
           .single()
+
+        if (!userData) {
+          // users-raden saknas -- troligen ett konto vars registrering
+          // stannade vid e-postbekräftelse (signUp() ger ingen session
+          // förrän e-posten bekräftats, så register/complete-anropet direkt
+          // efter signUp har inte kunnat köra). Slutför den nu, med samma
+          // Bearer-skyddade endpoint, från datat som stashades i
+          // user_metadata redan vid signUp (register/page.tsx).
+          const completed = await completeRegistrationFromMetadata(user)
+          if (completed) {
+            const { data: refetched } = await supabase
+              .from('users')
+              .select('avatar_url, name')
+              .eq('id', user.id)
+              .single()
+            setAvatarUrl(refetched?.avatar_url ?? null)
+            setName(refetched?.name ?? null)
+            return
+          }
+        }
+
         setAvatarUrl(userData?.avatar_url ?? null)
         setName(userData?.name ?? null)
       }

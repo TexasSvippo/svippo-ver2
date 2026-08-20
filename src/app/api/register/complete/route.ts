@@ -40,7 +40,12 @@ export async function POST(req: NextRequest) {
       created_at: new Date().toISOString(),
     })
 
-    if (userError) {
+    // 23505 = unique_violation on users_pkey -- the row already exists.
+    // Harmless: useAuth's self-heal can fire from more than one mounted
+    // instance (e.g. Navbar and a page both call useAuth()) for the same
+    // freshly-confirmed session, so a second, redundant completion attempt
+    // is expected and should be treated as success, not an error.
+    if (userError && userError.code !== '23505') {
       return NextResponse.json({ success: false, error: userError.message }, { status: 500 })
     }
 

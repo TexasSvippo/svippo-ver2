@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
-import { User, Building2, GraduationCap, ChevronRight, ChevronLeft, Check } from 'lucide-react'
+import { User, Building2, GraduationCap, ChevronRight, ChevronLeft, Check, Mail } from 'lucide-react'
 import styles from './register.module.scss'
 
 type AccountType = 'privatperson' | 'foretag' | 'uf'
@@ -76,15 +76,16 @@ export default function RegisterPage() {
   const [acceptedTerms, setAcceptedTerms] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [needsConfirmation, setNeedsConfirmation] = useState(false)
 
   useEffect(() => {
-    if (step !== 4) return
+    if (step !== 4 || needsConfirmation) return
     const timeout = window.setTimeout(() => {
       router.push('/profile')
       router.refresh()
     }, 2000)
     return () => window.clearTimeout(timeout)
-  }, [step])
+  }, [step, needsConfirmation])
 
   const goTo = (next: number, dir: Direction) => {
     setDirection(dir)
@@ -133,7 +134,34 @@ export default function RegisterPage() {
 
     setLoading(true)
 
-    const { data, error: signUpError } = await supabase.auth.signUp({ email, password })
+    const dbAccountType = ACCOUNT_TYPE_DB[accountType]
+    const name = accountType === 'privatperson' ? `${firstName} ${lastName}`.trim() : companyName
+
+    // account_type/name/city/orgNumber sparas i user_metadata redan här --
+    // om e-postbekräftelse krävs finns ingen session (och därmed ingen
+    // giltig token) förrän användaren klickat länken i mejlet, så data som
+    // bara skickats direkt till register/complete hade gått förlorad.
+    // useAuth läser samma metadata för att slutföra registreringen (skapa
+    // users-raden) så fort en session väl finns, oavsett var/när det sker.
+    const { data, error: signUpError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        // OBS: får INTE peka på /profile -- ProfileClient redirectar
+        // omedelbart till /login så fort den ser (loading:false, user:null),
+        // vilket kan hinna före än att supabase-js hunnit tolka
+        // sessionen ur URL-hashen (verifierat: den client-side
+        // navigeringen kastar bort hashen permanent, sessionen går
+        // förlorad). Startsidan har ingen sådan utloggad-redirect.
+        emailRedirectTo: `${window.location.origin}/`,
+        data: {
+          account_type: dbAccountType,
+          name,
+          city,
+          org_number: accountType === 'foretag' ? orgNumber : undefined,
+        },
+      },
+    })
 
     if (signUpError) {
       if (signUpError.message.includes('already registered')) {
@@ -145,37 +173,41 @@ export default function RegisterPage() {
       return
     }
 
-    if (data.user) {
-      const dbAccountType = ACCOUNT_TYPE_DB[accountType]
-      const name = accountType === 'privatperson' ? `${firstName} ${lastName}`.trim() : companyName
-
-      const res = await fetch('/api/register/complete', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${data.session?.access_token}`,
-        },
-        body: JSON.stringify({
-          userId: data.user.id,
-          email,
-          accountType: dbAccountType,
-          name,
-          city,
-          orgNumber: accountType === 'foretag' ? orgNumber : undefined,
-        }),
-      })
-
-      if (!res.ok) {
-        setError('Något gick fel. Försök igen.')
-        setLoading(false)
-        return
-      }
-
-      await supabase.auth.updateUser({ data: { account_type: dbAccountType } })
-
-      goTo(4, 'forward')
+    if (!data.user) {
+      setLoading(false)
+      return
     }
 
+    if (!data.session) {
+      setNeedsConfirmation(true)
+      goTo(4, 'forward')
+      setLoading(false)
+      return
+    }
+
+    const res = await fetch('/api/register/complete', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${data.session.access_token}`,
+      },
+      body: JSON.stringify({
+        userId: data.user.id,
+        email,
+        accountType: dbAccountType,
+        name,
+        city,
+        orgNumber: accountType === 'foretag' ? orgNumber : undefined,
+      }),
+    })
+
+    if (!res.ok) {
+      setError('Något gick fel. Försök igen.')
+      setLoading(false)
+      return
+    }
+
+    goTo(4, 'forward')
     setLoading(false)
   }
 
@@ -360,6 +392,20 @@ export default function RegisterPage() {
   const renderStep4 = () => {
     if (!accountType) return null
     const color = ACCOUNT_COLORS[accountType]
+
+    if (needsConfirmation) {
+      return (
+        <div className={styles.wizard__success}>
+          <div className={styles.wizard__success_icon} style={{ background: hexToRgba(color, 0.12) }}>
+            <Mail size={32} color={color} />
+          </div>
+          <h1 className={styles.wizard__success_title}>Kolla din inkorg</h1>
+          <p className={styles.wizard__success_text}>
+            Vi har skickat ett bekräftelsemejl till <strong>{email}</strong>. Klicka på länken i mejlet för att aktivera ditt konto.
+          </p>
+        </div>
+      )
+    }
 
     return (
       <div className={styles.wizard__success}>
