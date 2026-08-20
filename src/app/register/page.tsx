@@ -151,7 +151,10 @@ export default function RegisterPage() {
 
       const res = await fetch('/api/register/complete', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${data.session?.access_token}`,
+        },
         body: JSON.stringify({
           userId: data.user.id,
           email,

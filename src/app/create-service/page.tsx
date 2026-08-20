@@ -11,6 +11,7 @@ import styles from './createservice.module.scss'
 import { Clock, Lock, Tag, ClipboardList, MapPin, Monitor, Lightbulb, CheckCircle, Pencil, FileText, Calendar, ToggleRight, ToggleLeft } from 'lucide-react'
 import ReferenceImageUploader from '@/components/ReferenceImageUploader'
 import RichTextEditor from '@/components/RichTextEditor'
+import { sanitizeDescriptionHtml } from '@/utils/sanitizeHtml'
 
 type PriceType = 'timpris' | 'fastpris' | 'offert'
 
@@ -255,11 +256,12 @@ function CreateServiceContent() {
     setSaving(true)
     try {
       const { data: userData } = await supabase.from('users').select('name').eq('id', user.id).single()
+      const sanitizedDescription = sanitizeDescriptionHtml(form.description)
 
       if (isEditing) {
         await supabase.from('services').update({
           title: form.title,
-          description: form.description,
+          description: sanitizedDescription,
           status: 'active',
           price_type: form.price_type,
           price: form.price_type !== 'offert' ? Number(form.price) : null,
@@ -273,7 +275,7 @@ function CreateServiceContent() {
         // Update the draft created in step 0→1 with the full form data
         await supabase.from('services').update({
           title: form.title,
-          description: form.description,
+          description: sanitizedDescription,
           status: 'active',
           price_type: form.price_type,
           price: form.price_type !== 'offert' ? Number(form.price) : null,
@@ -289,7 +291,7 @@ function CreateServiceContent() {
         const selectedCat = categories.find(c => c.id === form.category_id)
         const { data: insertData } = await supabase.from('services').insert({
           title: form.title,
-          description: form.description,
+          description: sanitizedDescription,
           status: 'active',
           category_id: form.category_id,
           subcategory: form.subcategory,
@@ -721,7 +723,7 @@ function CreateServiceContent() {
                   <div key={row.label} className={styles.create__review_row}>
                     <span className={styles.create__review_label}>{row.label}</span>
                     {row.label === 'Beskrivning'
-                      ? <div dangerouslySetInnerHTML={{ __html: row.value }} style={{ fontSize: 14, lineHeight: 1.6 }} />
+                      ? <div dangerouslySetInnerHTML={{ __html: sanitizeDescriptionHtml(row.value) }} style={{ fontSize: 14, lineHeight: 1.6 }} />
                       : <span>{row.value}</span>
                     }
                   </div>

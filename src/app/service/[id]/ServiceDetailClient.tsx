@@ -10,6 +10,7 @@ import { supabase } from '@/lib/supabase'
 import styles from './servicedetail.module.scss'
 import refStyles from './references.module.scss'
 import { CheckCircle, Star, User, Wallet, Pencil, Trash2, Lock, MessageCircle, Shield, ChevronLeft, ChevronRight, Flag, MapPin } from 'lucide-react'
+import { sanitizeDescriptionHtml } from '@/utils/sanitizeHtml'
 import { renderStars } from '@/utils/renderStars'
 
 type CustomQuestion = {
@@ -314,7 +315,7 @@ export default function ServiceDetailClient({ service, reviews, avgRating, refer
             <h2 className={styles.section_title}>Om tjänsten</h2>
             <div
               className={`${styles.description} ${descLong && !expanded ? styles['description--collapsed'] : ''}`}
-              dangerouslySetInnerHTML={{ __html: service.description }}
+              dangerouslySetInnerHTML={{ __html: sanitizeDescriptionHtml(service.description) }}
             />
             {descLong && (
               <button className={styles.read_more_btn} onClick={() => setExpanded(e => !e)}>
@@ -588,7 +589,7 @@ export default function ServiceDetailClient({ service, reviews, avgRating, refer
               <Shield size={20} />
               <div>
                 <strong>Känn dig trygg med SvippoSafe</strong>
-                <p>Vi hjälper till att hantera trassel som kan dyka upp.</p>
+                <p>Om något inte går som planerat kan du kontakta oss, vi försöker hjälpa till.</p>
               </div>
             </div>
             {matchingCerts.length > 0 && (
@@ -724,7 +725,7 @@ export default function ServiceDetailClient({ service, reviews, avgRating, refer
               <Shield size={20} />
               <div>
                 <strong>Känn dig trygg med SvippoSafe</strong>
-                <p>Vi hjälper till att hantera trassel som kan dyka upp.</p>
+                <p>Om något inte går som planerat kan du kontakta oss, vi försöker hjälpa till.</p>
               </div>
             </div>
 
