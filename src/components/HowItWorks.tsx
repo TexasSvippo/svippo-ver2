@@ -20,7 +20,7 @@ const STEPS = [
   {
     image: '/images/how-it-works-3.png',
     title: 'Sen rullar pengarna in',
-    desc: 'Sedan när uppdraget är utfört, rullar pengarna in, skattade & klara. Du bara… svippar vidare.',
+    desc: 'Uppdraget klart, beställaren nöjd. Nu tar du betalt och svippar vidare till nästa.',
     bg: '#dcfce7',
     num: '03',
   },
