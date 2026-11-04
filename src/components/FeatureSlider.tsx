@@ -5,9 +5,15 @@ import Link from 'next/link'
 import Image from 'next/image'
 import styles from './FeatureSlider.module.scss'
 
+// `sizes` is the rendered width of each image under object-fit: cover, which
+// is wider than the card's image box for these wide photos. It is computed from
+// the image's aspect ratio and the box's FIXED height (210px mobile, 320px
+// desktop, see FeatureSlider.module.scss): width = height × (imgW / imgH),
+// never less than the box width. Recalculate if those heights change.
 const SLIDES = [
   {
-    image: '/images/utforare-img.png',
+    image: '/images/utforare-img.png', // 1920×1013
+    sizes: '(max-width: 768px) 400px, 610px',
     label: 'För utförare',
     title: 'Tjäna pengar på det du redan kan',
     desc: 'Sätt ditt eget pris, välj dina uppdrag och bygg ditt varumärke — helt gratis.',
@@ -15,7 +21,8 @@ const SLIDES = [
     href: '/hjalp/svippare',
   },
   {
-    image: '/images/om-oss-hero.png',
+    image: '/images/om-oss-hero.png', // 1920×651
+    sizes: '(max-width: 768px) 620px, 945px',
     label: 'För beställare',
     title: 'Hitta rätt hjälp, direkt',
     desc: 'Sök bland tjänster i 8 kategorier eller lägg upp en förfrågan och låt utförare höra av sig.',
@@ -23,7 +30,8 @@ const SLIDES = [
     href: '/hjalp/bestallare',
   },
   {
-    image: '/images/company-hero.png',
+    image: '/images/company-hero.png', // 1920×989
+    sizes: '(max-width: 768px) 410px, 625px',
     label: 'För företag',
     title: 'En plattform — oändliga möjligheter',
     desc: 'Sälj era tjänster och hitta hjälp. Kom igång direkt utan ansökan.',
@@ -31,7 +39,8 @@ const SLIDES = [
     href: '/hjalp/foretag',
   },
   {
-    image: '/images/uf-foretagare.jpg',
+    image: '/images/uf-foretagare.jpg', // 2048×1365
+    sizes: '(max-width: 768px) 370px, 480px',
     label: 'För UF-företag',
     title: 'Ge ditt UF-företag en flygande start',
     desc: 'Nå riktiga kunder och bygg ditt varumärke redan under UF-året.',
@@ -94,12 +103,12 @@ export default function FeatureSlider() {
                 className={`${styles.fs__card} ${idx === current ? styles['fs__card--active'] : ''}`}
               >
                 <div className={styles.fs__card_img_wrap}>
-                  {/* Image column: half of the 850px card on desktop, full 85vw card on mobile */}
                   <Image
                     src={slide.image}
                     alt={slide.title}
                     fill
-                    sizes="(max-width: 768px) 85vw, 425px"
+                    sizes={slide.sizes}
+                    quality={85}
                     className={styles.fs__card_img}
                   />
                 </div>

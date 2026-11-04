@@ -43,6 +43,7 @@ export default function HowItWorks() {
                   alt={step.title}
                   fill
                   sizes="(min-width: 1024px) 368px, 320px"
+                  quality={85}
                   className={styles.hiw__card_img}
                 />
               </div>

@@ -52,6 +52,7 @@ export default async function BloggPage() {
                         alt={post.title}
                         fill
                         sizes="(max-width: 768px) 100vw, 600px"
+                        quality={85}
                         className={styles.blogg__card_img}
                       />
                     : <div className={styles.blogg__card_img_fallback} />
