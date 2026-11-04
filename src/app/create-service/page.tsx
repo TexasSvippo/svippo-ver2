@@ -404,7 +404,7 @@ function CreateServiceContent() {
               {/* Reference image uploader – requires a service_id from the draft */}
               {(savedServiceId || (isEditing && editId)) && (
                 <div style={{ marginTop: 24, paddingTop: 20, borderTop: '1px solid var(--color-border)' }}>
-                  <h3 style={{ fontFamily: 'Inter, sans-serif', fontSize: 15, fontWeight: 600, color: 'var(--color-dark)', margin: '0 0 4px' }}>
+                  <h3 style={{ fontFamily: 'var(--font-body)', fontSize: 15, fontWeight: 600, color: 'var(--color-dark)', margin: '0 0 4px' }}>
                     Referensbilder (valfritt)
                   </h3>
                   <p style={{ fontSize: 13, color: 'var(--color-gray)', margin: '0 0 12px' }}>

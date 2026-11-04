@@ -1,5 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-@import url('https://use.typekit.net/whk1usm.css');
+/* Fonts are loaded in src/app/layout.tsx (Inter via next/font, ff-cocon-pro
+   via an Adobe Fonts <link>), not with @import here. */
 
 /* ================================
    CSS-VARIABLER
@@ -18,7 +18,7 @@
   --color-border-tertiary: #d1d5db;
 
   /* Typografi */
-  --font-body: 'Inter', sans-serif;
+  --font-body: var(--font-inter), sans-serif;
   --font-heading: 'ff-cocon-pro', sans-serif;
 
   /* Rundning */

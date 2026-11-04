@@ -213,7 +213,7 @@
 }
 
 .section_title {
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-body);
   font-size: 22px;
   font-weight: 700;
   color: #03141d;
@@ -222,7 +222,7 @@
 
 // ─── Description ──────────────────────────────────────────────────────────────
 .description {
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-body);
   font-size: 1rem;
   line-height: 1.7;
   color: #2C2C2C;
@@ -243,7 +243,7 @@
     font-weight: 700;
     margin: 0.75em 0 0.25em;
     color: black;
-    font-family: 'inter';
+    font-family: var(--font-body);
 
   }
 }

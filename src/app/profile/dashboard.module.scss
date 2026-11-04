@@ -152,7 +152,7 @@
 }
 
 .dash__messages_title {
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-body);
   font-size: 15px;
   font-weight: 600;
   color: #05334A;
@@ -356,7 +356,7 @@
 }
 
 .dash__section_title {
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-body);
   font-size: 15px;
   font-weight: 600;
   color: #05334A;
@@ -720,7 +720,7 @@
 }
 
 .dash__tip_heading {
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-body);
   font-size: 17px;
   font-weight: 600;
   color: var(--color-dark);
@@ -800,7 +800,7 @@
 }
 
 .dash__promo_title {
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-body);
   font-size: 16px;
   font-weight: 600;
   color: #05334A;
