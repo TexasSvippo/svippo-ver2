@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { Briefcase, ShoppingBag, Star, FileText, ShoppingCart, MessageCircle, Package, CheckCircle, Wallet, Rocket, Clock, XCircle } from 'lucide-react'
 import { sanityClient } from '@/sanity/client'
@@ -440,7 +441,13 @@ export default function DashboardOversikt({
               <Link href={`/blogg/${post.slug.current}`} key={post._id} className={styles.dash__tip_card}>
                 <div className={styles.dash__tip_img_wrap}>
                   {post.mainImage?.asset?.url
-                    ? <img src={post.mainImage.asset.url} alt={post.title} className={styles.dash__tip_img} />
+                    ? <Image
+                        src={post.mainImage.asset.url}
+                        alt={post.title}
+                        fill
+                        sizes="(max-width: 640px) 100vw, 320px"
+                        className={styles.dash__tip_img}
+                      />
                     : <div className={styles.dash__tip_img_fallback} />
                   }
                 </div>

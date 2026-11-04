@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import styles from './FeatureSlider.module.scss'
 
 const SLIDES = [
@@ -93,8 +94,14 @@ export default function FeatureSlider() {
                 className={`${styles.fs__card} ${idx === current ? styles['fs__card--active'] : ''}`}
               >
                 <div className={styles.fs__card_img_wrap}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={slide.image} alt={slide.title} className={styles.fs__card_img} />
+                  {/* Image column: half of the 850px card on desktop, full 85vw card on mobile */}
+                  <Image
+                    src={slide.image}
+                    alt={slide.title}
+                    fill
+                    sizes="(max-width: 768px) 85vw, 425px"
+                    className={styles.fs__card_img}
+                  />
                 </div>
                 <div className={styles.fs__card_body}>
                   <span className={styles.fs__card_label}>{slide.label}</span>

@@ -1,5 +1,4 @@
-'use client'
-
+import Image from 'next/image'
 import styles from './HowItWorks.module.scss'
 
 const STEPS = [
@@ -38,10 +37,12 @@ export default function HowItWorks() {
           {STEPS.map((step) => (
             <div key={step.num} className={styles.hiw__card}>
               <div className={styles.hiw__card_img_wrap} style={{ background: step.bg }}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+                {/* 320px cards in a scroller; 3-column grid (max 1200px) from 1024px */}
+                <Image
                   src={step.image}
                   alt={step.title}
+                  fill
+                  sizes="(min-width: 1024px) 368px, 320px"
                   className={styles.hiw__card_img}
                 />
               </div>

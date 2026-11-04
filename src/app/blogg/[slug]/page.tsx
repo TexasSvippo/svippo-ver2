@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { PortableText } from '@portabletext/react'
 import type { PortableTextBlock } from '@portabletext/types'
@@ -79,9 +80,15 @@ export default async function BloggPostPage({ params }: Props) {
 
           {/* 5. Huvudbild */}
           {post.mainImage?.asset?.url && (
-            <img
+            // width/height only set the intrinsic ratio; CSS (.post__image) sets
+            // the rendered size (100% × 450px, object-fit: cover).
+            <Image
               src={post.mainImage.asset.url}
               alt={post.title}
+              width={1600}
+              height={900}
+              sizes="(max-width: 840px) 100vw, 800px"
+              priority
               className={styles.post__image}
             />
           )}

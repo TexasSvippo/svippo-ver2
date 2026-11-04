@@ -60,6 +60,7 @@
 }
 
 .blogg__card_img_wrap {
+  position: relative; // next/image `fill`
   width: 100%;
   height: 200px;
   overflow: hidden;

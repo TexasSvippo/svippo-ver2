@@ -681,6 +681,7 @@
 }
 
 .dash__tip_img_wrap {
+  position: relative; // next/image `fill`
   height: 200px;
   overflow: hidden;
   flex-shrink: 0;

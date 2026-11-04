@@ -44,6 +44,7 @@
 }
 
 .hiw__card_img_wrap {
+  position: relative; // next/image `fill`
   border-radius: var(--radius-lg);
   overflow: hidden;
   height: 380px;

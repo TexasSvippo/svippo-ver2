@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { sanityClient } from '@/sanity/client'
 import { blogPostsQuery } from '@/sanity/queries'
 import styles from './blogg.module.scss'
@@ -46,7 +47,13 @@ export default async function BloggPage() {
               <Link href={`/blogg/${post.slug.current}`} key={post._id} className={styles.blogg__card}>
                 <div className={styles.blogg__card_img_wrap}>
                   {post.mainImage?.asset?.url
-                    ? <img src={post.mainImage.asset.url} alt={post.title} className={styles.blogg__card_img} />
+                    ? <Image
+                        src={post.mainImage.asset.url}
+                        alt={post.title}
+                        fill
+                        sizes="(max-width: 768px) 100vw, 600px"
+                        className={styles.blogg__card_img}
+                      />
                     : <div className={styles.blogg__card_img_fallback} />
                   }
                 </div>

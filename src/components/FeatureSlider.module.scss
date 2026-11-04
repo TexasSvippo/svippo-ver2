@@ -96,6 +96,7 @@
 }
 
 .fs__card_img_wrap {
+  position: relative; // next/image `fill`
   overflow: hidden;
   height: 320px;
   background: #EAF4FB;
