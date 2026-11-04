@@ -1,6 +1,6 @@
 import { Suspense } from 'react'
 import { supabase } from '@/lib/supabase'
-import ForfragningarClient from './ForfragningarClient'
+import ForfragningarClient, { ForfragningarView } from './ForfragningarClient'
 
 export const metadata = {
   title: 'Förfrågningar – Svippo',
@@ -34,7 +34,8 @@ export default async function ForfragningarPage() {
   }))
 
   return (
-    <Suspense fallback={null}>
+    // Fallback = the unfiltered list, rendered into the static HTML (see ForfragningarClient).
+    <Suspense fallback={<ForfragningarView requests={requests} params={{}} />}>
       <ForfragningarClient requests={requests} />
     </Suspense>
   )

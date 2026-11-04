@@ -40,14 +40,23 @@ const categoryDescriptions: Record<string, string> = {
 }
 const DEFAULT_DESC = 'Bläddra bland förfrågningar från kunder som söker hjälp och ta de uppdrag som passar dig.'
 
+// Reads the filters from the URL. useSearchParams() can't run while the page is
+// prerendered (it's a static/ISR page), so page.tsx wraps this in <Suspense>
+// with <ForfragningarView params={{}} /> as fallback: the server HTML then
+// contains the unfiltered list (no layout shift, indexable), and this component
+// takes over in the browser with the real filters.
 export default function ForfragningarClient({ requests }: Props) {
   const searchParams = useSearchParams()
+  return <ForfragningarView requests={requests} params={Object.fromEntries(searchParams)} />
+}
+
+export function ForfragningarView({ requests, params }: Props & { params: Record<string, string> }) {
   const router = useRouter()
 
   // Derived directly from URL — external navigation updates these automatically
-  const selectedCategory = searchParams.get('kategori') ?? ''
-  const selectedSubcategory = searchParams.get('underkategori') ?? ''
-  const search = searchParams.get('search') ?? ''
+  const selectedCategory = params.kategori ?? ''
+  const selectedSubcategory = params.underkategori ?? ''
+  const search = params.search ?? ''
 
   // Local UI state (not in URL)
   const [selectedLocation, setSelectedLocation] = useState('')
