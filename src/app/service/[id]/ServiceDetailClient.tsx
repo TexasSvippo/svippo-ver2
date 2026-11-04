@@ -10,7 +10,6 @@ import { supabase } from '@/lib/supabase'
 import styles from './servicedetail.module.scss'
 import refStyles from './references.module.scss'
 import { CheckCircle, Star, User, Wallet, Pencil, Trash2, Lock, MessageCircle, Shield, ChevronLeft, ChevronRight, Flag, MapPin } from 'lucide-react'
-import { sanitizeDescriptionHtml } from '@/utils/sanitizeHtml'
 import { renderStars } from '@/utils/renderStars'
 
 type CustomQuestion = {
@@ -63,13 +62,15 @@ type ServiceReference = {
 
 type Props = {
   service: Service
+  /** service.description, already sanitized on the server (see page.tsx) */
+  descriptionHtml: string
   reviews: Review[]
   avgRating: number | null
   references?: ServiceReference[]
   bio?: string | null
 }
 
-export default function ServiceDetailClient({ service, reviews, avgRating, references = [], bio }: Props) {
+export default function ServiceDetailClient({ service, descriptionHtml, reviews, avgRating, references = [], bio }: Props) {
   const { user } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -315,7 +316,7 @@ export default function ServiceDetailClient({ service, reviews, avgRating, refer
             <h2 className={styles.section_title}>Om tjänsten</h2>
             <div
               className={`${styles.description} ${descLong && !expanded ? styles['description--collapsed'] : ''}`}
-              dangerouslySetInnerHTML={{ __html: sanitizeDescriptionHtml(service.description) }}
+              dangerouslySetInnerHTML={{ __html: descriptionHtml }}
             />
             {descLong && (
               <button className={styles.read_more_btn} onClick={() => setExpanded(e => !e)}>

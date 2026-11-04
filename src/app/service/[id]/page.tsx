@@ -4,6 +4,7 @@ import { supabaseAdmin } from '@/lib/supabaseAdmin'
 import { notFound } from 'next/navigation'
 import ServiceDetailClient from './ServiceDetailClient'
 import { stripToOgDescription } from '@/utils/ogDescription'
+import { sanitizeDescriptionHtml } from '@/utils/sanitizeHtml'
 
 const OG_FALLBACK_IMAGE = '/images/Svippo-og-img.png'
 
@@ -83,6 +84,7 @@ export default async function ServiceDetailPage({ params }: Props) {
     <Suspense fallback={null}>
       <ServiceDetailClient
         service={service}
+        descriptionHtml={sanitizeDescriptionHtml(service.description)}
         reviews={reviews ?? []}
         avgRating={avgRating}
         references={references ?? []}
