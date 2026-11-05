@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo, useRef } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { authHeaders } from '@/lib/authHeaders'
+import { fetchMyProfile } from '@/lib/myProfile'
 import styles from './intresseanmalningar.module.scss'
 import { Star, User, CheckCircle, XCircle, Mail, ChevronDown, X, SlidersHorizontal, Check } from 'lucide-react'
 import { categories } from '@/data/categories'
@@ -168,7 +169,12 @@ export default function Intresseanmalningar({ userId }: Props) {
         return
       }
 
-      const { data: userData } = await supabase.from('users').select('name, email').eq('id', userId).single()
+      // Public name from users; own email via /api/profile/me (userId is the signed-in owner).
+      const [{ data: nameData }, me] = await Promise.all([
+        supabase.from('users').select('name').eq('id', userId).maybeSingle(),
+        fetchMyProfile(),
+      ])
+      const userData = { name: nameData?.name ?? '', email: me?.email ?? '' }
 
       const { data: requestData } = await supabase
         .from('requests')

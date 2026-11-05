@@ -8,15 +8,13 @@ import { supabase } from '@/lib/supabase'
 import useAuth from '@/hooks/useAuth'
 import ServiceCard from '@/components/ServiceCard'
 import styles from './publicprofile.module.scss'
-import { Link as LinkIcon, MapPin, Star, MessageCircle, CheckCircle, Zap, Briefcase, Globe, Smartphone, Mail, User, Info, Link2 } from 'lucide-react'
+import { Link as LinkIcon, MapPin, Star, MessageCircle, CheckCircle, Zap, Briefcase, Globe, User, Link2 } from 'lucide-react'
 import { renderStars } from '@/utils/renderStars'
 import type { ReactNode } from 'react'
 
 type UserProfile = {
   id: string
   name: string
-  email: string
-  phone?: string
   bio?: string
   account_type: string
   avatar_url?: string
@@ -555,24 +553,7 @@ export default function PublicProfileClient({
                 <span>i snittbetyg</span>
               </div>
 
-              <div className={styles.pubprofile__sidebar_divider} />
-
-              {/* Kontaktuppgifter */}
-              <div className={styles.pubprofile__sidebar_section}>
-                <h3 className={styles.pubprofile__sidebar_heading}>
-                  <Info size={16} /> Kontaktuppgifter
-                </h3>
-                <div className={styles.pubprofile__contact_info}>
-                  <div className={styles.pubprofile__contact_item}>
-                    <Smartphone size={16} />
-                    <span>{profile.phone || '–'}</span>
-                  </div>
-                  <div className={styles.pubprofile__contact_item}>
-                    <Mail size={16} />
-                    <span>{profile.email}</span>
-                  </div>
-                </div>
-              </div>
+              {/* Kontaktuppgifter (e-post/telefon) visas inte publikt -- kontakt sker via meddelanden. */}
 
               {/* Länkar */}
               {(website || socialLinks.length > 0) && (

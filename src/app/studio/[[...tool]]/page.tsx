@@ -1,6 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { redirect, notFound } from 'next/navigation'
+import { isAdmin } from '@/lib/requireUser'
 import StudioClient from './StudioClient'
 
 export default async function StudioPage() {
@@ -24,13 +25,9 @@ export default async function StudioPage() {
     redirect('/login')
   }
 
-  const { data: profile } = await supabase
-    .from('users')
-    .select('role')
-    .eq('id', user.id)
-    .single()
-
-  if (profile?.role !== 'admin') {
+  // Role is checked with the service role (isAdmin), so this page doesn't
+  // need the user's own JWT to be able to read users.role.
+  if (!(await isAdmin(user.id))) {
     notFound()
   }
 

@@ -39,9 +39,9 @@ export default async function PublicProfilePage({ params }: Props) {
   const { id } = await params
 
   const [{ data: profile }, { data: services }, { data: reviews }] = await Promise.all([
-    // Only the columns the public profile shows -- never role/is_approved.
-    // (email/phone are still shown under "Kontaktuppgifter"; that's a separate product decision.)
-    supabase.from('users').select('id, name, email, phone, bio, account_type, avatar_url, created_at').eq('id', id).single(),
+    // Only public columns -- never email, phone, role or is_approved
+    // (contact details are not shown publicly; contact happens via messages).
+    supabase.from('users').select('id, name, bio, account_type, avatar_url, created_at').eq('id', id).single(),
     supabase.from('services').select('*').eq('user_id', id).eq('status', 'active').order('created_at', { ascending: false }),
     supabase.from('reviews').select('*').eq('reviewee_id', id).eq('role', 'buyer'),
   ])

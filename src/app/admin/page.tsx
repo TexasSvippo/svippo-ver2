@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { authHeaders } from '@/lib/authHeaders'
+import { fetchMyProfile } from '@/lib/myProfile'
 import useAuth from '@/hooks/useAuth'
 import { prepareImageForUpload } from '@/utils/prepareImageForUpload'
 import styles from './admin.module.scss'
@@ -60,6 +61,20 @@ type UserRow = {
   account_type: string
   role: string
   created_at: string
+}
+
+// Users' email/role are read server-side via the admin-only /api/admin/users
+// route (requireUser + isAdmin), never from the users table in the browser.
+// Returns the same { data, error } shape as a Supabase query.
+async function fetchAdminUsers(ids?: string[]): Promise<{ data: UserRow[] | null; error: string | null }> {
+  const url = ids ? `/api/admin/users?ids=${encodeURIComponent(ids.join(','))}` : '/api/admin/users'
+  try {
+    const res = await fetch(url, { headers: await authHeaders(), cache: 'no-store' })
+    if (!res.ok) return { data: null, error: `HTTP ${res.status}` }
+    return { data: (await res.json()) as UserRow[], error: null }
+  } catch (err) {
+    return { data: null, error: String(err) }
+  }
 }
 
 type OrderRow = {
@@ -125,8 +140,9 @@ export default function AdminPage() {
     if (authLoading) return
     if (!user) { router.replace('/login'); return }
     const checkRole = async () => {
-      const { data } = await supabase.from('users').select('role').eq('id', user.id).single()
-      if (data?.role !== 'admin') { router.replace('/profile'); return }
+      // UX check only -- every admin action is also enforced server-side (RLS / admin routes).
+      const me = await fetchMyProfile()
+      if (me?.role !== 'admin') { router.replace('/profile'); return }
       setAuthorized(true)
       loadAll()
     }
@@ -144,7 +160,7 @@ export default function AdminPage() {
       supabase.from('orders').select('id', { count: 'exact', head: true }),
       supabase.from('svippare_profiles').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
       supabase.from('svippare_profiles').select('id, user_id, status, bio, created_at').eq('status', 'pending').order('created_at', { ascending: false }),
-      supabase.from('users').select('id, name, email, account_type, role, created_at').order('created_at', { ascending: false }).limit(20),
+      fetchAdminUsers(),
       supabase.from('orders').select('id, service_title, buyer_name, seller_name, status, project_status, created_at, active_price').order('created_at', { ascending: false }).limit(10),
       supabase.from('services').select('id, title, user_name, subcategory, created_at').order('created_at', { ascending: false }).limit(50),
       supabase.from('reports').select('id', { count: 'exact', head: true }).eq('status', 'open'),
@@ -185,10 +201,7 @@ export default function AdminPage() {
 
       let reportersById: Record<string, { name: string | null; email: string | null }> = {}
       if (reporterIds.length > 0) {
-        const { data: reportersData, error: reportersError } = await supabase
-          .from('users')
-          .select('id, name, email')
-          .in('id', reporterIds)
+        const { data: reportersData, error: reportersError } = await fetchAdminUsers(reporterIds)
 
         if (reportersError) {
           console.error('Kunde inte hämta reporter-data för rapporter:', reportersError)
@@ -220,10 +233,7 @@ export default function AdminPage() {
 
       let usersById: Record<string, { name: string | null; email: string | null }> = {}
       if (userIds.length > 0) {
-        const { data: appUsersData, error: appUsersError } = await supabase
-          .from('users')
-          .select('id, name, email')
-          .in('id', userIds)
+        const { data: appUsersData, error: appUsersError } = await fetchAdminUsers(userIds)
 
         if (appUsersError) {
           console.error('Kunde inte hämta användardata för ansökningar:', appUsersError)

@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import useAuth from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
 import { authHeaders } from '@/lib/authHeaders'
+import { fetchMyProfile } from '@/lib/myProfile'
 import styles from './requestdetail.module.scss'
 import { MapPin, CheckCircle, Users, MessageCircle, Shield, ClipboardList, Pencil, Trash2, Lock, Flag } from 'lucide-react'
 import ReportModal from '@/components/ReportModal'
@@ -66,13 +67,13 @@ export default function RequestDetailClient({ request }: Props) {
   useEffect(() => {
     if (!user) return
     const fetchProfile = async () => {
-      const { data } = await supabase
-        .from('users')
-        .select('name, email, phone, account_type')
-        .eq('id', user.id)
-        .single()
+      // Public columns from users; own email/phone via /api/profile/me.
+      const [{ data }, me] = await Promise.all([
+        supabase.from('users').select('name, account_type').eq('id', user.id).maybeSingle(),
+        fetchMyProfile(),
+      ])
       if (data) {
-        setUserProfile(data)
+        setUserProfile({ name: data.name, email: me?.email ?? user.email ?? '', phone: me?.phone ?? '' })
         setDbAccountType(data.account_type ?? null)
       }
     }

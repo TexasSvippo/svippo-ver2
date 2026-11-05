@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
+import { fetchMyProfile } from '@/lib/myProfile'
 import useAuth from '@/hooks/useAuth'
 import { useNotifications } from '@/hooks/useNotifications'
 import { fetchConversations as fetchConversationsForUser, type Conversation } from '@/lib/conversations'
@@ -168,8 +169,10 @@ export default function ProfileClient({ initialAccountType }: Props) {
   useEffect(() => {
     if (!user) return
     const fetchAll = async () => {
-      const [profileRes, servicesRes, incomingRes, placedRes, requestsRes, interestsRes, notifsRes, subsRes, svippareProfileRes] = await Promise.all([
-        supabase.from('users').select('*').eq('id', user.id).single(),
+      // Public columns from users; private ones (phone, role) via /api/profile/me.
+      const PROFILE_COLUMNS = 'id, name, bio, avatar_url, account_type, city, created_at'
+      const [profileRes, servicesRes, incomingRes, placedRes, requestsRes, interestsRes, notifsRes, subsRes, svippareProfileRes, me] = await Promise.all([
+        supabase.from('users').select(PROFILE_COLUMNS).eq('id', user.id).maybeSingle(),
         supabase.from('services').select('*').eq('user_id', user.id),
         supabase.from('orders').select('*').eq('seller_id', user.id).order('created_at', { ascending: false }),
         supabase.from('orders').select('*').eq('buyer_id', user.id).order('created_at', { ascending: false }),
@@ -178,17 +181,19 @@ export default function ProfileClient({ initialAccountType }: Props) {
         supabase.from('notifications').select('*').eq('user_id', user.id).eq('read', false).order('created_at', { ascending: false }),
         supabase.from('category_subscriptions').select('*').eq('user_id', user.id),
         supabase.from('svippare_profiles').select('rejection_reason').eq('user_id', user.id).maybeSingle(),
+        fetchMyProfile(),
       ])
       setRejectionReason(svippareProfileRes.data?.rejection_reason ?? null)
+      setIsAdmin(me?.role === 'admin')
       let profileData = profileRes.data
       if (!profileData?.name) {
         await new Promise(resolve => setTimeout(resolve, 1000))
-        const retryRes = await supabase.from('users').select('*').eq('id', user.id).single()
+        const retryRes = await supabase.from('users').select(PROFILE_COLUMNS).eq('id', user.id).maybeSingle()
         if (retryRes.data) profileData = retryRes.data
       }
+      setPhone(me?.phone || '')
       if (profileData) {
         setDisplayName(profileData.name || '')
-        setPhone(profileData.phone || '')
         setBio(profileData.bio || '')
         setAvatarUrl(profileData.avatar_url || null)
         setDbAccountType(profileData.account_type || null)
@@ -234,9 +239,6 @@ export default function ProfileClient({ initialAccountType }: Props) {
           .eq('role', 'buyer')
         setKarriarReviews(receivedReviews ?? [])
       }
-
-      const { data: roleData } = await supabase.from('users').select('role').eq('id', user.id).single()
-      setIsAdmin(roleData?.role === 'admin')
 
       // Hämta alla recensioner riktade till inloggad användare
       const { data: revData } = await supabase

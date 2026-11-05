@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { authHeaders } from '@/lib/authHeaders'
+import { fetchMyProfile } from '@/lib/myProfile'
 import useAuth from '@/hooks/useAuth'
 import type { ServiceType } from '@/data/categories'
 import styles from './OrderModal.module.scss'
@@ -82,12 +83,14 @@ export default function OrderModal({
   useEffect(() => {
     if (!user) return
     const fetchProfile = async () => {
-      const { data } = await supabase.from('users').select('name, email, phone').eq('id', user.id).single()
-      if (data) {
-        setName(data.name || '')
-        setEmail(data.email || user.email || '')
-        setPhone(data.phone || '')
-      }
+      // Public name from users; own email/phone via /api/profile/me.
+      const [{ data }, me] = await Promise.all([
+        supabase.from('users').select('name').eq('id', user.id).maybeSingle(),
+        fetchMyProfile(),
+      ])
+      if (data) setName(data.name || '')
+      setEmail(me?.email || user.email || '')
+      setPhone(me?.phone || '')
     }
     fetchProfile()
   }, [user])
