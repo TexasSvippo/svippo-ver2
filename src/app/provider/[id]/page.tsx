@@ -70,7 +70,8 @@ export default async function PublicProfilePage({ params }: Props) {
   if (profile.account_type === 'foretag' || profile.account_type === 'uf-foretag') {
     const { data } = await supabase
       .from('company_profiles')
-      .select('*')
+      // Only what PublicProfileClient shows (same reason as svippare_profiles above).
+      .select('org_number, website, social_links, categories, city, bio')
       .eq('user_id', id)
       .single()
     companyProfile = data
