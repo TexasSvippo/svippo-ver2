@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo, useRef } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
+import { authHeaders } from '@/lib/authHeaders'
 import styles from './intresseanmalningar.module.scss'
 import { Star, User, CheckCircle, XCircle, Mail, ChevronDown, X, SlidersHorizontal, Check } from 'lucide-react'
 import { categories } from '@/data/categories'
@@ -236,11 +237,10 @@ export default function Intresseanmalningar({ userId }: Props) {
 
         fetch('/api/interests/notify-email', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: await authHeaders(),
           body: JSON.stringify({
             type: 'accepted',
-            svippareId: interest.svippar_id,
-            requestTitle: interest.request_title,
+            interestId: interest.id,
             orderId: order.id,
           }),
         }).catch(err => console.error('Email notification error:', err))
@@ -284,14 +284,14 @@ export default function Intresseanmalningar({ userId }: Props) {
             : i
         ))
 
+        const headers = await authHeaders()
         otherPending.forEach(other => {
           fetch('/api/interests/notify-email', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers,
             body: JSON.stringify({
               type: 'rejected',
-              svippareId: other.svippar_id,
-              requestTitle: interest.request_title,
+              interestId: other.id,
             }),
           }).catch(err => console.error('Email notification error:', err))
         })
@@ -324,11 +324,10 @@ export default function Intresseanmalningar({ userId }: Props) {
 
     fetch('/api/interests/notify-email', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: await authHeaders(),
       body: JSON.stringify({
         type: 'rejected',
-        svippareId: interest.svippar_id,
-        requestTitle: interest.request_title,
+        interestId: interest.id,
       }),
     }).catch(err => console.error('Email notification error:', err))
   }

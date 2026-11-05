@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { authHeaders } from '@/lib/authHeaders'
 import useAuth from '@/hooks/useAuth'
 import { categories } from '@/data/categories'
 import { municipalities } from '@/data/municipalities'
@@ -220,6 +221,7 @@ function CreateRequestPage() {
         if (newRequest) {
           fetch(`/api/requests/${newRequest.id}/notify-subscribers`, {
             method: 'POST',
+            headers: await authHeaders(),
           }).catch(err => console.error('Category subscriber email notification error:', err))
         }
       }

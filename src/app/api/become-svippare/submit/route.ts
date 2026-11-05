@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
 import { parseAgeFromPersonnummer } from '@/utils/personnummer'
+import { sendNySvippareAnsokan } from '@/lib/emails/nySvippareAnsokan'
 
 const TERMS_VERSION = '1.0'
 const MIN_AGE = 18
@@ -115,6 +116,36 @@ export async function POST(req: NextRequest) {
   await supabaseAdmin.auth.admin.updateUserById(user.id, {
     user_metadata: { ...user.user_metadata, svippare_status: 'pending' },
   })
+
+  // ── Notify admins ─────────────────────────────────────────────────────────
+  // Previously a separate, unauthenticated route (become-svippare/notify-email)
+  // called by the client afterwards. Doing it here ties it to the verified
+  // user and the saved application. A failed email never fails the submission.
+  try {
+    const { data: applicant } = await supabaseAdmin
+      .from('users')
+      .select('name, email')
+      .eq('id', user.id)
+      .maybeSingle()
+
+    const { data: admins } = await supabaseAdmin
+      .from('users')
+      .select('email')
+      .eq('role', 'admin')
+
+    const adminEmails = (admins ?? []).map(a => a.email).filter(Boolean)
+
+    if (adminEmails.length > 0) {
+      await sendNySvippareAnsokan({
+        to: adminEmails,
+        applicantName: applicant?.name ?? 'Okänd',
+        applicantEmail: applicant?.email ?? user.email ?? '',
+        adminUrl: `${req.nextUrl.origin}/admin`,
+      })
+    }
+  } catch (err) {
+    console.error('[become-svippare/submit] admin notification failed:', err)
+  }
 
   return NextResponse.json({ success: true })
 }

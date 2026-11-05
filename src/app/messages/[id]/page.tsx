@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
+import { authHeaders } from '@/lib/authHeaders'
 import useAuth from '@/hooks/useAuth'
 import styles from './konversation.module.scss'
 import { ChevronRight, Package, CheckCircle, Clock, XCircle, ClipboardList, Users, Link as LinkIcon, Wrench, MessageCircle } from 'lucide-react'
@@ -277,14 +278,11 @@ export default function KonversationPage({ params }: { params: Promise<{ id: str
         created_at: new Date().toISOString(),
       })
 
+      // Sender, name and message text are read server-side from the database.
       fetch(`/api/messages/${conversation.id}/notify-email`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          senderId: user.id,
-          senderName: currentUserName,
-          messagePreview: input.trim(),
-        }),
+        headers: await authHeaders(),
+        body: JSON.stringify({}),
       }).catch(err => console.error('Email notification error:', err))
 
       setInput('')

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
+import { authHeaders } from '@/lib/authHeaders'
 import useAuth from '@/hooks/useAuth'
 import type { ServiceType } from '@/data/categories'
 import styles from './OrderModal.module.scss'
@@ -197,7 +198,7 @@ export default function OrderModal({
 
         fetch(`/api/orders/${order.id}/notify-email`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: await authHeaders(),
           body: JSON.stringify({ type: 'new_order' }),
         }).catch(err => console.error('Email notification error:', err))
       }

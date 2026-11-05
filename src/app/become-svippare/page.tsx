@@ -150,11 +150,7 @@ export default function BliSvipparePage() {
         return
       }
 
-      fetch('/api/become-svippare/notify-email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user.id }),
-      }).catch(err => console.error('Admin notification email error:', err))
+      // Admins are notified by /api/become-svippare/submit itself.
 
       router.push('/profile?svippare=pending')
       router.refresh()

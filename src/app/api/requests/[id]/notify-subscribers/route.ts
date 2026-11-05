@@ -1,20 +1,37 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
+import { requireUser } from '@/lib/requireUser'
 import { sendNyForfragningIBevakadKategori } from '@/lib/emails/nyForfragningIBevakadKategori'
 import { categories } from '@/data/categories'
 
+// Only the request's owner may trigger this, and only once per request:
+// the update below atomically "claims" the send by setting
+// requests.subscribers_notified_at, and only matches if the caller owns the
+// request and nothing has been sent yet.
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const auth = await requireUser(req)
+    if ('response' in auth) return auth.response
+    const { user } = auth
+
     const { id } = await params
 
-    const { data: request } = await supabaseAdmin
+    const { data: request, error: claimError } = await supabaseAdmin
       .from('requests')
-      .select('id, title, category_id, subcategory, user_id')
+      .update({ subscribers_notified_at: new Date().toISOString() })
       .eq('id', id)
-      .single()
+      .eq('user_id', user.id)
+      .is('subscribers_notified_at', null)
+      .select('id, title, category_id, subcategory, user_id')
+      .maybeSingle()
 
+    if (claimError) {
+      console.error('[notify-subscribers] claim failed:', claimError.message)
+      return NextResponse.json({ success: false, error: 'Internal error' }, { status: 500 })
+    }
     if (!request) {
-      return NextResponse.json({ success: false, error: 'Request not found' }, { status: 404 })
+      // Not the owner, unknown request, or already sent.
+      return NextResponse.json({ success: true, sent: 0, skipped: 'not_owner_or_already_sent' })
     }
 
     const { data: subscribers } = await supabaseAdmin
@@ -61,6 +78,6 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     return NextResponse.json({ success: true, sent, eligible: eligibleUsers?.length ?? 0 })
   } catch (err) {
     console.error('Category subscription notification email error:', err)
-    return NextResponse.json({ success: false, error: String(err) }, { status: 500 })
+    return NextResponse.json({ success: false, error: 'Internal error' }, { status: 500 })
   }
 }

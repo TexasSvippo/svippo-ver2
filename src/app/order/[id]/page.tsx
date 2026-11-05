@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
+import { authHeaders } from '@/lib/authHeaders'
 import useAuth from '@/hooks/useAuth'
 import styles from '@/styles/orderdetail.module.scss'
 import { Package, Clock, CheckCircle, XCircle, Link as LinkIcon, ClipboardList, Star, User, MessageCircle, BarChart2, Wallet, ArrowLeft, Tag, Calendar } from 'lucide-react'
@@ -167,7 +168,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
 
     fetch(`/api/orders/${order.id}/notify-email`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: await authHeaders(),
       body: JSON.stringify({ type: status }),
     }).catch(err => console.error('Email notification error:', err))
 

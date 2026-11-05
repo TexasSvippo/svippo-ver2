@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
+import { requireUser, forbidden } from '@/lib/requireUser'
 import { sendNyBestallning } from '@/lib/emails/nyBestallning'
 import { sendBestallningGodkand } from '@/lib/emails/bestallningGodkand'
 import { sendBestallningNekad } from '@/lib/emails/bestallningNekad'
@@ -13,6 +14,7 @@ type OrderRow = {
   buyer_name: string
   message: string | null
   created_at: string
+  status: string
   price_type: string | null
   active_price: number | null
   initial_price: number | null
@@ -31,25 +33,39 @@ function formatDate(dateString: string) {
   return new Intl.DateTimeFormat('sv-SE', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(dateString))
 }
 
+// new_order: only the buyer, while the order is pending.
+// accepted/rejected: only the seller, and only if the order already has that status
+// (order/[id]/page.tsx updates the status before calling this route).
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const auth = await requireUser(req)
+    if ('response' in auth) return auth.response
+    const { user } = auth
+
     const { id } = await params
     const { type } = await req.json()
 
+    if (type !== 'new_order' && type !== 'accepted' && type !== 'rejected') {
+      return NextResponse.json({ success: false, error: 'Unknown type' }, { status: 400 })
+    }
+
     const { data: order } = await supabaseAdmin
       .from('orders')
-      .select('id, service_title, seller_id, seller_name, buyer_id, buyer_name, message, created_at, price_type, active_price, initial_price, hourly_rate')
+      .select('id, service_title, seller_id, seller_name, buyer_id, buyer_name, message, created_at, status, price_type, active_price, initial_price, hourly_rate')
       .eq('id', id)
-      .single<OrderRow>()
+      .maybeSingle<OrderRow>()
 
     if (!order) {
       return NextResponse.json({ success: false, error: 'Order not found' }, { status: 404 })
     }
 
+    if (type === 'new_order' && !(order.buyer_id === user.id && order.status === 'pending')) return forbidden()
+    if (type !== 'new_order' && !(order.seller_id === user.id && order.status === type)) return forbidden()
+
     const baseUrl = req.nextUrl.origin
 
     if (type === 'new_order') {
-      const { data: seller } = await supabaseAdmin.from('users').select('email').eq('id', order.seller_id).single()
+      const { data: seller } = await supabaseAdmin.from('users').select('email').eq('id', order.seller_id).maybeSingle()
       if (!seller?.email) {
         return NextResponse.json({ success: false, error: 'Seller email not found' }, { status: 404 })
       }
@@ -64,8 +80,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         buyerMessage: order.message ?? undefined,
         orderUrl: `${baseUrl}/order/${order.id}`,
       })
-    } else if (type === 'accepted' || type === 'rejected') {
-      const { data: buyer } = await supabaseAdmin.from('users').select('email').eq('id', order.buyer_id).single()
+    } else {
+      const { data: buyer } = await supabaseAdmin.from('users').select('email').eq('id', order.buyer_id).maybeSingle()
       if (!buyer?.email) {
         return NextResponse.json({ success: false, error: 'Buyer email not found' }, { status: 404 })
       }
@@ -88,13 +104,11 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
           orderUrl: `${baseUrl}/my-order/${order.id}`,
         })
       }
-    } else {
-      return NextResponse.json({ success: false, error: 'Unknown type' }, { status: 400 })
     }
 
     return NextResponse.json({ success: true })
   } catch (err) {
     console.error('Order notification email error:', err)
-    return NextResponse.json({ success: false, error: String(err) }, { status: 500 })
+    return NextResponse.json({ success: false, error: 'Internal error' }, { status: 500 })
   }
 }

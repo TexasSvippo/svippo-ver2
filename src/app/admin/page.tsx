@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { authHeaders } from '@/lib/authHeaders'
 import useAuth from '@/hooks/useAuth'
 import { prepareImageForUpload } from '@/utils/prepareImageForUpload'
 import styles from './admin.module.scss'
@@ -276,7 +277,7 @@ export default function AdminPage() {
 
     fetch('/api/admin/notify-email', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: await authHeaders(),
       body: JSON.stringify({ type: 'approved', userId: app.user_id }),
     }).catch(err => console.error('Email notification error:', err))
   }
@@ -305,10 +306,11 @@ export default function AdminPage() {
     setRejectModalApp(null)
     setRejectReason('')
 
+    // The reason is read server-side from svippare_profiles.rejection_reason (saved above).
     fetch('/api/admin/notify-email', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type: 'rejected', userId: app.user_id, reason }),
+      headers: await authHeaders(),
+      body: JSON.stringify({ type: 'rejected', userId: app.user_id }),
     }).catch(err => console.error('Email notification error:', err))
   }
 

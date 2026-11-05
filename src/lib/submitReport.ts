@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase'
+import { authHeaders } from '@/lib/authHeaders'
 
 export type ReportTargetType = 'service' | 'request'
 
@@ -33,10 +34,12 @@ export async function submitReport({ reporterId, targetType, targetId, reason, m
 
   if (error) throw error
 
+  // Everything in the email is read server-side from the reports row.
+  // The token is empty for anonymous reporters, which the route allows.
   fetch('/api/reports/notify-email', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ reportId: id, targetType, targetId, reason }),
+    headers: await authHeaders(),
+    body: JSON.stringify({ reportId: id }),
   }).catch(err => console.error('Report email notification error:', err))
 
   return { id }

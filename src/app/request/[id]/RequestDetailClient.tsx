@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import useAuth from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
+import { authHeaders } from '@/lib/authHeaders'
 import styles from './requestdetail.module.scss'
 import { MapPin, CheckCircle, Users, MessageCircle, Shield, ClipboardList, Pencil, Trash2, Lock, Flag } from 'lucide-react'
 import ReportModal from '@/components/ReportModal'
@@ -136,12 +137,11 @@ export default function RequestDetailClient({ request }: Props) {
       })
       if (notifError) throw notifError
 
+      // The interested party's name is read server-side from users.
       fetch(`/api/requests/${request.id}/notify-email`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          svippareName: userProfile?.name || user.email,
-        }),
+        headers: await authHeaders(),
+        body: JSON.stringify({}),
       }).catch(err => console.error('Email notification error:', err))
 
       setSuccess(true)
