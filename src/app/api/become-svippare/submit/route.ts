@@ -16,6 +16,25 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  // ── Existing application ──────────────────────────────────────────────────
+  // Only a rejected (or missing) application may be (re)submitted. Without
+  // this, the upsert below would overwrite a pending application (and email
+  // the admins again) or reset an approved svippare back to 'pending'. The
+  // client-side guard on /become-svippare can't be relied on: it reads the
+  // session's user_metadata, which may be stale.
+  const { data: existing } = await supabaseAdmin
+    .from('svippare_profiles')
+    .select('status')
+    .eq('user_id', user.id)
+    .maybeSingle()
+
+  if (existing?.status === 'pending') {
+    return NextResponse.json({ error: 'Du har redan en ansökan som granskas.' }, { status: 409 })
+  }
+  if (existing?.status === 'approved') {
+    return NextResponse.json({ error: 'Du är redan godkänd som Svippare.' }, { status: 409 })
+  }
+
   // ── Parse body ──────────────────────────────────────────────────────────
   let body: {
     categories?: unknown

@@ -152,6 +152,11 @@ export default function BliSvipparePage() {
 
       // Admins are notified by /api/become-svippare/submit itself.
 
+      // The route set user_metadata.svippare_status = 'pending' server-side.
+      // Refresh the session so useAuth sees it now (otherwise only when the
+      // access token next refreshes) and the dashboard shows "Din ansökan granskas".
+      await supabase.auth.refreshSession()
+
       router.push('/profile?svippare=pending')
       router.refresh()
     } catch (err) {
