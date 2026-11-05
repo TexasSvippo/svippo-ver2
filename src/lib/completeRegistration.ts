@@ -5,6 +5,22 @@ import { supabaseAdmin } from '@/lib/supabaseAdmin'
 // (already has a verified session from exchangeCodeForSession, no separate
 // auth check needed) -- one place for the actual users/company_profiles
 // write so the two entry points can't drift apart.
+// The only account types a user may choose at sign-up. 'svippare' is never
+// chosen here -- it's granted by an admin approving an application
+// (admin/page.tsx). Every source of accountType (request body, the
+// ?account_type= query param on the OAuth callback, user_metadata) can be
+// set by the user, so it's always normalized here.
+export const ALLOWED_ACCOUNT_TYPES = ['bestellare', 'foretag', 'uf-foretag'] as const
+export type AllowedAccountType = (typeof ALLOWED_ACCOUNT_TYPES)[number]
+
+export function isAllowedAccountType(value: unknown): value is AllowedAccountType {
+  return typeof value === 'string' && (ALLOWED_ACCOUNT_TYPES as readonly string[]).includes(value)
+}
+
+export function normalizeAccountType(value: unknown): AllowedAccountType {
+  return isAllowedAccountType(value) ? value : 'bestellare'
+}
+
 type CompleteRegistrationInput = {
   userId: string
   email: string
@@ -18,12 +34,13 @@ type CompleteRegistrationInput = {
 export async function completeRegistration({
   userId,
   email,
-  accountType,
+  accountType: requestedAccountType,
   name,
   city,
   orgNumber,
   avatarUrl,
 }: CompleteRegistrationInput): Promise<{ success: true } | { success: false; error: string }> {
+  const accountType = normalizeAccountType(requestedAccountType)
   const isApproved = accountType !== 'bestellare'
 
   const { error: userError } = await supabaseAdmin.from('users').insert({

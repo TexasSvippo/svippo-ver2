@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
-import { completeRegistration } from '@/lib/completeRegistration'
+import { completeRegistration, normalizeAccountType } from '@/lib/completeRegistration'
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url)
@@ -38,13 +38,15 @@ export async function GET(request: NextRequest) {
         .from('users')
         .select('id')
         .eq('id', data.user.id)
-        .single()
+        .maybeSingle()
 
       if (!existingUser) {
         const meta = data.user.user_metadata ?? {}
         const fullName = (meta.full_name ?? meta.name ?? '') as string
         const avatarUrl = (meta.avatar_url ?? meta.picture ?? null) as string | null
-        const accountType = (meta.account_type as string | undefined) ?? queryAccountType
+        // Both sources can be set by the user; anything outside the allowed
+        // sign-up types falls back to 'bestellare' rather than failing the login.
+        const accountType = normalizeAccountType(meta.account_type ?? queryAccountType)
 
         await completeRegistration({
           userId: data.user.id,

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
-import { completeRegistration } from '@/lib/completeRegistration'
+import { completeRegistration, isAllowedAccountType } from '@/lib/completeRegistration'
 
 export async function POST(req: NextRequest) {
   try {
@@ -11,15 +11,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { userId, email, accountType, name, city, orgNumber } = await req.json()
+    // `email` in the body (still sent by older clients) is ignored -- the
+    // address always comes from the verified auth user.
+    const { userId, accountType, name, city, orgNumber } = await req.json()
 
     if (
       typeof userId !== 'string' ||
-      typeof email !== 'string' ||
-      typeof accountType !== 'string' ||
+      !isAllowedAccountType(accountType) ||
       typeof name !== 'string'
     ) {
       return NextResponse.json({ success: false, error: 'Invalid body' }, { status: 400 })
+    }
+
+    if (!authUser.email) {
+      return NextResponse.json({ success: false, error: 'Account has no email' }, { status: 400 })
     }
 
     // A caller may only complete registration for their own account -- the
@@ -31,7 +36,7 @@ export async function POST(req: NextRequest) {
 
     const result = await completeRegistration({
       userId,
-      email,
+      email: authUser.email,
       accountType,
       name,
       city: typeof city === 'string' ? city : null,
@@ -45,6 +50,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true })
   } catch (err) {
     console.error('Register complete error:', err)
-    return NextResponse.json({ success: false, error: String(err) }, { status: 500 })
+    return NextResponse.json({ success: false, error: 'Internal error' }, { status: 500 })
   }
 }
