@@ -451,7 +451,7 @@ export default function Navbar() {
                   {categories.map(cat => {
                     const Icon = CATEGORY_ICONS[cat.id]
                     return (
-                      <Link key={cat.id} href={`/services?category=${cat.id}`} className={styles.navbar__overlay_subitem} onClick={() => setMobileMenuOpen(false)}>
+                      <Link key={cat.id} href={`/services?kategori=${cat.id}`} className={styles.navbar__overlay_subitem} onClick={() => setMobileMenuOpen(false)}>
                         <Icon size={16} />
                         <span>{cat.label}</span>
                       </Link>
@@ -470,7 +470,7 @@ export default function Navbar() {
                   {categories.map(cat => {
                     const Icon = CATEGORY_ICONS[cat.id]
                     return (
-                      <Link key={cat.id} href={`/requests?category=${cat.id}`} className={styles.navbar__overlay_subitem} onClick={() => setMobileMenuOpen(false)}>
+                      <Link key={cat.id} href={`/requests?kategori=${cat.id}`} className={styles.navbar__overlay_subitem} onClick={() => setMobileMenuOpen(false)}>
                         <Icon size={16} />
                         <span>{cat.label}</span>
                       </Link>
