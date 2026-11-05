@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
 import { sendPrisforlagMottaget } from '@/lib/emails/prisforlagMottaget'
+import { toStoragePath } from '@/lib/storagePaths'
 
 export async function POST(req: NextRequest) {
   // ── Auth ────────────────────────────────────────────────────────────────
@@ -11,14 +12,19 @@ export async function POST(req: NextRequest) {
   }
 
   // ── Parse body ──────────────────────────────────────────────────────────
-  let body: { order_id?: unknown; amount?: unknown; note?: unknown; hours?: unknown; attachment_url?: unknown }
+  let body: { order_id?: unknown; amount?: unknown; note?: unknown; hours?: unknown; attachment_path?: unknown; attachment_url?: unknown }
   try {
     body = await req.json()
   } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
   }
 
-  const { order_id, amount, note, hours, attachment_url } = body
+  // `attachment_path` is the storage path in the private
+  // price-proposal-attachments bucket. `attachment_url` is still accepted from
+  // older clients, but only as a public URL of that same bucket (converted to
+  // a path) -- never an arbitrary URL.
+  const { order_id, amount, note, hours } = body
+  const rawAttachment = body.attachment_path ?? body.attachment_url
 
   if (typeof order_id !== 'string' || !order_id) {
     return NextResponse.json({ error: 'order_id is required' }, { status: 400 })
@@ -29,8 +35,16 @@ export async function POST(req: NextRequest) {
   if (hours !== undefined && (typeof hours !== 'number' || hours <= 0)) {
     return NextResponse.json({ error: 'hours must be a positive number' }, { status: 400 })
   }
-  if (attachment_url !== undefined && typeof attachment_url !== 'string') {
-    return NextResponse.json({ error: 'attachment_url must be a string' }, { status: 400 })
+  if (rawAttachment !== undefined && typeof rawAttachment !== 'string') {
+    return NextResponse.json({ error: 'attachment_path must be a string' }, { status: 400 })
+  }
+  let attachmentPath: string | null = null
+  if (typeof rawAttachment === 'string' && rawAttachment) {
+    attachmentPath = toStoragePath(rawAttachment, 'price-proposal-attachments')
+    // Must be a file in this order's folder (<order_id>/...).
+    if (!attachmentPath || !attachmentPath.startsWith(`${order_id}/`)) {
+      return NextResponse.json({ error: 'Invalid attachment' }, { status: 400 })
+    }
   }
 
   // ── Load order ──────────────────────────────────────────────────────────
@@ -64,7 +78,7 @@ export async function POST(req: NextRequest) {
       currency: 'SEK',
       note: note && typeof note === 'string' ? note : null,
       hours: typeof hours === 'number' ? hours : null,
-      attachment_url: typeof attachment_url === 'string' ? attachment_url : null,
+      attachment_url: attachmentPath, // storage path, not a URL (column name kept)
       status: 'pending',
     })
     .select()
@@ -120,6 +134,7 @@ export async function POST(req: NextRequest) {
 
   if (buyer?.email) {
     const baseUrl = req.nextUrl.origin
+    const orderUrl = `${baseUrl}/my-order/${order_id}`
     sendPrisforlagMottaget({
       to: buyer.email,
       buyerName: buyer.name ?? 'där',
@@ -127,8 +142,10 @@ export async function POST(req: NextRequest) {
       amount,
       note: proposal.note,
       hours: proposal.hours,
-      attachmentUrl: proposal.attachment_url,
-      orderUrl: `${baseUrl}/my-order/${order_id}`,
+      // The attachment is private: "Öppna bilaga" links to the order page
+      // (login required), never to the file itself.
+      attachmentUrl: proposal.attachment_url ? orderUrl : null,
+      orderUrl,
     }).catch(err => console.error('Email notification error:', err))
   }
 

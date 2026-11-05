@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { categories as allCategories } from '@/data/categories'
 import { supabase } from '@/lib/supabase'
 import useAuth from '@/hooks/useAuth'
+import { openProtectedFile } from '@/lib/openProtectedFile'
 import ServiceCard from '@/components/ServiceCard'
 import styles from './publicprofile.module.scss'
 import { Link as LinkIcon, MapPin, Star, MessageCircle, CheckCircle, Zap, Briefcase, Globe, User, Link2 } from 'lucide-react'
@@ -455,9 +456,16 @@ export default function PublicProfileClient({
                       <strong>{cert.name}</strong>
                       <span>{cat?.label}{cert.subcategory ? ` · ${cert.subcategory}` : ''}</span>
                     </div>
-                    <a href={cert.file_url} target="_blank" rel="noopener noreferrer" className={styles.pubprofile__cert_link}>
-                      Visa PDF
-                    </a>
+                    {/* Certificates are only viewable by signed-in users (private bucket, signed URL). */}
+                    {user ? (
+                      <button type="button" onClick={() => openProtectedFile(`/api/files/certificate/${cert.id}`)} className={styles.pubprofile__cert_link}>
+                        Visa PDF
+                      </button>
+                    ) : (
+                      <Link href="/login" className={styles.pubprofile__cert_link}>
+                        Logga in för att visa
+                      </Link>
+                    )}
                   </div>
                 )
               })}

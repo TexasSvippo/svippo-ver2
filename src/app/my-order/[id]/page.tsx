@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
+import { openProtectedFile } from '@/lib/openProtectedFile'
 import useAuth from '@/hooks/useAuth'
 import styles from './Myorderdetail.module.scss'
 import orderStyles from '@/styles/orderdetail.module.scss'
@@ -536,9 +537,9 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
                         )}
                         {pendingProposal.note && <p className={styles.price_pending_note}>{pendingProposal.note}</p>}
                         {pendingProposal.attachment_url && (
-                          <a href={pendingProposal.attachment_url} target="_blank" rel="noopener noreferrer" className={styles.price_pending_attachment}>
+                          <button type="button" onClick={() => openProtectedFile(`/api/files/price-proposal/${pendingProposal.id}`)} className={styles.price_pending_attachment}>
                             <FileText size={14} /> Se bifogad fil
-                          </a>
+                          </button>
                         )}
                         <button
                           className="btn btn-primary"
@@ -803,9 +804,9 @@ export default function MyOrderDetailPage({ params }: { params: Promise<{ id: st
                     )}
                     {pendingProposal.note && <p className={styles.price_pending_note}>{pendingProposal.note}</p>}
                     {pendingProposal.attachment_url && (
-                      <a href={pendingProposal.attachment_url} target="_blank" rel="noopener noreferrer" className={styles.price_pending_attachment}>
+                      <button type="button" onClick={() => openProtectedFile(`/api/files/price-proposal/${pendingProposal.id}`)} className={styles.price_pending_attachment}>
                         <FileText size={14} /> Se bifogad fil
-                      </a>
+                      </button>
                     )}
                     <div className={styles.price_pending_actions}>
                       <button

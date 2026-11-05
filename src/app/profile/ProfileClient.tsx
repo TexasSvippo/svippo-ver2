@@ -5,6 +5,9 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { fetchMyProfile } from '@/lib/myProfile'
+import { authHeaders } from '@/lib/authHeaders'
+import { openProtectedFile } from '@/lib/openProtectedFile'
+import { toStoragePath } from '@/lib/storagePaths'
 import useAuth from '@/hooks/useAuth'
 import { useNotifications } from '@/hooks/useNotifications'
 import { fetchConversations as fetchConversationsForUser, type Conversation } from '@/lib/conversations'
@@ -45,7 +48,7 @@ type Service = { id: string; title: string; subcategory: string; price_type: str
 type Order = { id: string; service_title: string; buyer_name: string; buyer_email: string; message: string; status: string; project_status: string }
 type PlacedOrder = { id: string; service_title: string; seller_name: string; message: string; status: string; project_status: string }
 type KarriarOrder = { id: string; service_title: string; buyer_name: string; project_status: string; created_at: string }
-type Request = { id: string; title: string; category_id: string; subcategory: string; budget: number; budget_type: string; location: string; status?: string }
+type Request = { id: string; title: string; category_id: string; subcategory: string; budget: number; budget_type: string; location: string; status?: string; image_url?: string | null }
 type Interest = { id: string; request_title: string; svippar_name: string; svippar_email: string; message: string; price: number }
 type Notification = { id: string; type: string; order_id: string; service_title: string; message: string; read: boolean }
 type Subscription = { id: string; category_id: string }
@@ -389,10 +392,11 @@ export default function ProfileClient({ initialAccountType }: Props) {
       const fileName = `${user.id}/${Date.now()}.pdf`
       const { error: uploadError } = await supabase.storage.from('certificates').upload(fileName, certFile)
       if (uploadError) throw uploadError
-      const { data: urlData } = supabase.storage.from('certificates').getPublicUrl(fileName)
+      // The bucket is private: store the storage path (not a public URL).
+      // Files are opened via /api/files/certificate/<id> (signed URL).
       const { data: inserted } = await supabase.from('certificates').insert({
         user_id: user.id, name: certName, category_id: certCategoryId,
-        subcategory: certSubcategory, file_url: urlData.publicUrl,
+        subcategory: certSubcategory, file_url: fileName,
       }).select().single()
       if (inserted) setCertificates(prev => [inserted, ...prev])
       setCertName(''); setCertCategoryId(''); setCertSubcategory(''); setCertFile(null)
@@ -405,11 +409,11 @@ export default function ProfileClient({ initialAccountType }: Props) {
     }
   }
 
-  const handleCertDelete = async (id: string, fileUrl: string) => {
+  const handleCertDelete = async (id: string) => {
     if (!confirm('Ta bort detta certifikat?')) return
-    const path = fileUrl.split('/certificates/')[1]
-    if (path) await supabase.storage.from('certificates').remove([path])
-    await supabase.from('certificates').delete().eq('id', id)
+    // File + row are deleted server-side (owner or admin); the bucket is private.
+    const res = await fetch(`/api/certificates/${id}`, { method: 'DELETE', headers: await authHeaders() })
+    if (!res.ok) { alert('Certifikatet kunde inte tas bort. Försök igen.'); return }
     setCertificates(prev => prev.filter(c => c.id !== id))
   }
 
@@ -1055,6 +1059,13 @@ export default function ProfileClient({ initialAccountType }: Props) {
                           title="Ta bort"
                           onClick={async () => {
                             if (!confirm('Är du säker på att du vill ta bort denna förfrågan?')) return
+                            // Remove the request's image too (allowed by the owner-only
+                            // delete policy on request-images: "<user_id>-..." file names).
+                            const imagePath = toStoragePath(r.image_url, 'request-images')
+                            if (imagePath) {
+                              const { error: imageError } = await supabase.storage.from('request-images').remove([imagePath])
+                              if (imageError) console.error('Kunde inte ta bort förfrågans bild:', imageError)
+                            }
                             await supabase.from('requests').delete().eq('id', r.id)
                             setMyRequests(prev => prev.filter(x => x.id !== r.id))
                           }}
@@ -1365,8 +1376,8 @@ export default function ProfileClient({ initialAccountType }: Props) {
                               <span>{cat?.label} · {cert.subcategory}</span>
                             </div>
                             <div className={styles.cert__actions}>
-                              <a href={cert.file_url} target="_blank" rel="noopener noreferrer" className="btn btn-outline" style={{ padding: '6px 12px', fontSize: '13px' }}>Visa PDF</a>
-                              <button className={`btn btn-outline ${styles.profile__delete_btn}`} onClick={() => handleCertDelete(cert.id, cert.file_url)}><Trash2 size={14} /></button>
+                              <button type="button" onClick={() => openProtectedFile(`/api/files/certificate/${cert.id}`)} className="btn btn-outline" style={{ padding: '6px 12px', fontSize: '13px' }}>Visa PDF</button>
+                              <button className={`btn btn-outline ${styles.profile__delete_btn}`} onClick={() => handleCertDelete(cert.id)}><Trash2 size={14} /></button>
                             </div>
                           </div>
                         )

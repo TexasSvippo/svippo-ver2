@@ -33,7 +33,9 @@ function sanitizeFilename(filename: string): string {
 }
 
 export async function submitPriceProposal({ orderId, amount, note, hours, file }: SubmitPriceProposalParams) {
-  let attachmentUrl: string | undefined
+  // The bucket is private: send the storage path (not a public URL). The file
+  // is opened via /api/files/price-proposal/<id>, which returns a signed URL.
+  let attachmentPath: string | undefined
 
   if (file) {
     const path = `${orderId}/${Date.now()}-${sanitizeFilename(file.name)}`
@@ -41,8 +43,7 @@ export async function submitPriceProposal({ orderId, amount, note, hours, file }
       .from('price-proposal-attachments')
       .upload(path, file)
     if (uploadError) throw uploadError
-    const { data } = supabase.storage.from('price-proposal-attachments').getPublicUrl(path)
-    attachmentUrl = data.publicUrl
+    attachmentPath = path
   }
 
   const { data: { session } } = await supabase.auth.getSession()
@@ -58,7 +59,7 @@ export async function submitPriceProposal({ orderId, amount, note, hours, file }
       amount,
       note: note || undefined,
       hours: hours ?? undefined,
-      attachment_url: attachmentUrl,
+      attachment_path: attachmentPath,
     }),
   })
 

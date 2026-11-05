@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { authHeaders } from '@/lib/authHeaders'
+import { openProtectedFile } from '@/lib/openProtectedFile'
 import useAuth from '@/hooks/useAuth'
 import styles from '@/styles/orderdetail.module.scss'
 import { Package, Clock, CheckCircle, XCircle, Link as LinkIcon, ClipboardList, Star, User, MessageCircle, BarChart2, Wallet, ArrowLeft, Tag, Calendar } from 'lucide-react'
@@ -728,9 +729,9 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                         )}
                         {p.note && <p className={styles.price_history_note}>{p.note}</p>}
                         {p.attachment_url && (
-                          <a href={p.attachment_url} target="_blank" rel="noopener noreferrer" className={styles.price_history_attachment}>
+                          <button type="button" onClick={() => openProtectedFile(`/api/files/price-proposal/${p.id}`)} className={styles.price_history_attachment}>
                             <LinkIcon size={12} /> Bilaga
-                          </a>
+                          </button>
                         )}
                         <span className={styles.price_history_date}>{new Date(p.created_at).toLocaleDateString('sv-SE')}</span>
                       </div>

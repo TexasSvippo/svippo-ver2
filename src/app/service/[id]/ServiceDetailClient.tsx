@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import useAuth from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
+import { openProtectedFile } from '@/lib/openProtectedFile'
 import styles from './servicedetail.module.scss'
 import refStyles from './references.module.scss'
 import { CheckCircle, Star, User, Wallet, Pencil, Trash2, Lock, MessageCircle, Shield, ChevronLeft, ChevronRight, Flag, MapPin } from 'lucide-react'
@@ -602,7 +603,11 @@ export default function ServiceDetailClient({ service, descriptionHtml, reviews,
                 {matchingCerts.map(cert => (
                   <div key={cert.id} className={styles.cert_row}>
                     <span>{cert.name}</span>
-                    <a href={cert.file_url} target="_blank" rel="noopener noreferrer">Visa PDF</a>
+                    {user ? (
+                      <button type="button" onClick={() => openProtectedFile(`/api/files/certificate/${cert.id}`)}>Visa PDF</button>
+                    ) : (
+                      <Link href="/login">Logga in för att visa</Link>
+                    )}
                   </div>
                 ))}
               </div>
@@ -739,7 +744,11 @@ export default function ServiceDetailClient({ service, descriptionHtml, reviews,
                 {matchingCerts.map(cert => (
                   <div key={cert.id} className={styles.cert_row}>
                     <span>{cert.name}</span>
-                    <a href={cert.file_url} target="_blank" rel="noopener noreferrer">Visa PDF</a>
+                    {user ? (
+                      <button type="button" onClick={() => openProtectedFile(`/api/files/certificate/${cert.id}`)}>Visa PDF</button>
+                    ) : (
+                      <Link href="/login">Logga in för att visa</Link>
+                    )}
                   </div>
                 ))}
               </div>
