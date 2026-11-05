@@ -39,7 +39,9 @@ export default async function PublicProfilePage({ params }: Props) {
   const { id } = await params
 
   const [{ data: profile }, { data: services }, { data: reviews }] = await Promise.all([
-    supabase.from('users').select('*').eq('id', id).single(),
+    // Only the columns the public profile shows -- never role/is_approved.
+    // (email/phone are still shown under "Kontaktuppgifter"; that's a separate product decision.)
+    supabase.from('users').select('id, name, email, phone, bio, account_type, avatar_url, created_at').eq('id', id).single(),
     supabase.from('services').select('*').eq('user_id', id).eq('status', 'active').order('created_at', { ascending: false }),
     supabase.from('reviews').select('*').eq('reviewee_id', id).eq('role', 'buyer'),
   ])
@@ -54,7 +56,10 @@ export default async function PublicProfilePage({ params }: Props) {
   if (profile.account_type === 'svippare') {
     const { data } = await supabase
       .from('svippare_profiles')
-      .select('*')
+      // Only what PublicProfileClient shows. Never select('*') here: the row also
+      // holds personal_number, address and postal_code, and this object is sent
+      // to the browser.
+      .select('categories, location, bio, experience, website, social_links, city')
       .eq('user_id', id)
       .eq('status', 'approved')
       .single()
